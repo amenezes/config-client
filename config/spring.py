@@ -24,9 +24,10 @@ class ConfigServer:
         try:
             logging.info('Retrieving config server configuration...')
 
-            response = requests.get(self.__format_config_url())
+            response = requests.get(self.__format_configserver_url())
 
-            logging.debug(self.__format_config_url())
+            logging.debug(self.__format_configserver_url())
+            logging.debug('Response status code: %s' % response.status_code)
 
             if response.status_code == 200:
                 self.__config = response.json()
@@ -36,7 +37,7 @@ class ConfigServer:
                 'Failed to establish connection with configserver.')
             sys.exit(1)
 
-    def __format_config_url(self):
+    def __format_configserver_url(self):
         """
         Set the URL to the format of the spring config server
         """

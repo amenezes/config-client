@@ -4,7 +4,7 @@ config-client package for [spring cloud config](https://spring.io/projects/sprin
 
 ## Installing
 
-Install and update using pip:
+Install and update using pip: 
 
 ````bash
 pip install -U config-client
@@ -13,6 +13,27 @@ pip install -U config-client
 ## Dependencies
 
 - [requests](https://pypi.org/project/requests/)
+
+## Setup
+
+config server url pattern:
+- http://<*config_server*>:<*config_server_port*>/configuration/<*branch*>/<*app_name*>-<*profile*>.json
+
+````ini
+# expected environment variables:
+#
+CONFIGSERVER_ADDRESS=http://configserver:8888/configuration
+BRANCH=master
+PROFILE=development
+APP_NAME=myapp
+````
+
+will result in:
+
+````txt
+http://configserver:8888/configuration/master/myapp-development.json
+````
+
 
 ## Usage Example
 
