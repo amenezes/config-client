@@ -2,10 +2,14 @@
 Module for retrieve application's config from configserver
 """
 
-import logging
 import os
 import sys
 import requests
+
+import logging
+from logging import NullHandler
+
+logging.getLogger(__name__).addHandler(NullHandler())
 
 
 class ConfigServer:
