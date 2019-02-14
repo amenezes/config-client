@@ -1,3 +1,5 @@
+[![Maintainability](https://api.codeclimate.com/v1/badges/7b8b70e0c20c6809df54/maintainability)](https://codeclimate.com/github/amenezes/config-client/maintainability)
+
 # config-client
 
 config-client package for [spring cloud config](https://spring.io/projects/spring-cloud-config).
@@ -32,6 +34,17 @@ will result in:
 
 ````txt
 http://configserver:8888/configuration/master/myapp-development.json
+````
+
+### Default values
+
+if no value was adjusted for the environment variables below, the default value will be assumed, as:
+
+````ini
+CONFIGSERVER_ADDRESS=http://localhost:8888/configuration
+BRANCH=master
+PROFILE=development
+APP_NAME=
 ````
 
 

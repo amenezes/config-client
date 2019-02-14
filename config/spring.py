@@ -15,7 +15,7 @@ logging.getLogger(__name__).addHandler(NullHandler())
 class ConfigServer:
     """ConfigServer client"""
 
-    __config = {}
+    _config = {}
 
     def __init__(self):
         self.__load_config_from_configserver()
@@ -28,13 +28,14 @@ class ConfigServer:
         try:
             logging.info('Retrieving config server configuration...')
 
-            response = requests.get(self.__format_configserver_url())
+            request_url = self.__format_configserver_url()
+            response = requests.get(request_url)
 
-            logging.debug(self.__format_configserver_url())
+            logging.debug(request_url)
             logging.debug('Response status code: %s' % response.status_code)
 
             if response.status_code == 200:
-                self.__config = response.json()
+                self._config = response.json()
 
         except requests.exceptions.ConnectionError:
             logging.error(
@@ -58,14 +59,4 @@ class ConfigServer:
     @property
     def config(self):
         logging.debug('Getting atribute from content')
-        return self.__config
-
-    def get_atribute(self, key_attr):
-        return self.__config.get(key_attr)
-
-    def get_keys(self):
-        """
-        List all keys from config file
-        """
-        logging.debug('Gettings keys from config file')
-        return self.__config.keys()
+        return self._config

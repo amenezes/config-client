@@ -1,0 +1,16 @@
+version: '2'
+plugins:
+  duplication:
+    enabled: true
+    config:
+      languages:
+        - python:
+  fixme:
+    enabled: true
+  radon:
+    enabled: true
+  pep8:
+    enabled: true
+exclude_patterns:
+- "app/docker"
+- "venv"

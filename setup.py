@@ -21,9 +21,9 @@ setuptools.setup(
         ('Code', 'https://github.com/amenezes/config-client'),
         ('Issue tracker', 'https://github.com/amenezes/config-client/issues')
     )),
-    extras_require={
-        'requests': ['requests']
-    },
+    install_requires=[
+        'requests>=2.21.0'
+    ],
     classifiers=[
         "Programming Language :: Python :: 3.5",
         "Programming Language :: Python :: 3.6",
