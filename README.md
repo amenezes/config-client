@@ -1,4 +1,5 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/7b8b70e0c20c6809df54/maintainability)](https://codeclimate.com/github/amenezes/config-client/maintainability)
+[![Build Status](https://travis-ci.org/amenezes/config-client.svg?branch=master)](https://travis-ci.org/amenezes/config-client)
 
 # config-client
 
@@ -6,7 +7,7 @@ config-client package for [spring cloud config](https://spring.io/projects/sprin
 
 ## Installing
 
-Install and update using pip: 
+Install and update using pip:
 
 ````bash
 pip install -U config-client

@@ -1,30 +1,26 @@
-"""
-Module for retrieve application's config from configserver
-"""
-
-import os
-import sys
-import requests
+"""Module for retrieve application's config from spring cloud config."""
 
 import logging
-from logging import NullHandler
+import os
+import sys
 
-logging.getLogger(__name__).addHandler(NullHandler())
+import requests
+
+
+logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 class ConfigServer:
-    """ConfigServer client"""
+    """ConfigServer client."""
 
     _config = {}
 
     def __init__(self):
+        """Create a instance for standard spring cloud client."""
         self.__load_config_from_configserver()
 
     def __load_config_from_configserver(self):
-        """
-        Retrieves configuration information from the
-        configuration server
-        """
+        """Retrieve configuration from the spring cloud config server."""
         try:
             logging.info('Retrieving config server configuration...')
 
@@ -43,9 +39,7 @@ class ConfigServer:
             sys.exit(1)
 
     def __format_configserver_url(self):
-        """
-        Set the URL to the format of the spring config server
-        """
+        """Set the URL to the format of the spring cloud config server."""
         logging.debug('Requesting configuration file')
 
         address = os.getenv(
@@ -58,5 +52,6 @@ class ConfigServer:
 
     @property
     def config(self):
+        """Getter for config property."""
         logging.debug('Getting atribute from content')
         return self._config
