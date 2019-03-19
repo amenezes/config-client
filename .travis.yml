@@ -7,7 +7,6 @@ install:
   - pip install -r requirements-dev.txt
 script:
   - echo '--- code style checking ---'
-  - flake8 config/*.py
-  # - flake8 tests/*.py
+  - flake8 config
   - echo '--- unittest ---'
-  # - python -m pytest -v
+  - python -m pytest -v tests/

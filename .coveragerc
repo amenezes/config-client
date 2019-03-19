@@ -1,0 +1,21 @@
+[run]
+branch = True
+omit = **__init__.py**
+
+[report]
+show_missing = True
+sort = Cover
+precision = 2
+exclude_lines = logging.info
+                logging.debug
+                logging.warn
+                logging.error
+
+[paths]
+source = discovery/
+
+[html]
+directory = .
+
+[xml]
+output = coverage.xml
