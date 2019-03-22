@@ -1,12 +1,21 @@
 dist: xenial
 language: python
 python:
+  - 3.5
   - 3.6
   - 3.7
 install:
   - pip install -r requirements-dev.txt
+before_script:
+  - curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
+  - chmod +x ./cc-test-reporter
 script:
   - echo '--- code style checking ---'
   - flake8 config
+  - flake8 tests
   - echo '--- unittest ---'
   - python -m pytest -v tests/
+  - echo '--- report upload ---'
+  - codecov --file coverage.xml -t $CODECOV_TOKEN
+  - ./cc-test-reporter format-coverage -t coverage.py -o codeclimate.json
+  - ./cc-test-reporter upload-coverage -i codeclimate.json -r $CC_TEST_REPORTER_ID
