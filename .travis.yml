@@ -14,7 +14,7 @@ script:
   - flake8 config
   - flake8 tests
   - echo '--- unittest ---'
-  - python -m pytest -v tests/
+  - python -m pytest -v --cov-report xml --cov-report term --cov=config tests
   - echo '--- report upload ---'
   - codecov --file coverage.xml -t $CODECOV_TOKEN
   - ./cc-test-reporter format-coverage -t coverage.py -o codeclimate.json
