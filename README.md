@@ -62,6 +62,17 @@ config_client.config['spring']['cloud']['consul']['host']
 config_client.config.get('spring').get('cloud').get('consul').get('port')
 ````
 
+### standard client with @decorator
+
+````python
+from config import spring
+
+@spring.config_client
+def my_test(config_client):
+config_client.config['spring']['cloud']['consul']['host']
+config_client.config.get('spring').get('cloud').get('consul').get('port')
+````
+
 Integration with Flask.
 
 ````python

@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="config-client",
-    version="0.1.1",
+    version="0.2.0",
     author="alexandre menezes",
     author_email="alexandre.fmenezes@gmail.com",
     description="config service client",
@@ -22,7 +22,7 @@ setuptools.setup(
         ('Issue tracker', 'https://github.com/amenezes/config-client/issues')
     )),
     install_requires=[
-        'requests>=2.21.0'
+        'requests>=2.22.0'
     ],
     classifiers=[
         "Programming Language :: Python :: 3.5",

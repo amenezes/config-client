@@ -3,12 +3,15 @@ import logging
 import os
 import sys
 
+from config.core import singleton
+
 import requests
 
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
+@singleton
 class ConfigServer:
     """ConfigServer client."""
 
@@ -78,3 +81,11 @@ class ConfigServer:
     def get_keys(self):
         """List all keys from configuration retrieved."""
         return self.config.keys()
+
+
+def config_client(func):
+    """Spring config client decorator."""
+    def enable_config():
+        """Inner function to create ConfigServer instance."""
+        return func(ConfigServer())
+    return enable_config
