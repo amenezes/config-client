@@ -2,6 +2,7 @@
 import logging
 import os
 import sys
+from functools import wraps
 
 from config.core import singleton
 
@@ -85,6 +86,7 @@ class ConfigServer:
 
 def config_client(func):
     """Spring config client decorator."""
+    @wraps(func)
     def enable_config():
         """Inner function to create ConfigServer instance."""
         return func(ConfigServer())

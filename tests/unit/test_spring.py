@@ -36,7 +36,3 @@ class TestUtils(unittest.TestCase):
         """Test failed to connect on configserver."""
         with self.assertRaises(SystemExit):
             ConfigServer()
-
-
-if __name__ == '__main__':
-    unittest.main()
