@@ -16,5 +16,4 @@ plugins:
     config:
       python_version: 3
 exclude_patterns:
-- "app/docker"
 - "venv"
