@@ -11,6 +11,10 @@ plugins:
     enabled: true
   pep8:
     enabled: true
+  bandit:
+    enabled: true
+    config:
+      python_version: 3
 exclude_patterns:
 - "app/docker"
 - "venv"
