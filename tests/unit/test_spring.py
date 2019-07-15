@@ -1,5 +1,6 @@
 """Test spring module."""
 import unittest
+from unittest.mock import patch
 
 from config.spring import ConfigServer
 
@@ -31,12 +32,25 @@ class TestUtils(unittest.TestCase):
                 }
             }
         }
+        self.obj = ConfigServer()
 
-    def test_connection_failed_to_configserver(self):
+    def test_get_config_failed(self):
         """Test failed to connect on configserver."""
         with self.assertRaises(SystemExit):
-            ConfigServer()
+            self.obj.get_config()
 
+    def test_get_config(self):
+        pass
 
-if __name__ == '__main__':
-    unittest.main()
+    def test_config_property(self):
+        self.assertIsInstance(self.obj.config, dict)
+
+    def test_url_property(self):
+        self.assertIsInstance(self.obj.url, str)
+
+    def test_get_attribute(self):
+        pass
+
+    @patch('config.spring.ConfigServer')
+    def test_get_keys(self, ConfigMock):
+        pass
