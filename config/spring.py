@@ -2,7 +2,6 @@
 import logging
 import os
 import sys
-from functools import wraps
 
 import attr
 
@@ -97,12 +96,11 @@ class ConfigServer:
         return self._config.keys()
 
 
-def config_client(func):
-    """Spring config client decorator."""
-    @wraps(func)
-    def enable_config(*args, **kwargs):
-        """Inner function to create ConfigServer instance."""
-        obj = ConfigServer(*args, **kwargs)
-        obj.get_config()
-        return func(obj)
-    return enable_config
+def config_client(*args, **kwargs):
+    def wrap_function(function):
+        def enable_config():
+            obj = ConfigServer(*args, **kwargs)
+            obj.get_config()
+            return function(obj)
+        return enable_config
+    return wrap_function

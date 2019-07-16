@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="config-client",
-    version="0.3.0",
+    version="0.3.1",
     author="alexandre menezes",
     author_email="alexandre.fmenezes@gmail.com",
     description="config service client",

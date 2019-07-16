@@ -94,7 +94,7 @@ class TestUtils(unittest.TestCase):
 
     @patch('requests.get')
     def test_decorator(self, RequestMock):
-        @config_client
+        @config_client(app_name='myapp')
         def inner_method(c=None):
             self.assertEqual(ConfigServer(), c)
             return c
@@ -103,7 +103,7 @@ class TestUtils(unittest.TestCase):
         self.assertIsNotNone(response)
 
     def test_decorator_failed(self):
-        @config_client
+        @config_client()
         def inner_method(c=None):
             self.assertEqual(ConfigServer(), c)
 

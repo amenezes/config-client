@@ -46,9 +46,9 @@ http://configserver:8888/configuration/master/myapp-development.json
 from config import spring
 
 c = spring.ConfigServer(
-    app_name='myapp',
-    url="{address}/{branch}/{profile}-{app_name}.json"
-)
+        app_name='myapp',
+        url="{address}/{branch}/{profile}-{app_name}.json"
+    )
 c.url
 # output: 'http://localhost:8888/configuration/master/development-myapp.json'
 ```
@@ -74,20 +74,37 @@ from config.spring import ConfigServer
 
 config_client = ConfigServer(app_name='my_app')
 config_client.get_config()
-# option 1: dict like
+
+# option 1: dict like with direct access
 config_client.config['spring']['cloud']['consul']['host']
+
 # option 2: dict like using get
 config_client.config.get('spring').get('cloud').get('consul').get('port')
+
 # option 3: using get_attribute method
 config_client.config.get_attribute('spring.cloud.consul.port')
 ````
 
 ### standard client with @decorator
 
+For use cases where environment variables are set.
+
 ````python
 from config import spring
 
-@spring.config_client
+@spring.config_client()
+def my_test(config_client=None):
+    config_client.config['spring']['cloud']['consul']['host']
+    config_client.config.get('spring').get('cloud').get('consul').get('port')
+    config_client.config.get_attribute('spring.cloud.consul.port')
+````
+
+For use cases where environment variables are not set can you use decorator parameters, as example below:
+
+````python
+from config import spring
+
+@spring.config_client(app_name='myapp', branch="dev")
 def my_test(config_client=None):
     config_client.config['spring']['cloud']['consul']['host']
     config_client.config.get('spring').get('cloud').get('consul').get('port')
@@ -140,12 +157,12 @@ loop.run_until_complete(service_discovery)
 ### Running Tests
 
 Install development dependencies.
-```python
+```bash
 pip install -r requirements-dev.txt
 ```
 
 To execute tests just run:
-```python
+```bash
 python -m pytest -v --cov-report term --cov=config tests
 ```
 
