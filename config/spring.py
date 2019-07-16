@@ -2,6 +2,7 @@
 import logging
 import os
 import sys
+from functools import wraps
 
 import attr
 
@@ -98,6 +99,7 @@ class ConfigServer:
 
 def config_client(func):
     """Spring config client decorator."""
+    @wraps(func)
     def enable_config(*args, **kwargs):
         """Inner function to create ConfigServer instance."""
         obj = ConfigServer(*args, **kwargs)

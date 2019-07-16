@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import PropertyMock, patch
 
-from config import spring
+from config.spring import ConfigServer, config_client
 
 
 class ResponseMock:
@@ -36,7 +36,7 @@ class TestUtils(unittest.TestCase):
                 }
             }
         }
-        self.obj = spring.ConfigServer(app_name='test-app')
+        self.obj = ConfigServer(app_name='test-app')
 
     def test_get_config_failed(self):
         """Test failed to connect on configserver."""
@@ -70,7 +70,7 @@ class TestUtils(unittest.TestCase):
     """
     @unittest.skip('skipping due singleton use.')
     def test_custom_url_property(self):
-        obj = spring.ConfigServer(
+        obj = ConfigServer(
             app_name='test-app',
             branch='development',
             url="{address}/{branch}/{profile}-{app_name}.json"
@@ -92,15 +92,20 @@ class TestUtils(unittest.TestCase):
         type(self.obj)._config = PropertyMock(return_value=self.config_example)
         self.assertEqual(self.obj.get_keys(), self.config_example.keys())
 
-    def test_decorator(self):
-        @spring.config_client
+    @patch('requests.get')
+    def test_decorator(self, RequestMock):
+        @config_client
         def inner_method(c=None):
-            pass
+            self.assertEqual(ConfigServer(), c)
+            return c
+
+        response = inner_method()
+        self.assertIsNotNone(response)
 
     def test_decorator_failed(self):
-        @spring.config_client
+        @config_client
         def inner_method(c=None):
-            self.assertIsInstance(c, spring.ConfigServer)
+            self.assertEqual(ConfigServer(), c)
 
         with self.assertRaises(SystemExit):
             inner_method()
