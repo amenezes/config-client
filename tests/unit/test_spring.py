@@ -1,7 +1,12 @@
 """Test spring module."""
 import unittest
+from unittest.mock import PropertyMock, patch
 
-from config.spring import ConfigServer
+from config.spring import ConfigServer, config_client
+
+
+class ResponseMock:
+    ok = False
 
 
 class TestUtils(unittest.TestCase):
@@ -31,8 +36,76 @@ class TestUtils(unittest.TestCase):
                 }
             }
         }
+        self.obj = ConfigServer(app_name='test-app')
 
-    def test_connection_failed_to_configserver(self):
+    def test_get_config_failed(self):
         """Test failed to connect on configserver."""
         with self.assertRaises(SystemExit):
-            ConfigServer()
+            self.obj.get_config()
+
+    @patch('requests.get')
+    def test_get_config(self, RequestMock):
+        self.obj.get_config()
+        self.assertDictEqual(self.obj.config, self.config_example)
+
+    @patch('requests.get', return_value=ResponseMock())
+    def test_get_config_response_failed(self, RequestMock):
+        with self.assertRaises(ValueError):
+            self.obj.get_config()
+
+    def test_config_property(self):
+        self.assertIsInstance(self.obj.config, dict)
+
+    def test_default_url_property(self):
+        self.assertIsInstance(self.obj.url, str)
+        self.assertEqual(
+            self.obj.url,
+            "http://localhost:8888/configuration/master/test-app-development.json"
+        )
+
+    """
+    As ConfigServer class apply singleton pattern to avoid unnecessary
+    network call, the creation of a new instance with different attributes
+    even using del() it's not applied with success in this test.
+    """
+    @unittest.skip('skipping due singleton use.')
+    def test_custom_url_property(self):
+        obj = ConfigServer(
+            app_name='test-app',
+            branch='development',
+            url="{address}/{branch}/{profile}-{app_name}.json"
+        )
+        self.assertIsInstance(obj.url, str)
+        self.assertEqual(obj.branch, 'development')
+        self.assertEqual(
+            obj.url,
+            "http://localhost:8888/configuration/development/development-test-app.json"
+        )
+
+    def test_get_attribute(self):
+        type(self.obj)._config = PropertyMock(return_value=self.config_example)
+        response = self.obj.get_attribute('spring.cloud.consul.host')
+        self.assertIsNotNone(response)
+        self.assertEqual(response, "discovery")
+
+    def test_get_keys(self):
+        type(self.obj)._config = PropertyMock(return_value=self.config_example)
+        self.assertEqual(self.obj.get_keys(), self.config_example.keys())
+
+    @patch('requests.get')
+    def test_decorator(self, RequestMock):
+        @config_client
+        def inner_method(c=None):
+            self.assertEqual(ConfigServer(), c)
+            return c
+
+        response = inner_method()
+        self.assertIsNotNone(response)
+
+    def test_decorator_failed(self):
+        @config_client
+        def inner_method(c=None):
+            self.assertEqual(ConfigServer(), c)
+
+        with self.assertRaises(SystemExit):
+            inner_method()
