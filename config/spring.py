@@ -26,29 +26,37 @@ class ConfigServer:
     branch = attr.ib(
         type=str,
         default=os.getenv('BRANCH'),
-        converter=attr.converters.default_if_none('ft-sdintegracoes-591')
+        converter=attr.converters.default_if_none('master')
     )
     app_name = attr.ib(
         type=str,
         default=os.getenv('APP_NAME'),
-        converter=attr.converters.default_if_none('autosprocessuais-pecas-textos')
+        converter=attr.converters.default_if_none('')
     )
     profile = attr.ib(
         type=str,
         default=os.getenv('PROFILE'),
         converter=attr.converters.default_if_none('development')
     )
-    _url = attr.ib(default=None)
+    url = attr.ib(
+        type=str,
+        default="{address}/{branch}/{app_name}-{profile}.json"
+    )
     _config = attr.ib(default={}, type=dict, init=False)
 
     def __attrs_post_init__(self):
-       """Retrieve configuration information."""
-       if self._url is None:
-           self._url = f"{self.address}/{self.branch}/{self.app_name}-{self.profile}.json"
+        """Format ConfigServer URL."""
+        self.url = self.url.format(
+            address=self.address,
+            app_name=self.app_name,
+            branch=self.branch,
+            profile=self.profile
+        )
 
     def get_config(self):
+        """Retrieve configuration from Spring Configserver."""
         try:
-            response = requests.get(self._url)
+            response = requests.get(self.url)
             if response.ok:
                 self._config = response.json()
             else:
@@ -64,18 +72,13 @@ class ConfigServer:
     def config(self):
         """Getter from configurations retrieved from configserver."""
         return self._config
-    
-    @property
-    def url(self):
-        """Getter from ConfigServer URL."""
-        return self._url
 
-    def get_attribute(self, attr):
+    def get_attribute(self, value):
         """Get attribute from configurations.
 
         Use <dot> to define a path on a key tree.
         """
-        key_list = attr.split('.')
+        key_list = value.split('.')
         logging.debug(f'Key attribute: {key_list}')
 
         attribute_content = self._config.get(key_list[0])

@@ -4,6 +4,8 @@ exclude = venv
           *.pyc
           __init__.py
 ignore = E501 # line too long
+         D101 # missing docstring in public class
+         D102 # missing docstring in public method
 verbose = 2
 doctests = True
 format = [%(code)s] %(path)s [%(row)d,%(col)d] %(text)s
