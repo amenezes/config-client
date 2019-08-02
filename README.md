@@ -64,6 +64,25 @@ PROFILE=development
 APP_NAME=
 ````
 
+### Supported response format
+
+- JSON
+
+Just add the `.json` extension to the end of the URL parameter. For example:
+
+````python
+c = ConfigServer(
+    app_name='foo',
+    profile='development',
+    address='http://localhost:8888',
+    branch='master',
+    url='{address}/{branch}/{app_name}-{profile}.json' # <
+)
+````
+
+It will result in URL: `http://localhost:8888/master/foo-development.json` .
+
+- ~~YAML~~ not supported.
 
 ## Usage Example
 

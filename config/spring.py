@@ -21,7 +21,9 @@ class ConfigServer:
     address = attr.ib(
         type=str,
         default=os.getenv('CONFIGSERVER_ADDRESS'),
-        converter=attr.converters.default_if_none('http://localhost:8888/configuration')
+        converter=attr.converters.default_if_none(
+            'http://localhost:8888/configuration'
+        )
     )
     branch = attr.ib(
         type=str,
@@ -52,16 +54,19 @@ class ConfigServer:
             branch=self.branch,
             profile=self.profile
         )
+        logging.debug(f'Target URL configured: {self.url}')
 
     def get_config(self):
         """Retrieve configuration from Spring Configserver."""
         try:
+            logging.debug(f'Requesting: {self.url}')
             response = requests.get(self.url)
+            logging.debug(f'HTTP response code: {response.status_code}')
             if response.ok:
                 self._config = response.json()
             else:
-                raise ValueError(
-                    f'Response from: {self.url} was different than 200.')
+                raise Exception(
+                    f'Failed to retrieve the configurations. HTTP Response code: {response.status_code}.')
 
         except requests.exceptions.ConnectionError:
             logging.error(
@@ -97,7 +102,12 @@ class ConfigServer:
 
 
 def config_client(*args, **kwargs):
+    logging.debug(f'args: {args}')
+    logging.debug(f'kwargs: {kwargs}')
+
     def wrap_function(function):
+        logging.debug(f'caller: {function}')
+
         def enable_config():
             obj = ConfigServer(*args, **kwargs)
             obj.get_config()

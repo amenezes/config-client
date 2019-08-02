@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="config-client",
-    version="0.3.1",
+    version="0.3.2",
     author="alexandre menezes",
     author_email="alexandre.fmenezes@gmail.com",
     description="config service client",
@@ -36,5 +36,6 @@ setuptools.setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
+        "Topic :: Software Development :: Libraries :: Java Libraries",
     ],
 )

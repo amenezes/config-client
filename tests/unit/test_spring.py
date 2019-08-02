@@ -7,6 +7,7 @@ from config.spring import ConfigServer, config_client
 
 class ResponseMock:
     ok = False
+    status_code = 402
 
 
 class TestUtils(unittest.TestCase):
@@ -50,7 +51,7 @@ class TestUtils(unittest.TestCase):
 
     @patch('requests.get', return_value=ResponseMock())
     def test_get_config_response_failed(self, RequestMock):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(Exception):
             self.obj.get_config()
 
     def test_config_property(self):
