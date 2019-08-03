@@ -37,7 +37,10 @@ class TestUtils(unittest.TestCase):
                 }
             }
         }
-        self.obj = ConfigServer(app_name='test-app')
+        self.obj = ConfigServer(
+            app_name='test-app',
+            url='{address}/{branch}/{app_name}-{profile}.yaml'
+        )
 
     def test_get_config_failed(self):
         """Test failed to connect on configserver."""
@@ -110,3 +113,6 @@ class TestUtils(unittest.TestCase):
 
         with self.assertRaises(SystemExit):
             inner_method()
+
+    def test_fix_valid_url_extension(self):
+        self.assertTrue(self.obj.url.endswith('json'))

@@ -14,7 +14,7 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 @singleton
-@attr.s
+@attr.s(slots=True)
 class ConfigServer:
     """ConfigServer client."""
 
@@ -33,7 +33,7 @@ class ConfigServer:
     app_name = attr.ib(
         type=str,
         default=os.getenv('APP_NAME'),
-        converter=attr.converters.default_if_none('')
+        validator=attr.validators.instance_of(str)
     )
     profile = attr.ib(
         type=str,
@@ -44,7 +44,12 @@ class ConfigServer:
         type=str,
         default="{address}/{branch}/{app_name}-{profile}.json"
     )
-    _config = attr.ib(default={}, type=dict, init=False)
+    _config = attr.ib(
+        type=dict,
+        default={},
+        init=False,
+        validator=attr.validators.instance_of(dict)
+    )
 
     def __attrs_post_init__(self):
         """Format ConfigServer URL."""
@@ -54,6 +59,15 @@ class ConfigServer:
             branch=self.branch,
             profile=self.profile
         )
+        if not self.url.endswith('.json'):
+            self.url = self.url.replace(
+                self.url[self.url.rfind('.'):], '.json'
+            )
+            logging.warn(
+                'URL suffix adjusted to a supported format. '
+                'For more details see: '
+                'https://github.com/amenezes/config-client/#default-values'
+            )
         logging.debug(f'Target URL configured: {self.url}')
 
     def get_config(self):
@@ -66,11 +80,14 @@ class ConfigServer:
                 self._config = response.json()
             else:
                 raise Exception(
-                    f'Failed to retrieve the configurations. HTTP Response code: {response.status_code}.')
+                    'Failed to retrieve the configurations. '
+                    f'HTTP Response code: {response.status_code}.'
+                )
 
         except requests.exceptions.ConnectionError:
             logging.error(
-                'Failed to establish connection with configserver.')
+                'Failed to establish connection with configserver.'
+            )
             sys.exit(1)
 
     @property
