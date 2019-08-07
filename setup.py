@@ -8,7 +8,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="config-client",
-    version="0.3.1",
+    version="0.3.2",
     author="alexandre menezes",
     author_email="alexandre.fmenezes@gmail.com",
     description="config service client",
@@ -24,7 +24,6 @@ setuptools.setup(
         ('Issue tracker', 'https://github.com/amenezes/config-client/issues')
     )),
     install_requires=[
-        'requests>=2.22.0',
         'attrs>=19.1.0'
     ],
     classifiers=[
@@ -36,5 +35,6 @@ setuptools.setup(
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
+        "Topic :: Software Development :: Libraries :: Java Libraries",
     ],
 )
