@@ -24,7 +24,6 @@ setuptools.setup(
         ('Issue tracker', 'https://github.com/amenezes/config-client/issues')
     )),
     install_requires=[
-        'requests>=2.22.0',
         'attrs>=19.1.0'
     ],
     classifiers=[

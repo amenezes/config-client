@@ -17,7 +17,6 @@ pip install -U config-client
 
 ## Dependencies
 
-- [requests](https://pypi.org/project/requests/)
 - [attrs](http://attrs.org)
 
 ## Setup
@@ -28,7 +27,7 @@ The default URL pattern is:
 ````ini
 # expected environment variables:
 #
-CONFIGSERVER_ADDRESS=http://configserver:8888/configuration
+CONFIGSERVER_ADDRESS=http://localhost:8888/configuration
 BRANCH=master
 PROFILE=development
 APP_NAME=myapp
@@ -37,15 +36,15 @@ APP_NAME=myapp
 will result in:
 
 ````txt
-http://configserver:8888/configuration/master/myapp-development.json
+http://localhost:8888/configuration/master/myapp-development.json
 ````
 
-> the url pattern can be customize on constructor with parameter `url`.
+The url pattern can be customize on constructor with parameter `url`.
 
 ```python
 from config import spring
 
-c = spring.ConfigServer(
+c = spring.ConfigClient(
         app_name='myapp',
         url="{address}/{branch}/{profile}-{app_name}.json"
     )
@@ -71,7 +70,7 @@ APP_NAME=
 Just add the `.json` extension to the end of the URL parameter. For example:
 
 ````python
-c = ConfigServer(
+c = ConfigClient(
     app_name='foo',
     profile='development',
     address='http://localhost:8888',
@@ -82,16 +81,17 @@ c = ConfigServer(
 
 It will result in URL: `http://localhost:8888/master/foo-development.json` .
 
-- ~~YAML~~ not supported.
+**Notice**
+`.yaml` it's not supported, all extensions will be converted to `.json` internally.
 
 ## Usage Example
 
 ### using standard client
 
 ````python
-from config.spring import ConfigServer
+from config.spring import ConfigClient
 
-config_client = ConfigServer(app_name='my_app')
+config_client = ConfigClient(app_name='my_app')
 config_client.get_config()
 
 # option 1: dict like with direct access
@@ -133,11 +133,11 @@ def my_test(config_client=None):
 Integration with Flask.
 
 ````python
-from config.spring import ConfigServer
+from config.spring import ConfigClient
 from flask import Flask
 
 
-config_client = ConfigServer(app_name="myapp")
+config_client = ConfigClient(app_name="myapp")
 config_client.get_config()
 app = Flask(__name__)
 app.run(host='0.0.0.0',
@@ -150,11 +150,11 @@ client using asyncio
 
 ````python
 import asyncio
-from config.spring import ConfigServer
+from config.spring import ConfigClient
 
 
 loop = asyncio.get_event_loop()
-config_client = ConfigServer(app_name='myapp')
+config_client = ConfigClient(app_name='myapp')
 config_client.get_config()
 
 async def service_discovery():

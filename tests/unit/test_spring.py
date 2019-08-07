@@ -1,16 +1,43 @@
 """Test spring module."""
+import json
 import unittest
 from unittest.mock import PropertyMock, patch
 
-from config.spring import ConfigServer, config_client
+from config.spring import ConfigClient, config_client
 
 
 class ResponseMock:
-    ok = False
-    status_code = 402
+    config = {
+        "health": {
+            "config": {
+                "enabled": False
+            }
+        },
+        "spring": {
+            "cloud": {
+                "consul": {
+                    "discovery": {
+                        "health-check-interval": "10s",
+                        "health-check-path": "/manage/health",
+                        "instance-id": "pecas-textos:${random.value}",
+                        "prefer-ip-address": True,
+                        "register-health-check": True
+                    },
+                    "host": "discovery",
+                    "port": 8500
+                }
+            }
+        }
+    }
+
+    def __init__(self, code=200):
+        self.code = code
+
+    def readlines(self):
+        return [json.dumps(self.config).encode('utf-8')]
 
 
-class TestUtils(unittest.TestCase):
+class TestConfigClient(unittest.TestCase):
     """Unit tests to spring module."""
 
     def setUp(self):
@@ -37,22 +64,22 @@ class TestUtils(unittest.TestCase):
                 }
             }
         }
-        self.obj = ConfigServer(
+        self.obj = ConfigClient(
             app_name='test-app',
             url='{address}/{branch}/{app_name}-{profile}.yaml'
         )
 
     def test_get_config_failed(self):
-        """Test failed to connect on configserver."""
+        """Test failed to connect on ConfigClient."""
         with self.assertRaises(SystemExit):
             self.obj.get_config()
 
-    @patch('requests.get')
+    @patch('urllib.request.urlopen', return_value=ResponseMock())
     def test_get_config(self, RequestMock):
         self.obj.get_config()
         self.assertDictEqual(self.obj.config, self.config_example)
 
-    @patch('requests.get', return_value=ResponseMock())
+    @patch('urllib.request.urlopen', return_value=ResponseMock(code=402))
     def test_get_config_response_failed(self, RequestMock):
         with self.assertRaises(Exception):
             self.obj.get_config()
@@ -68,13 +95,13 @@ class TestUtils(unittest.TestCase):
         )
 
     """
-    As ConfigServer class apply singleton pattern to avoid unnecessary
+    As ConfigClient class apply singleton pattern to avoid unnecessary
     network call, the creation of a new instance with different attributes
     even using del() it's not applied with success in this test.
     """
     @unittest.skip('skipping due singleton use.')
     def test_custom_url_property(self):
-        obj = ConfigServer(
+        obj = ConfigClient(
             app_name='test-app',
             branch='development',
             url="{address}/{branch}/{profile}-{app_name}.json"
@@ -96,11 +123,11 @@ class TestUtils(unittest.TestCase):
         type(self.obj)._config = PropertyMock(return_value=self.config_example)
         self.assertEqual(self.obj.get_keys(), self.config_example.keys())
 
-    @patch('requests.get')
+    @patch('urllib.request.urlopen', return_value=ResponseMock())
     def test_decorator(self, RequestMock):
         @config_client(app_name='myapp')
         def inner_method(c=None):
-            self.assertEqual(ConfigServer(), c)
+            self.assertEqual(ConfigClient(), c)
             return c
 
         response = inner_method()
@@ -109,7 +136,7 @@ class TestUtils(unittest.TestCase):
     def test_decorator_failed(self):
         @config_client()
         def inner_method(c=None):
-            self.assertEqual(ConfigServer(), c)
+            self.assertEqual(ConfigClient(), c)
 
         with self.assertRaises(SystemExit):
             inner_method()

@@ -1,13 +1,14 @@
 """Module for retrieve application's config from Spring Cloud Config."""
+import json
 import logging
 import os
 import sys
+from urllib import request
+from urllib.error import URLError
 
 import attr
 
 from config.core import singleton
-
-import requests
 
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
@@ -15,8 +16,8 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 @singleton
 @attr.s(slots=True)
-class ConfigServer:
-    """ConfigServer client."""
+class ConfigClient:
+    """ConfigClient client."""
 
     address = attr.ib(
         type=str,
@@ -52,7 +53,7 @@ class ConfigServer:
     )
 
     def __attrs_post_init__(self):
-        """Format ConfigServer URL."""
+        """Format ConfigClient URL."""
         self.url = self.url.format(
             address=self.address,
             app_name=self.app_name,
@@ -63,7 +64,7 @@ class ConfigServer:
             self.url = self.url.replace(
                 self.url[self.url.rfind('.'):], '.json'
             )
-            logging.warn(
+            logging.warning(
                 'URL suffix adjusted to a supported format. '
                 'For more details see: '
                 'https://github.com/amenezes/config-client/#default-values'
@@ -71,28 +72,29 @@ class ConfigServer:
         logging.debug(f'Target URL configured: {self.url}')
 
     def get_config(self):
-        """Retrieve configuration from Spring Configserver."""
+        """Retrieve configuration from Spring ConfigClient."""
         try:
             logging.debug(f'Requesting: {self.url}')
-            response = requests.get(self.url)
-            logging.debug(f'HTTP response code: {response.status_code}')
-            if response.ok:
-                self._config = response.json()
+
+            response = request.urlopen(self.url)
+            logging.debug(f'HTTP response code: {response.code}')
+            if response.code == 200:
+                self._config = json.loads(response.readlines()[0])
             else:
                 raise Exception(
                     'Failed to retrieve the configurations. '
                     f'HTTP Response code: {response.status_code}.'
                 )
 
-        except requests.exceptions.ConnectionError:
+        except URLError:
             logging.error(
-                'Failed to establish connection with configserver.'
+                'Failed to establish connection with ConfigClient.'
             )
             sys.exit(1)
 
     @property
     def config(self):
-        """Getter from configurations retrieved from configserver."""
+        """Getter from configurations retrieved from ConfigClient."""
         return self._config
 
     def get_attribute(self, value):
@@ -126,7 +128,7 @@ def config_client(*args, **kwargs):
         logging.debug(f'caller: {function}')
 
         def enable_config():
-            obj = ConfigServer(*args, **kwargs)
+            obj = ConfigClient(*args, **kwargs)
             obj.get_config()
             return function(obj)
         return enable_config
