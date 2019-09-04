@@ -1,12 +1,13 @@
 """Module for retrieve application's config from Spring Cloud Config."""
-import json
 import logging
 import os
 import sys
-from urllib import request
-from urllib.error import URLError
 
 import attr
+
+import requests
+
+from glom import glom
 
 from config.core import singleton
 
@@ -21,25 +22,23 @@ class ConfigClient:
 
     address = attr.ib(
         type=str,
-        default=os.getenv('CONFIGSERVER_ADDRESS'),
-        converter=attr.converters.default_if_none(
+        default=os.getenv(
+            'CONFIGSERVER_ADDRESS',
             'http://localhost:8888/configuration'
         )
     )
     branch = attr.ib(
         type=str,
-        default=os.getenv('BRANCH'),
-        converter=attr.converters.default_if_none('master')
+        default=os.getenv('BRANCH', 'master')
     )
     app_name = attr.ib(
         type=str,
-        default=os.getenv('APP_NAME'),
+        default=os.getenv('APP_NAME', ''),
         validator=attr.validators.instance_of(str)
     )
     profile = attr.ib(
         type=str,
-        default=os.getenv('PROFILE'),
-        converter=attr.converters.default_if_none('development')
+        default=os.getenv('PROFILE', 'development')
     )
     url = attr.ib(
         type=str,
@@ -60,6 +59,9 @@ class ConfigClient:
             branch=self.branch,
             profile=self.profile
         )
+        self._ensure_request_json()
+
+    def _ensure_request_json(self):
         if not self.url.endswith('.json'):
             self.url = self.url.replace(
                 self.url[self.url.rfind('.'):], '.json'
@@ -71,24 +73,24 @@ class ConfigClient:
             )
         logging.debug(f'Target URL configured: {self.url}')
 
-    def get_config(self):
+    def get_config(self, headers={}):
         """Retrieve configuration from Spring ConfigClient."""
         try:
             logging.debug(f'Requesting: {self.url}')
 
-            response = request.urlopen(self.url)
-            logging.debug(f'HTTP response code: {response.code}')
-            if response.code == 200:
-                self._config = json.loads(response.readlines()[0])
+            response = requests.get(self.url, headers=headers)
+            logging.debug(f'HTTP response code: {response.status_code}')
+            if response.ok:
+                self._config = response.json()
             else:
                 raise Exception(
                     'Failed to retrieve the configurations. '
                     f'HTTP Response code: {response.status_code}.'
                 )
 
-        except URLError:
+        except Exception:
             logging.error(
-                'Failed to establish connection with ConfigClient.'
+                'Failed to establish connection with ConfigServer.'
             )
             sys.exit(1)
 
@@ -98,22 +100,8 @@ class ConfigClient:
         return self._config
 
     def get_attribute(self, value):
-        """Get attribute from configurations.
-
-        Use <dot> to define a path on a key tree.
-        """
-        key_list = value.split('.')
-        logging.debug(f'Key attribute: {key_list}')
-
-        attribute_content = self._config.get(key_list[0])
-        logging.debug(f'Attribute content: {attribute_content}')
-
-        for key in key_list[1:]:
-            attribute_content = attribute_content.get(key)
-
-        logging.debug(f"Configuration getted: {attribute_content}")
-
-        return attribute_content
+        """Get attribute from configurations."""
+        return glom(self._config, value)
 
     def get_keys(self):
         """List all keys from configuration retrieved."""
