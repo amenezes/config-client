@@ -1,9 +1,8 @@
 """Test spring module."""
-import json
 import unittest
 from unittest.mock import PropertyMock, patch
 
-from config.spring import ConfigClient, config_client
+from config.spring import ConfigClient, create_config_client, config_client
 
 
 class ResponseMock:
@@ -30,11 +29,12 @@ class ResponseMock:
         }
     }
 
-    def __init__(self, code=200):
-        self.code = code
+    def __init__(self, code=200, ok=True):
+        self.status_code = code
+        self.ok = ok
 
-    def readlines(self):
-        return [json.dumps(self.config).encode('utf-8')]
+    def json(self):
+        return self.config
 
 
 class TestConfigClient(unittest.TestCase):
@@ -74,14 +74,14 @@ class TestConfigClient(unittest.TestCase):
         with self.assertRaises(SystemExit):
             self.obj.get_config()
 
-    @patch('urllib.request.urlopen', return_value=ResponseMock())
+    @patch('config.spring.requests.get', return_value=ResponseMock())
     def test_get_config(self, RequestMock):
         self.obj.get_config()
         self.assertDictEqual(self.obj.config, self.config_example)
 
-    @patch('urllib.request.urlopen', return_value=ResponseMock(code=402))
+    @patch('config.spring.requests.get', return_value=ResponseMock(code=402, ok=False))
     def test_get_config_response_failed(self, RequestMock):
-        with self.assertRaises(Exception):
+        with self.assertRaises(SystemExit):
             self.obj.get_config()
 
     def test_config_property(self):
@@ -94,12 +94,6 @@ class TestConfigClient(unittest.TestCase):
             "http://localhost:8888/configuration/master/test-app-development.json"
         )
 
-    """
-    As ConfigClient class apply singleton pattern to avoid unnecessary
-    network call, the creation of a new instance with different attributes
-    even using del() it's not applied with success in this test.
-    """
-    @unittest.skip('skipping due singleton use.')
     def test_custom_url_property(self):
         obj = ConfigClient(
             app_name='test-app',
@@ -123,11 +117,11 @@ class TestConfigClient(unittest.TestCase):
         type(self.obj)._config = PropertyMock(return_value=self.config_example)
         self.assertEqual(self.obj.get_keys(), self.config_example.keys())
 
-    @patch('urllib.request.urlopen', return_value=ResponseMock())
+    @patch('config.spring.requests.get', return_value=ResponseMock())
     def test_decorator(self, RequestMock):
         @config_client(app_name='myapp')
         def inner_method(c=None):
-            self.assertEqual(ConfigClient(), c)
+            self.assertIsInstance(c, ConfigClient)
             return c
 
         response = inner_method()
@@ -143,3 +137,9 @@ class TestConfigClient(unittest.TestCase):
 
     def test_fix_valid_url_extension(self):
         self.assertTrue(self.obj.url.endswith('json'))
+
+    def test_create_config_client_with_singleton_decorator(self):
+        client1 = create_config_client()
+        client2 = create_config_client()
+
+        self.assertEqual(client1, client2)

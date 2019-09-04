@@ -15,7 +15,7 @@ from config.core import singleton
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-@singleton
+# @singleton
 @attr.s(slots=True)
 class ConfigClient:
     """ConfigClient client."""
@@ -106,6 +106,11 @@ class ConfigClient:
     def get_keys(self):
         """List all keys from configuration retrieved."""
         return self._config.keys()
+
+
+@singleton
+def create_config_client(*args, **kwargs):
+    return config_client(args, kwargs)
 
 
 def config_client(*args, **kwargs):

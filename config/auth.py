@@ -56,3 +56,8 @@ class OAuth2:
         )
         if response.ok:
             self._token = response.json().get('access_token')
+        else:
+            raise Exception(
+                'Failed to retrieve oauth2 access_token. '
+                f'HTTP Response code: {response.status_code}.'
+            )
