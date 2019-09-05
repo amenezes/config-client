@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import PropertyMock, patch
 
 from config.cf import CF
 from config.spring import ConfigClient
@@ -23,4 +23,19 @@ class TestCF(unittest.TestCase):
 
     def test_custom_client(self):
         cf = self.configure_custom_client()
-        self.assertEqual(cf.client.address, None)
+        self.assertEqual(cf.client.address, '')
+
+    def test_vcap_services_property(self):
+        self.assertIsNotNone(self.cf.vcap_services)
+
+    def test_vcap_application_property(self):
+        self.assertIsNotNone(self.cf.vcap_application)
+
+    def test_cf_config(self):
+        self.assertIsInstance(self.cf.config, dict)
+
+    def test_cf_get_attribute(self):
+        pass
+
+    def test_cf_get_keys(self):
+        self.assertEqual(list(self.cf.get_keys()), [])

@@ -91,7 +91,7 @@ class TestConfigClient(unittest.TestCase):
         self.assertIsInstance(self.obj.url, str)
         self.assertEqual(
             self.obj.url,
-            "http://localhost:8888/configuration/master/test-app-development.json"
+            "http://localhost:8888/master/test-app-development.json"
         )
 
     def test_custom_url_property(self):
@@ -104,7 +104,7 @@ class TestConfigClient(unittest.TestCase):
         self.assertEqual(obj.branch, 'development')
         self.assertEqual(
             obj.url,
-            "http://localhost:8888/configuration/development/development-test-app.json"
+            "http://localhost:8888/development/development-test-app.json"
         )
 
     def test_get_attribute(self):

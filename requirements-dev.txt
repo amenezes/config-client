@@ -41,3 +41,5 @@ traitlets==4.3.2
 urllib3==1.25.3
 wcwidth==0.1.7
 zipp==0.5.2
+glom==19.2.0
+requests==2.22.0

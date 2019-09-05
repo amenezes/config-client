@@ -18,6 +18,8 @@ pip install -U config-client
 ## Dependencies
 
 - [attrs](http://attrs.org)
+- [glom](https://glom.readthedocs.io/en/latest/index.html)
+- [requests](https://2.python-requests.org/en/master/)
 
 ## Setup
 
@@ -27,7 +29,7 @@ The default URL pattern is:
 ````ini
 # expected environment variables:
 #
-CONFIGSERVER_ADDRESS=http://localhost:8888/configuration
+CONFIGSERVER_ADDRESS=http://localhost:8888
 BRANCH=master
 PROFILE=development
 APP_NAME=myapp
@@ -36,7 +38,7 @@ APP_NAME=myapp
 will result in:
 
 ````txt
-http://localhost:8888/configuration/master/myapp-development.json
+http://localhost:8888/master/myapp-development.json
 ````
 
 The url pattern can be customize on constructor with parameter `url`.
@@ -49,7 +51,7 @@ c = spring.ConfigClient(
         url="{address}/{branch}/{profile}-{app_name}.json"
     )
 c.url
-# output: 'http://localhost:8888/configuration/master/development-myapp.json'
+# output: 'http://localhost:8888/master/development-myapp.json'
 ```
 
 ### Default values
@@ -57,7 +59,7 @@ c.url
 if no value was adjusted for the environment variables below, the default value will be assumed, as:
 
 ````ini
-CONFIGSERVER_ADDRESS=http://localhost:8888/configuration
+CONFIGSERVER_ADDRESS=http://localhost:8888
 BRANCH=master
 PROFILE=development
 APP_NAME=
@@ -73,13 +75,13 @@ Just add the `.json` extension to the end of the URL parameter. For example:
 c = ConfigClient(
     app_name='foo',
     profile='development',
-    address='http://localhost:8888',
+    address='http://localhost:8000',
     branch='master',
     url='{address}/{branch}/{app_name}-{profile}.json' # <
 )
 ````
 
-It will result in URL: `http://localhost:8888/master/foo-development.json` .
+It will result in URL: `http://localhost:8000/master/foo-development.json` .
 
 **Notice**
 `.yaml` it's not supported, all extensions will be converted to `.json` internally.
@@ -141,7 +143,7 @@ config_client = ConfigClient(app_name="myapp")
 config_client.get_config()
 app = Flask(__name__)
 app.run(host='0.0.0.0',
-        port=config_client.config['app']['port']
+        port=config_client.config.get('app').get('port')
 ````
 
 ### using asyncio
@@ -164,11 +166,20 @@ async def service_discovery():
     )
 
 discovery_client = Consul(
-    config_client.config['spring']['cloud']['consul']['host'],
-    config_client.config['spring']['cloud']['consul']['port'],
+    config_client.config.get('spring').get('cloud').get('consul').get('host'),
+    config_client.get_attribute('spring.cloud.consul.port'],
     loop
 )
 loop.run_until_complete(service_discovery)
+````
+
+### cloudfoundry integration
+
+````python
+from config.cf import CF
+
+cf = CF()
+cf.get_config()
 ````
 
 ## Development

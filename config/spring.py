@@ -5,17 +5,16 @@ import sys
 
 import attr
 
-import requests
+from config.core import singleton
 
 from glom import glom
 
-from config.core import singleton
+import requests
 
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
-# @singleton
 @attr.s(slots=True)
 class ConfigClient:
     """ConfigClient client."""
@@ -24,7 +23,7 @@ class ConfigClient:
         type=str,
         default=os.getenv(
             'CONFIGSERVER_ADDRESS',
-            'http://localhost:8888/configuration'
+            'http://localhost:8888'
         )
     )
     branch = attr.ib(
