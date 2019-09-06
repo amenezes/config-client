@@ -66,4 +66,5 @@ class TestCF(unittest.TestCase):
         )
         client = ConfigClient(address='http://localhost', app_name='test_app')
         cf = CF(oauth2=oauth2, client=client)
-
+        self.assertEqual(cf.client, client)
+        self.assertEqual(cf.oauth2, oauth2)

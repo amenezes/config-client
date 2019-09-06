@@ -1,12 +1,12 @@
 import json
 import os
 
+import attr
+
 from config.cloudfoundry import (
     default_vcap_application,
     default_vcap_services
 )
-
-import attr
 
 from glom import glom
 
@@ -38,7 +38,7 @@ class CFenv:
 
     def configserver_uri(self, vcap_path='p-config-server.0.credentials.uri'):
         return glom(self.vcap_services, vcap_path)
-    
+
     def configserver_access_token_uri(self, vcap_path='p-config-server.0.credentials.access_token_uri'):
         return glom(self.vcap_services, vcap_path)
 

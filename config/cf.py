@@ -1,11 +1,10 @@
-import json
 import logging
 
 import attr
 
 from config.auth import OAuth2
-from config.spring import ConfigClient
 from config.cfenv import CFenv
+from config.spring import ConfigClient
 
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
