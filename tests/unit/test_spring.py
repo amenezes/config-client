@@ -2,7 +2,7 @@
 import unittest
 from unittest.mock import PropertyMock, patch
 
-from config.spring import ConfigClient, create_config_client, config_client
+from config.spring import ConfigClient, config_client, create_config_client
 
 
 class ResponseMock:

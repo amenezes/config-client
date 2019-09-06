@@ -1,8 +1,10 @@
 import unittest
-from unittest.mock import PropertyMock, patch
+from unittest.mock import PropertyMock, MagicMock, patch
 
 from config.cf import CF
 from config.spring import ConfigClient
+
+from glom.core import PathAccessError
 
 
 class TestCF(unittest.TestCase):
@@ -35,7 +37,8 @@ class TestCF(unittest.TestCase):
         self.assertIsInstance(self.cf.config, dict)
 
     def test_cf_get_attribute(self):
-        pass
+        with self.assertRaises(PathAccessError):
+            self.cf.get_attribute('')
 
     def test_cf_get_keys(self):
         self.assertEqual(list(self.cf.get_keys()), [])
