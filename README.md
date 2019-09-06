@@ -173,7 +173,7 @@ discovery_client = Consul(
 loop.run_until_complete(service_discovery)
 ````
 
-### cloudfoundry integration
+### [cloudfoundry](https://docs.pivotal.io/spring-cloud-services/1-5/common/config-server/index.html) integration
 
 ````python
 from config.cf import CF
@@ -181,6 +181,11 @@ from config.cf import CF
 cf = CF()
 cf.get_config()
 ````
+
+It's necessary bind Config Server with the application first.
+
+A example application it's available on:
+- https://github.com/amenezes/simpleweb
 
 ## Development
 

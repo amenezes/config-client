@@ -33,7 +33,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.7",
         "Framework :: AsyncIO",
         "Framework :: Flask",
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: Apache Software License",
         "Operating System :: OS Independent",
