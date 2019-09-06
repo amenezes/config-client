@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import PropertyMock, MagicMock, patch
+from unittest.mock import patch
 
 from config.cf import CF
 from config.spring import ConfigClient
