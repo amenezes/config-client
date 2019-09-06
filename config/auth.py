@@ -26,7 +26,7 @@ class OAuth2:
     def token(self):
         return self._token
 
-    def _request_token(self, client_auth, data):
+    def request_token(self, client_auth, data):
         try:
             response = requests.post(
                 self.access_token_uri,
@@ -51,4 +51,4 @@ class OAuth2:
             self.client_secret
         )
         data = {'grant_type': f"{self.grant_type}"}
-        self._request_token(client_auth, data)
+        self.request_token(client_auth, data)

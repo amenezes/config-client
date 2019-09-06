@@ -15,4 +15,11 @@ default_vcap_services = json.dumps(
         ]
     }
 )
-default_vcap_application = json.dumps({"application_name": ""})
+default_vcap_application = json.dumps(
+    {
+        "application_name": "",
+        "space_name": "",
+        "organization_name": "",
+        "uris": []
+    }
+)
