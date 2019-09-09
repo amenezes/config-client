@@ -103,7 +103,7 @@ config_client.config['spring']['cloud']['consul']['host']
 config_client.config.get('spring').get('cloud').get('consul').get('port')
 
 # option 3: using get_attribute method
-config_client.config.get_attribute('spring.cloud.consul.port')
+config_client.get_attribute('spring.cloud.consul.port')
 ````
 
 ### standard client with @decorator
@@ -117,7 +117,7 @@ from config import spring
 def my_test(config_client=None):
     config_client.config['spring']['cloud']['consul']['host']
     config_client.config.get('spring').get('cloud').get('consul').get('port')
-    config_client.config.get_attribute('spring.cloud.consul.port')
+    config_client.get_attribute('spring.cloud.consul.port')
 ````
 
 For use cases where environment variables are not set can you use decorator parameters, as example below:
@@ -129,7 +129,7 @@ from config import spring
 def my_test(config_client=None):
     config_client.config['spring']['cloud']['consul']['host']
     config_client.config.get('spring').get('cloud').get('consul').get('port')
-    config_client.config.get_attribute('spring.cloud.consul.port')
+    config_client.get_attribute('spring.cloud.consul.port')
 ````
 
 Integration with Flask.
