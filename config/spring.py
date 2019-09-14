@@ -4,11 +4,13 @@ import logging
 import os
 import sys
 from urllib import request
-from urllib.error import URLError
+from urllib.error import URLError, HTTPError
+from base64 import b64encode
 
 import attr
 
 from config.core import singleton
+from strutil import is_not_blank
 
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
@@ -45,6 +47,16 @@ class ConfigClient:
         type=str,
         default="{address}/{branch}/{app_name}-{profile}.json"
     )
+    username = attr.ib(
+        type=str,
+        default="",
+        validator=attr.validators.instance_of(str)
+    )
+    password = attr.ib(
+        type=str,
+        default="",
+        validator=attr.validators.instance_of(str)
+    )
     _config = attr.ib(
         type=dict,
         default={},
@@ -76,7 +88,18 @@ class ConfigClient:
         try:
             logging.debug(f'Requesting: {self.url}')
 
-            response = request.urlopen(self.url)
+            req = request.Request(self.url)            
+
+            if is_not_blank(self.username) and is_not_blank(self.password):
+
+                logging.debug('Will attempt basic authrization')
+
+                _authz_str = f'{self.username}:{self.password}'.encode()
+                _authz_head = f'Basic {b64encode(_authz_str).decode()}'
+
+                req.add_header('Authorization', _authz_head)
+
+            response = request.urlopen(req)
             logging.debug(f'HTTP response code: {response.code}')
             if response.code == 200:
                 self._config = json.loads(response.readlines()[0])
@@ -85,6 +108,12 @@ class ConfigClient:
                     'Failed to retrieve the configurations. '
                     f'HTTP Response code: {response.status_code}.'
                 )
+        
+        except HTTPError as err:
+            logging.error(
+                f'Configuration request failed with status {err.code}'
+            )
+            sys.exit(1)
 
         except URLError:
             logging.error(
