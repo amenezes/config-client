@@ -51,8 +51,9 @@ class TestCF(unittest.TestCase):
         self.assertIsInstance(self.cf.config, dict)
 
     def test_cf_get_attribute(self):
-        with self.assertRaises(PathAccessError):
-            self.cf.get_attribute('')
+        self.assertEqual(self.cf.get_attribute(''), '')
+        # with self.assertRaises(PathAccessError):
+        #     self.cf.get_attribute('')
 
     def test_cf_get_keys(self):
         self.assertEqual(list(self.cf.get_keys()), [])

@@ -17,7 +17,7 @@ class CF:
     oauth2 = attr.ib(type=OAuth2, default=None)
     client = attr.ib(type=ConfigClient, default=None)
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         if not self.oauth2:
             self.oauth2 = OAuth2(
                 access_token_uri=self.cfenv.configserver_access_token_uri(),

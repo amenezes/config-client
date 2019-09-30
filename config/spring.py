@@ -2,6 +2,7 @@
 import logging
 import os
 import sys
+from typing import Any, Dict
 
 import attr
 
@@ -50,7 +51,7 @@ class ConfigClient:
         validator=attr.validators.instance_of(dict)
     )
 
-    def __attrs_post_init__(self):
+    def __attrs_post_init__(self) -> None:
         """Format ConfigClient URL."""
         self.url = self.url.format(
             address=self.address,
@@ -60,7 +61,7 @@ class ConfigClient:
         )
         self._ensure_request_json()
 
-    def _ensure_request_json(self):
+    def _ensure_request_json(self) -> None:
         if not self.url.endswith('.json'):
             self.url = self.url.replace(
                 self.url[self.url.rfind('.'):], '.json'
@@ -72,7 +73,7 @@ class ConfigClient:
             )
         logging.debug(f'Target URL configured: {self.url}')
 
-    def get_config(self, headers={}):
+    def get_config(self, headers: Dict = {}) -> None:
         """Retrieve configuration from Spring ConfigClient."""
         try:
             logging.debug(f'Requesting: {self.url}')
@@ -94,13 +95,13 @@ class ConfigClient:
             sys.exit(1)
 
     @property
-    def config(self):
+    def config(self) -> Dict:
         """Getter from configurations retrieved from ConfigClient."""
         return self._config
 
-    def get_attribute(self, value):
+    def get_attribute(self, value: str) -> Any:
         """Get attribute from configurations."""
-        return glom(self._config, value)
+        return glom(self._config, value, default='')
 
     def get_keys(self):
         """List all keys from configuration retrieved."""

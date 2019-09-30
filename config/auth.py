@@ -1,8 +1,10 @@
 import logging
+from typing import Dict
 
 import attr
 
 import requests
+from requests.auth import HTTPBasicAuth
 
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
@@ -26,7 +28,9 @@ class OAuth2:
     def token(self):
         return self._token
 
-    def request_token(self, client_auth, data):
+    def request_token(self,
+                      client_auth: HTTPBasicAuth,
+                      data: Dict[str, str]) -> None:
         try:
             response = requests.post(
                 self.access_token_uri,
@@ -45,8 +49,8 @@ class OAuth2:
         except requests.exceptions.MissingSchema:
             logging.error('Access token URI it\'s empty')
 
-    def configure(self):
-        client_auth = requests.auth.HTTPBasicAuth(
+    def configure(self) -> None:
+        client_auth = HTTPBasicAuth(
             self.client_id,
             self.client_secret
         )
