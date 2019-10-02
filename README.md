@@ -173,6 +173,36 @@ discovery_client = Consul(
 loop.run_until_complete(service_discovery)
 ````
 
+### create singleton instance
+
+Assuming default values.
+
+```python
+from config.spring import create_config_client
+
+
+c = create_config_client()
+d = create_config_client()
+
+print(id(c))
+print(id(d))
+
+```
+
+With custom values.
+
+```python
+from config.spring import create_config_client
+
+
+c = create_config_client(address='http://localhost:8888/configuration', app_name='autosprocessuais-pecas-txtos', branch="ft-sdintegracoes-591")
+d = create_config_client(address='http://localhost:8888/configuration', app_name='autosprocessuais-pecas-txtos', branch="ft-sdintegracoes-591")
+
+print(id(c))
+print(id(d))
+
+```
+
 ### [cloudfoundry](https://docs.pivotal.io/spring-cloud-services/1-5/common/config-server/index.html) integration
 
 ````python

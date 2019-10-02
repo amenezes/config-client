@@ -1,4 +1,5 @@
 import logging
+from typing import Any, Dict, KeysView
 
 import attr
 
@@ -40,17 +41,16 @@ class CF:
     def vcap_application(self):
         return self.cfenv.vcap_application
 
-    def get_config(self):
+    def get_config(self) -> None:
         header = {'Authorization': f"Bearer {self.oauth2.token}"}
-        print(header)
-        return self.client.get_config(header)
+        self.client.get_config(header)
 
     @property
-    def config(self):
+    def config(self) -> Dict:
         return self.client.config
 
-    def get_attribute(self, value):
+    def get_attribute(self, value: str) -> Any:
         return self.client.get_attribute(value)
 
-    def get_keys(self):
+    def get_keys(self) -> KeysView:
         return self.client.get_keys()

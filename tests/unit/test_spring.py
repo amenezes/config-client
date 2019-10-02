@@ -138,7 +138,8 @@ class TestConfigClient(unittest.TestCase):
     def test_fix_valid_url_extension(self):
         self.assertTrue(self.obj.url.endswith('json'))
 
-    def test_create_config_client_with_singleton_decorator(self):
+    @patch('config.spring.requests.get', return_value=ResponseMock())
+    def test_create_config_client_with_singleton(self, RequestMock):
         client1 = create_config_client()
         client2 = create_config_client()
 

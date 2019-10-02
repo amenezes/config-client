@@ -24,7 +24,7 @@ class TestOAuth2(unittest.TestCase):
         )
 
     def test_token(self):
-        self.assertIsNone(self.oauth2.token)
+        self.assertEqual(self.oauth2.token, '')
 
     @patch('config.auth.requests.post')
     def test_configure(self, RequestsMock):

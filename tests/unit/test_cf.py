@@ -5,8 +5,6 @@ from config.auth import OAuth2
 from config.cf import CF
 from config.spring import ConfigClient
 
-from glom.core import PathAccessError
-
 
 class TestCF(unittest.TestCase):
 
@@ -52,8 +50,6 @@ class TestCF(unittest.TestCase):
 
     def test_cf_get_attribute(self):
         self.assertEqual(self.cf.get_attribute(''), '')
-        # with self.assertRaises(PathAccessError):
-        #     self.cf.get_attribute('')
 
     def test_cf_get_keys(self):
         self.assertEqual(list(self.cf.get_keys()), [])

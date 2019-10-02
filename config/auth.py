@@ -21,11 +21,13 @@ class OAuth2:
         default='client_credentials'
     )
     _token = attr.ib(
-        default=None
+        type=str,
+        default='',
+        validator=attr.validators.instance_of(str)
     )
 
     @property
-    def token(self):
+    def token(self) -> str:
         return self._token
 
     def request_token(self,

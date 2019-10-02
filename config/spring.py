@@ -2,7 +2,7 @@
 import logging
 import os
 import sys
-from typing import Any, Dict
+from typing import Any, Callable, Dict, KeysView
 
 import attr
 
@@ -103,17 +103,19 @@ class ConfigClient:
         """Get attribute from configurations."""
         return glom(self._config, value, default='')
 
-    def get_keys(self):
+    def get_keys(self) -> KeysView:
         """List all keys from configuration retrieved."""
         return self._config.keys()
 
 
 @singleton
-def create_config_client(*args, **kwargs):
-    return config_client(args, kwargs)
+def create_config_client(**kwargs):
+    obj = ConfigClient(**kwargs)
+    obj.get_config()
+    return obj
 
 
-def config_client(*args, **kwargs):
+def config_client(*args, **kwargs) -> Callable[[Dict[str, str]], ConfigClient]:
     logging.debug(f'args: {args}')
     logging.debug(f'kwargs: {kwargs}')
 
