@@ -29,7 +29,7 @@ class CFenv:
 
     if "config-server" in attr.asdict(vcap_services)['_default']:
         val = "config-server"
-    elif "p-config-server" in attr.asdict(vcap_services)['_default']:
+    else:
         val = "p-config-server"
 
     @property
