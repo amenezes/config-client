@@ -41,7 +41,7 @@ class ConfigClient:
         default=os.getenv('PROFILE', '')
     )
     """support for empty/blank profile"""
-    if profile._default == "":
+    if attr.asdict(profile)['_default'] == "":
         url = attr.ib(
             type=str,
             default="{address}/{branch}/{app_name}.json"
