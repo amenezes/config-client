@@ -38,12 +38,19 @@ class ConfigClient:
     )
     profile = attr.ib(
         type=str,
-        default=os.getenv('PROFILE', 'development')
+        default=os.getenv('PROFILE', '')
     )
-    url = attr.ib(
-        type=str,
-        default="{address}/{branch}/{app_name}-{profile}.json"
-    )
+    """support for empty/blank profile"""
+    if profile._default == "":
+        url = attr.ib(
+            type=str,
+            default="{address}/{branch}/{app_name}.json"
+        )
+    else:
+        url = attr.ib(
+            type=str,
+            default="{address}/{branch}/{app_name}-{profile}.json"
+        )
     _config = attr.ib(
         type=dict,
         default={},
