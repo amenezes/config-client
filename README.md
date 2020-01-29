@@ -5,7 +5,7 @@
 
 # config-client
 
-config-client package for [spring cloud config](https://spring.io/projects/spring-cloud-config).
+config-client package for [spring cloud config server](https://spring.io/projects/spring-cloud-config).
 
 ## Installing
 
@@ -47,11 +47,11 @@ The url pattern can be customize on constructor with parameter `url`.
 from config import spring
 
 c = spring.ConfigClient(
-        app_name='myapp',
-        url="{address}/{branch}/{profile}-{app_name}.json"
-    )
+    app_name='myapp',
+    url="{address}/{branch}/{profile}-{app_name}.json"
+)
 c.url
-# output: 'http://localhost:8888/master/development-myapp.json'
+# OUTPUT: 'http://localhost:8888/master/development-myapp.json'
 ```
 
 ### Default values
@@ -93,7 +93,7 @@ It will result in URL: `http://localhost:8000/master/foo-development.json` .
 ````python
 from config.spring import ConfigClient
 
-config_client = ConfigClient(app_name='my_app')
+config_client = ConfigClient(app_name='myapp')
 config_client.get_config()
 
 # option 1: dict like with direct access
@@ -144,6 +144,7 @@ config_client.get_config()
 app = Flask(__name__)
 app.run(host='0.0.0.0',
         port=config_client.config.get('app').get('port')
+)
 ````
 
 ### using asyncio
@@ -195,8 +196,16 @@ With custom values.
 from config.spring import create_config_client
 
 
-c = create_config_client(address='http://localhost:8888/configuration', app_name='autosprocessuais-pecas-txtos', branch="ft-sdintegracoes-591")
-d = create_config_client(address='http://localhost:8888/configuration', app_name='autosprocessuais-pecas-txtos', branch="ft-sdintegracoes-591")
+c = create_config_client(
+    address='http://localhost:8888/configuration',
+    app_name='myapp',
+    branch="ft-591"
+)
+d = create_config_client(
+    address='http://localhost:8888/configuration',
+    app_name='myapp',
+    branch="ft-591"
+)
 
 print(id(c))
 print(id(d))
@@ -217,18 +226,78 @@ It's necessary bind Config Server with the application first.
 A example application it's available on:
 - https://github.com/amenezes/simpleweb
 
+### command line
+
+#### installing cli dependencies
+
+```bash
+pip install config-client[cli]
+```
+
+#### usage
+
+```bash
+$ config -h
+
+Config Client version 0.5.0a0
+
+USAGE
+  config-client [-h] [-q] [-v [<...>]] [-V] [--ansi] [--no-ansi] [-n] <command>
+                [<arg1>] ... [<argN>]
+
+ARGUMENTS
+  <command>              The command to execute
+  <arg>                  The arguments of the command
+
+GLOBAL OPTIONS
+  -h (--help)            Display this help message
+  -q (--quiet)           Do not output any message
+  -v (--verbose)         Increase the verbosity of messages: "-v" for normal output,
+                         "-vv" for more verbose output and "-vvv" for debug
+  -V (--version)         Display this application version
+  --ansi                 Force ANSI output
+  --no-ansi              Disable ANSI output
+  -n (--no-interaction)  Do not ask any interactive question
+
+AVAILABLE COMMANDS
+  cf                     Interact with CloudFoundry via cli.
+  client                 Interact with Spring Cloud Server via cli.
+  help                   Display the manual of a command
+```
+
+##### example 1: quering for a specific configuration.
+
+```bash
+# config client -h ## show client help
+# config client <application_name> <filter> # command format
+$ config client myapp spring.cloud.consul   
+⏳ contacting server...
+🎉 Ok! 🎉
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│ report for filter: 'spring.cloud.consul'                                            │
+├─────────────────────────────────────────────────────────────────────────────────────┤
+│ {'discovery': {'catalog-services-watch-delay': 5000, 'catalog-services-watch-       │
+│ timeout': 10, 'health-check-critical-timeout': '15s', 'health-check-interval':      │
+│ '5s', 'health-check-path': '/manage/health', 'instance-id':                         │
+│ '${spring.application.name}:${random.value}', 'prefer-ip-address': True, 'register- │
+│ health-check': True}, 'host': 'consul', 'port': 8500}                               │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+```
+
 ## Development
 
 ### Running Tests
 
 Install development dependencies.
 ```bash
-pip install -r requirements-dev.txt
+make install-deps
+# OR: pip install -r requirements-dev.txt
 ```
 
 To execute tests just run:
 ```bash
-python -m pytest -v --cov-report term --cov=config tests
+make tests
+# OR: python -m pytest -v --cov-report term --cov=config tests
 ```
 
 ## Links

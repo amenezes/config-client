@@ -1,6 +1,5 @@
 import json
 
-
 default_vcap_services = json.dumps(
     {
         "p-config-server": [
@@ -9,17 +8,12 @@ default_vcap_services = json.dumps(
                     "uri": "",
                     "access_token_uri": "",
                     "client_id": "",
-                    "client_secret": ""
+                    "client_secret": "",
                 }
             }
         ]
     }
 )
 default_vcap_application = json.dumps(
-    {
-        "application_name": "",
-        "space_name": "",
-        "organization_name": "",
-        "uris": []
-    }
+    {"application_name": "", "space_name": "", "organization_name": "", "uris": []}
 )

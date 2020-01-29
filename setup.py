@@ -1,3 +1,5 @@
+from config import __version__
+
 from collections import OrderedDict
 
 import setuptools
@@ -8,10 +10,10 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="config-client",
-    version="0.4.0",
+    version=f"{__version__}",
     author="alexandre menezes",
     author_email="alexandre.fmenezes@gmail.com",
-    description="config service client",
+    description="config service client for Spring Cloud Config Server",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license='Apache-2.0',
@@ -26,11 +28,18 @@ setuptools.setup(
     install_requires=[
         'attrs>=19.1.0',
         'glom>=19.2.0',
-        'requests>=2.22.0'
+        'requests>=2.22.0',
+        'PyYAML>=5.3'
     ],
+    extras_require={
+        "cli": [
+            "cleo==0.7.6"
+        ]
+    },
     classifiers=[
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
         "Framework :: AsyncIO",
         "Framework :: Flask",
         "Development Status :: 5 - Production/Stable",

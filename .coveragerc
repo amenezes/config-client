@@ -1,6 +1,7 @@
 [run]
 branch = True
 omit = **__init__.py**
+       **__main__.py
 
 [report]
 show_missing = True
@@ -12,7 +13,7 @@ exclude_lines = logging.info
                 logging.error
 
 [paths]
-source = discovery/
+source = config/
 
 [html]
 directory = .

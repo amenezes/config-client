@@ -1,0 +1,2 @@
+class RequestTokenException(Exception):
+    pass
