@@ -32,6 +32,10 @@ class ResponseMock:
     def json(self):
         return self.config
 
+    @property
+    def headers(self):
+        return {"Content-Type": "application/json"}
+
 
 class TestConfigClient(unittest.TestCase):
     """Unit tests to spring module."""
@@ -56,9 +60,8 @@ class TestConfigClient(unittest.TestCase):
                 }
             },
         }
-        self.obj = ConfigClient(
-            app_name="test-app", url="{address}/{branch}/{app_name}-{profile}.yaml"
-        )
+        self.obj = ConfigClient(app_name="test-app")
+        # app_name="test-app", url="{address}/{branch}/{app_name}-{profile}"
 
     def test_get_config_failed(self):
         """Test failed to connect on ConfigClient."""
@@ -67,8 +70,8 @@ class TestConfigClient(unittest.TestCase):
 
     def test_fail_fast_disabled(self):
         obj = ConfigClient(app_name="test-app", fail_fast=False)
-        obj.get_config()
-        self.assertEqual(obj.config, {})
+        with self.assertRaises(ConnectionError):
+            obj.get_config()
 
     @patch("config.spring.requests.get", return_value=ResponseMock())
     def test_get_config(self, RequestMock):
@@ -86,7 +89,7 @@ class TestConfigClient(unittest.TestCase):
     def test_default_url_property(self):
         self.assertIsInstance(self.obj.url, str)
         self.assertEqual(
-            self.obj.url, "http://localhost:8888/master/test-app-development.json"
+            self.obj.url, "http://localhost:8888/master/test-app-development"
         )
 
     def test_custom_url_property(self):
@@ -129,13 +132,10 @@ class TestConfigClient(unittest.TestCase):
         with self.assertRaises(SystemExit):
             inner_method()
 
-    def test_fix_valid_url_extension(self):
-        self.assertTrue(self.obj.url.endswith("json"))
-
-    def test_disable_enforce_json(self):
-        obj = ConfigClient(app_name="test-app", enforce_json=False)
-        self.assertEqual(obj.enforce_json, False)
-        self.assertFalse(obj.url.endswith("json"))
+    # def test_disable_enforce_json(self):
+    #     obj = ConfigClient(app_name="test-app", enforce_json=False)
+    #     self.assertEqual(obj.enforce_json, False)
+    #     self.assertFalse(obj.url.endswith("json"))
 
     @patch("config.spring.requests.get", return_value=ResponseMock())
     def test_create_config_client_with_singleton(self, RequestMock):

@@ -13,10 +13,14 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 @attr.s(slots=True)
 class OAuth2:
 
-    access_token_uri = attr.ib(type=str)
-    client_id = attr.ib(type=str)
-    client_secret = attr.ib(type=str)
-    grant_type = attr.ib(type=str, default="client_credentials")
+    access_token_uri = attr.ib(type=str, validator=attr.validators.instance_of(str))
+    client_id = attr.ib(type=str, validator=attr.validators.instance_of(str))
+    client_secret = attr.ib(type=str, validator=attr.validators.instance_of(str))
+    grant_type = attr.ib(
+        type=str,
+        default="client_credentials",
+        validator=attr.validators.instance_of(str),
+    )
     _token = attr.ib(type=str, default="", validator=attr.validators.instance_of(str))
 
     @property

@@ -9,6 +9,9 @@ application.add(CloudFoundryCommand())
 application.add(ConfigClientCommand())
 
 
+SAMPLE_CONFIG = {"db": {"user": "root", "pass": "123"}}
+
+
 class TestCloudFoundryCommand:
     def test_cf_command(self):
         command = application.find("cf")
@@ -18,33 +21,47 @@ class TestCloudFoundryCommand:
 
 
 class TestClientCommand:
+    def get_attribute_mock(self, *args, **kwargs):
+        return SAMPLE_CONFIG
+
     @pytest.fixture
-    def client(self, mocker):
-        c = mocker.patch.object(
-            ConfigClient,
-            "get_config",
-            return_value={"db": {"user": "user", "pass": "pass"}},
-        )
-        return c
-
-    @pytest.mark.skip
-    def test_client_command(self, client):
+    def command(self):
         command = application.find("client")
-        ct = CommandTester(command)
-        ct.execute("app 'db'")
-        assert "\U0001f4c4" == ct.io.fetch_output()
+        return CommandTester(command)
 
-    def test_client_command_empty_result(self, client):
-        command = application.find("client")
-        ct = CommandTester(command)
+    @pytest.fixture
+    def connection_mock(self, monkeypatch):
+        monkeypatch.setattr(ConfigClient, "get_config", print)
+
+    @pytest.fixture
+    def config_mock(self, connection_mock, monkeypatch):
+        monkeypatch.setattr(ConfigClient, "config", SAMPLE_CONFIG)
+
+    @pytest.fixture
+    def attribute_mock(self, connection_mock, monkeypatch):
+        monkeypatch.setattr(ConfigClient, "get_attribute", self.get_attribute_mock)
+
+    def test_show_all_config(self, command, config_mock):
+        command.execute("app --all")
+        assert "report for filter: 'all'" in command.io.fetch_output()
+
+    def test_show_filter_config(self, command, attribute_mock):
+        command.execute("app 'db'")
+        assert "report for filter: 'db'" in command.io.fetch_output()
+
+    def test_connection_error(self, command):
         with pytest.raises(SystemExit):
-            ct.execute("app ''")
+            command.execute("app --all")
 
-    def test_show_all(self):
-        pass
+    def test_empty_response(self, command, monkeypatch):
+        monkeypatch.setattr(ConfigClient, "get_config", print)
+        with pytest.raises(SystemExit):
+            command.execute("app")
 
-    def test_client_output_json(self):
-        pass
+    def test_save_as_json(self, command, attribute_mock):
+        command.execute("app 'db' --json")
+        assert "generating json file" in command.io.fetch_output()
 
-    def test_client_output_yaml(self):
-        pass
+    def test_save_as_yaml(self, command, attribute_mock):
+        command.execute("app 'db' --yaml")
+        assert "generating yaml file" in command.io.fetch_output()

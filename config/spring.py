@@ -6,10 +6,10 @@ from typing import Any, Callable, Dict, KeysView
 
 import attr
 import requests
-import yaml
 from glom import glom
 
 from config.core import singleton
+from config.exceptions import RequestFailedException
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -51,26 +51,24 @@ class ConfigClient:
         try:
             response = requests.get(self.url, headers=headers)
             logging.debug(f"HTTP response code: {response.status_code}")
-            if response.ok:
-                logging.warning(response.headers.get("Content-Type"))
-                if response.headers.get("Content-Type") not in (
-                    "application/json;charset=UTF-8",
-                    "application/json",
-                ):
-                    self._config = yaml.load(response.content)
-                else:
-                    self._config = response.json()
+            if response.ok and response.headers.get("Content-Type") in (
+                "application/json;charset=UTF-8",
+                "application/json",
+            ):
+                self._config = response.json()
             else:
-                raise ConnectionError(
-                    "Failed to retrieve the configurations. "
+                raise RequestFailedException(
+                    "Failed to request the configurations. "
                     f"HTTP Response code: {response.status_code}."
                 )
 
         except Exception:
             logging.error("Failed to establish connection with ConfigServer.")
             if self.fail_fast:
+                logging.info("fail_fast enabled (True). Terminating process.")
                 sys.exit(1)
-            raise ConnectionError("Failed to establish connection with ConfigServer.")
+            logging.info("")
+            raise ConnectionError("fail_fast disabled (False).")
 
     @property
     def config(self) -> Dict:

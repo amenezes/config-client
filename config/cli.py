@@ -74,33 +74,50 @@ class ConfigClientCommand(Command):
             app_name=self.argument("app") or "",
             profile=self.option("profile") or "development",
             url=self.option("url") or url,
+            fail_fast=False,
         )
-        self.line("\U000023f3 contacting server...")
 
-        client.get_config()
-        emoji = random.choice(self.EMOJI_ERRORS)
-        self.line(f"{emoji} failed to contact server... {emoji}")
+        content = self.request_config(client, filter_options)
+
+        if self.option("json"):
+            self.save_file("output.json", json.dumps(content))
+        elif self.option("yaml"):
+            self.save_file("output.yaml", yaml.dump(content))
+        else:
+            self.table_output(filter_options, content)
+
+    def request_config(self, client: ConfigClient, filter_options: str):
+        self.line("\U000023f3 contacting server...")
+        try:
+            client.get_config()
+        except ConnectionError:
+            emoji = random.choice(self.EMOJI_ERRORS)
+            self.line(f"{emoji} failed to contact server... {emoji}")
+            sys.exit(1)
+
+        self.print_contact_server_ok()
+        content = self.get_config(client, filter_options)
+        self.has_content(content, filter_options)
+        return content
+
+    def get_config(self, client, filter_options):
+        if self.option("all"):
+            content = client.config
+        else:
+            content = client.get_attribute(f"{filter_options}")
+        return content
+
+    def print_contact_server_ok(self):
         emoji = random.choice(self.EMOJI_SUCCESS)
         self.line(f"{emoji} Ok! {emoji}")
 
-        if self.option("all"):
-            output = client.config
-        else:
-            output = client.get_attribute(f"{filter_options}")
-
-        if len(output) == 0:
+    def has_content(self, content, filter_options) -> None:
+        if len(content) == 0:
             emoji = random.choice(self.EMOJI_NOT_FOUND)
             self.line(
                 f"{emoji} no result found for your filter: <comment>'{filter_options}'<comment>"
             )
             sys.exit(0)
-
-        if self.option("json"):
-            self.file_output("json", json.dumps(output))
-        elif self.option("yaml"):
-            self.file_output("yaml", yaml.dump(output))
-        else:
-            self.table_output(filter_options, output)
 
     def table_output(self, filter_options: str, content: str) -> None:
         if self.option("all"):
@@ -112,11 +129,9 @@ class ConfigClientCommand(Command):
         table = self.table(header=headers, rows=rows, style="solid")
         table.render(self.io)
 
-    def file_output(self, file_format, content):
-        self.line(f"generating <info>{file_format}</info> file...")
-        self.save_to_file(f"output.{file_format}", content)
-        self.line(f"file saved: <info>output.{file_format}</info>")
-
-    def save_to_file(self, filename: str, content: str):
-        with open(filename, "w") as f:
+    def save_file(self, filename: str, content: str):
+        extension = filename[-4:]
+        self.line(f"generating <info>{extension}</info> file...")
+        with open(f"{filename}", "w") as f:
             f.write(content)
+        self.line(f"file saved: <info>{filename}</info>")
