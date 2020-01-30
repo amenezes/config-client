@@ -3,6 +3,7 @@ import logging
 import os
 import sys
 from typing import Any, Callable, Dict, KeysView
+import yaml
 
 import attr
 import requests
@@ -56,6 +57,14 @@ class ConfigClient:
                 "application/json",
             ):
                 self._config = response.json()
+            elif response.ok and response.headers.get("Content-Type") == "text/plain":
+                url_extension = self.url.rfind('.')
+                if url_extension > 0:
+                    extension = self.url[url_extension:]
+                    if extension == '.yaml':
+                        self._config = yaml.load(response.text)
+                    elif extension == '.properties':
+                        self._config = ''
             else:
                 raise RequestFailedException(
                     "Failed to request the configurations. "

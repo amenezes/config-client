@@ -28,13 +28,11 @@ setuptools.setup(
     install_requires=[
         'attrs>=19.1.0',
         'glom>=19.2.0',
-        'requests>=2.22.0'
+        'requests>=2.22.0',
+        'PyYAML>=5.3'
     ],
     extras_require={
-        "cli": [
-            'cleo>=0.7.6',
-            'PyYAML>=5.3'
-        ]
+        "cli": ['cleo>=0.7.6']
     },
     classifiers=[
         "Programming Language :: Python :: 3.6",
