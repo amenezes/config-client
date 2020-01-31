@@ -12,3 +12,7 @@ PyYAML==5.3
 isort==4.3.21
 black
 mypy
+tox
+codecov
+# optional for asdf-vm
+# tox-asdf
