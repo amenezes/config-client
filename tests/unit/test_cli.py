@@ -61,7 +61,3 @@ class TestClientCommand:
     def test_save_as_json(self, command, attribute_mock):
         command.execute("app 'db' --json")
         assert "generating json file" in command.io.fetch_output()
-
-    def test_save_as_yaml(self, command, attribute_mock):
-        command.execute("app 'db' --yaml")
-        assert "generating yaml file" in command.io.fetch_output()

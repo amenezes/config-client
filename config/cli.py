@@ -1,9 +1,7 @@
 import json
 import random
-import sys
 from typing import List
 
-import yaml
 from cleo import Command
 
 from config.spring import ConfigClient
@@ -32,7 +30,6 @@ class ConfigClientCommand(Command):
         {--p|profile=development : Profile config.}
         {--u|url : Base URL format. <option=bold>(default: "<address>/<branch>/<app>-<profile>")</>}
         {--json : Save output as json}
-        {--yaml : Save output as yaml.}
         {--all : Show all config.}
     """
 
@@ -81,8 +78,6 @@ class ConfigClientCommand(Command):
 
         if self.option("json"):
             self.save_file("output.json", json.dumps(content))
-        elif self.option("yaml"):
-            self.save_file("output.yaml", yaml.dump(content))
         else:
             self.table_output(filter_options, content)
 
@@ -93,7 +88,7 @@ class ConfigClientCommand(Command):
         except ConnectionError:
             emoji = random.choice(self.EMOJI_ERRORS)
             self.line(f"{emoji} failed to contact server... {emoji}")
-            sys.exit(1)
+            raise SystemExit(1)
 
         self.print_contact_server_ok()
         content = self.get_config(client, filter_options)
@@ -117,7 +112,7 @@ class ConfigClientCommand(Command):
             self.line(
                 f"{emoji} no result found for your filter: <comment>'{filter_options}'<comment>"
             )
-            sys.exit(0)
+            raise SystemExit(0)
 
     def table_output(self, filter_options: str, content: str) -> None:
         if self.option("all"):

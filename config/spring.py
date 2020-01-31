@@ -1,9 +1,7 @@
 """Module for retrieve application's config from Spring Cloud Config."""
 import logging
 import os
-import sys
 from typing import Any, Callable, Dict, KeysView
-import yaml
 
 import attr
 import requests
@@ -17,7 +15,7 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 @attr.s(slots=True)
 class ConfigClient:
-    """ConfigClient client."""
+    """Spring Cloud Config Client."""
 
     address = attr.ib(
         type=str, default=os.getenv("CONFIGSERVER_ADDRESS", "http://localhost:8888")
@@ -34,7 +32,11 @@ class ConfigClient:
         type=bool, default=True, validator=attr.validators.instance_of(bool)
     )
     _config = attr.ib(
-        type=dict, default={}, init=False, validator=attr.validators.instance_of(dict)
+        type=dict,
+        default={},
+        init=False,
+        validator=attr.validators.instance_of(dict),
+        repr=False,
     )
 
     def __attrs_post_init__(self) -> None:
@@ -46,38 +48,26 @@ class ConfigClient:
             profile=self.profile,
         )
 
-    def get_config(self, headers: Dict = {}) -> None:
-        """Retrieve configuration from Spring ConfigClient."""
-        logging.debug(f"Requesting: {self.url}")
+    def get_config(self, headers: dict = {}) -> None:
+        response = self._request_config(headers)
+        if response.ok:
+            self._config = response.json()
+        else:
+            raise RequestFailedException(
+                "Failed to request the configurations. "
+                f"HTTP Response code: {response.status_code}."
+            )
+
+    def _request_config(self, headers: dict) -> requests.Response:
         try:
             response = requests.get(self.url, headers=headers)
-            logging.debug(f"HTTP response code: {response.status_code}")
-            if response.ok and response.headers.get("Content-Type") in (
-                "application/json;charset=UTF-8",
-                "application/json",
-            ):
-                self._config = response.json()
-            elif response.ok and response.headers.get("Content-Type") == "text/plain":
-                url_extension = self.url.rfind('.')
-                if url_extension > 0:
-                    extension = self.url[url_extension:]
-                    if extension == '.yaml':
-                        self._config = yaml.load(response.text)
-                    elif extension == '.properties':
-                        self._config = ''
-            else:
-                raise RequestFailedException(
-                    "Failed to request the configurations. "
-                    f"HTTP Response code: {response.status_code}."
-                )
-
         except Exception:
             logging.error("Failed to establish connection with ConfigServer.")
             if self.fail_fast:
                 logging.info("fail_fast enabled (True). Terminating process.")
-                sys.exit(1)
-            logging.info("")
+                raise SystemExit(1)
             raise ConnectionError("fail_fast disabled (False).")
+        return response
 
     @property
     def config(self) -> Dict:
@@ -85,13 +75,11 @@ class ConfigClient:
         return self._config
 
     def get_attribute(self, value: str) -> Any:
-        """Get attribute from configuration.
+        """
+        Get attribute from configuration.
 
-        Arguments:
-            value value: str -- The filter to query on dict.
-
-        Returns:
-            Any -- The value matches.
+        :value value: -- The filter to query on dict.
+        :return: The value matches or ''
         """
         return glom(self._config, value, default="")
 
@@ -102,10 +90,16 @@ class ConfigClient:
 
 @singleton
 def create_config_client(**kwargs) -> ConfigClient:
-    """Create ConfigClient singleton instance.
+    """
+    Create ConfigClient singleton instance.
 
-    Returns:
-        ConfigClient -- ConfigClient instance.
+    :param address:
+    :param app_name:
+    :param branch:
+    :param fail_fast:
+    :param profile:
+    :param url:
+    :return: ConfigClient instance.
     """
     obj = ConfigClient(**kwargs)
     obj.get_config()
@@ -115,15 +109,14 @@ def create_config_client(**kwargs) -> ConfigClient:
 def config_client(*args, **kwargs) -> Callable[[Dict[str, str]], ConfigClient]:
     """ConfigClient decorator.
 
+    Usage:
+
     @config_client(app_name='test')
     def get_config(config):
         db_user = config.get_attribute('database.user')
 
-    Raises:
-        ConnectionError: If fail_fast enabled.
-
-    Returns:
-        Callable[[Dict[str, str]], ConfigClient] -- ConfigClient instance.
+    :raises: ConnectionError: If fail_fast enabled.
+    :return: ConfigClient instance.
     """
     logging.debug(f"args: {args}")
     logging.debug(f"kwargs: {kwargs}")

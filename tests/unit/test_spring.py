@@ -4,9 +4,8 @@ from unittest.mock import PropertyMock
 import pytest
 import requests
 
+from config.exceptions import RequestFailedException
 from config.spring import ConfigClient, config_client, create_config_client
-
-# from tests.unit.test_oauth2 import ResponseMock
 
 
 class ResponseMock:
@@ -29,13 +28,19 @@ class ResponseMock:
         },
     }
 
-    def __init__(self, code=200, ok=True, headers={}):
-        self.status_code = code
-        self.ok = ok
+    def __init__(self, *args, **kwargs):
+        self.status_code = 200
+        self.ok = True
         self.headers = {"Content-Type": "application/json"}
 
     def json(self):
         return self.CONFIG
+
+
+class ResponseMockError:
+    def __init__(self, *arsgs, **kwargs):
+        self.ok = False
+        self.status_code = 404
 
 
 class TestConfigClient:
@@ -62,15 +67,15 @@ class TestConfigClient:
     def client(self):
         return ConfigClient(app_name="test_app")
 
-    def test_get_config_failed(self, client):
-        """SystemExit will be raises because fail_fast it's True by default."""
-        with pytest.raises(SystemExit):
-            client.get_config()
-
     def test_get_config(self, client, monkeypatch):
         monkeypatch.setattr(requests, "get", ResponseMock)
         client.get_config()
         assert isinstance(client.config, dict)
+
+    def test_get_config_failed(self, client, monkeypatch):
+        monkeypatch.setattr(requests, "get", ResponseMockError)
+        with pytest.raises(RequestFailedException):
+            client.get_config()
 
     def test_get_config_response_failed(self, client, monkeypatch):
         monkeypatch.setattr(requests, "get", ResponseMock(code=404, ok=False))
