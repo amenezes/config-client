@@ -1,10 +1,13 @@
 import json
+import logging
 import random
 from typing import List
 
 from cleo import Command
 
 from config.spring import ConfigClient
+
+logging.disable(logging.ERROR)
 
 
 class CloudFoundryCommand(Command):
