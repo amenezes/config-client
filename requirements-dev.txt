@@ -1,18 +1,18 @@
-attrs>==19.3.0
+attrs>==19.1.0
 flake8==3.7.8
 flake8-blind-except==0.1.1
 flake8-polyfill==1.0.2
 pytest==5.3.4
 pytest-cov==2.8.1
 pytest-mock==2.0.0
-glom>=19.10.0
+glom==19.10.0
 requests>=2.22.0
 cleo==0.7.6
 PyYAML==5.3
 isort==4.3.21
-black
-mypy
-tox
-codecov
+black==19.10b0
+mypy>=0.761
+tox==3.14.3
+codecov==2.0.15
 # optional for asdf-vm
 # tox-asdf

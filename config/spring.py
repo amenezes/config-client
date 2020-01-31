@@ -27,7 +27,7 @@ class ConfigClient:
         validator=attr.validators.instance_of(str),
     )
     profile = attr.ib(type=str, default=os.getenv("PROFILE", "development"))
-    url = attr.ib(type=str, default="{address}/{branch}/{app_name}-{profile}")
+    url = attr.ib(type=str, default="{address}/{branch}/{app_name}-{profile}.json")
     fail_fast = attr.ib(
         type=bool, default=True, validator=attr.validators.instance_of(bool)
     )
@@ -47,6 +47,19 @@ class ConfigClient:
             app_name=self.app_name,
             profile=self.profile,
         )
+        self._ensure_request_json()
+
+    def _ensure_request_json(self):
+        if not self.url.endswith('.json'):
+            self.url = self.url.replace(
+                    self.url[self.url.rfind('.'):], '.json'
+            )
+            logging.warning(
+                'URL suffix adjusted to a supported format. '
+                'For more details see: '
+                'https://github.com/amenezes/config-client/#default-values'
+            )
+        logging.debug(f'ConfigServer Target(URL: {self.url})')
 
     def get_config(self, headers: dict = {}) -> None:
         response = self._request_config(headers)
@@ -55,7 +68,7 @@ class ConfigClient:
         else:
             raise RequestFailedException(
                 "Failed to request the configurations. "
-                f"HTTP Response code: {response.status_code}."
+                f"HTTP Response(Address={self.address}, code:{response.status_code})"
             )
 
     def _request_config(self, headers: dict) -> requests.Response:

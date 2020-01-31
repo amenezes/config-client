@@ -1,4 +1,5 @@
 import json
+import os
 import logging
 import random
 from typing import List
@@ -7,7 +8,8 @@ from cleo import Command
 
 from config.spring import ConfigClient
 
-logging.disable(logging.ERROR)
+
+#logging.disable(logging.ERROR)
 
 
 class CloudFoundryCommand(Command):
@@ -65,32 +67,33 @@ class ConfigClientCommand(Command):
     ]
 
     def handle(self):
-        url = f"{self.option('address')}/{self.option('branch')}/{self.argument('app')}-{self.option('profile')}.json"
+        url = os.getenv("CONFIGSERVER_CUSTOM_URL") or f"{self.option('address')}/{self.option('branch')}/{self.argument('app')}-{self.option('profile')}.json"
         filter_options = self.argument("filter") or ""
 
         client = ConfigClient(
-            address=self.option("address") or "http://localhost:8888",
-            branch=self.option("branch") or "master",
-            app_name=self.argument("app") or "",
-            profile=self.option("profile") or "development",
+            address=os.getenv('CONFIGSERVER_ADDRESS', self.option('address')),
+            branch=os.getenv("BRANCH", self.option("branch")),
+            app_name=os.getenv("APP_NAME", self.argument("app")),
+            profile=os.getenv("PROFILE", self.option("profile")),
             url=self.option("url") or url,
             fail_fast=False,
         )
+        print(url)
 
         content = self.request_config(client, filter_options)
 
         if self.option("json"):
-            self.save_file("output.json", json.dumps(content))
+            self.save_file("output.json", content)
         else:
             self.table_output(filter_options, content)
 
     def request_config(self, client: ConfigClient, filter_options: str):
-        self.line("\U000023f3 contacting server...")
+        self.line("<options=bold>\U000023f3 contacting server...</>")
         try:
             client.get_config()
         except ConnectionError:
             emoji = random.choice(self.EMOJI_ERRORS)
-            self.line(f"{emoji} failed to contact server... {emoji}")
+            self.line(f"<options=bold>{emoji} failed to contact server... {emoji}</>")
             raise SystemExit(1)
 
         self.print_contact_server_ok()
@@ -107,12 +110,12 @@ class ConfigClientCommand(Command):
 
     def print_contact_server_ok(self):
         emoji = random.choice(self.EMOJI_SUCCESS)
-        self.line(f"{emoji} Ok! {emoji}")
+        self.line(f"<options=bold>{emoji} Ok! {emoji}</>")
 
     def has_content(self, content, filter_options) -> None:
         if len(content) == 0:
             emoji = random.choice(self.EMOJI_NOT_FOUND)
-            self.line(
+            self.overwrite(
                 f"{emoji} no result found for your filter: <comment>'{filter_options}'<comment>"
             )
             raise SystemExit(0)
@@ -120,16 +123,14 @@ class ConfigClientCommand(Command):
     def table_output(self, filter_options: str, content: str) -> None:
         if self.option("all"):
             filter_options = "all"
-        headers = [
-            f"<options=bold>report for filter: <comment>'{filter_options}'</comment></>"
-        ]
-        rows = [[f"{content}"]]
-        table = self.table(header=headers, rows=rows, style="solid")
-        table.render(self.io)
+        self.line(
+            f"<options=bold>\U0001f4c4 report for filter: <comment>'{filter_options}'</comment>:</>"
+        )
+        self.line(f"{json.dumps(content, indent=4, sort_keys=True)}")
 
     def save_file(self, filename: str, content: str):
         extension = filename[-4:]
         self.line(f"generating <info>{extension}</info> file...")
         with open(f"{filename}", "w") as f:
-            f.write(content)
+            json.dump(content, f, indent=4, sort_keys=True)
         self.line(f"file saved: <info>{filename}</info>")

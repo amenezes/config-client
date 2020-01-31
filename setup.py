@@ -18,7 +18,9 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     license="Apache-2.0",
     url="https://github.com/amenezes/config-client",
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(
+        include=['config']
+    ),
     python_requires=">=3.6.0",
     project_urls=OrderedDict(
         (
@@ -29,17 +31,20 @@ setuptools.setup(
     ),
     install_requires=["attrs>=19.1.0", "glom>=19.2.0", "requests>=2.22.0"],
     tests_require=[
-        "pytest",
-        "flake8",
-        "flake8-blind-except",
-        "flake8-polyfill",
-        "pytest-cov",
-        "pytest-mock",
-        "isort",
-        "black",
-        "mypy",
+        "pytest==5.3.4",
+        "flake8==3.7.8",
+        "flake8-blind-except==0.1.1",
+        "flake8-polyfill==1.0.2",
+        "pytest-cov==2.8.1",
+        "pytest-mock==2.0.0",
+        "isort==4.3.21",
+        "black==19.10b0",
+        "mypy>=0.761",
     ],
-    extras_require={"cli": ["cleo>=0.7.6"]},
+    extras_require={
+        "cli": ["cleo>=0.7.6"],
+        "docs": ["portray>=1.3.1"]
+    },
     setup_requires=["setuptools>=38.6.0"],
     entry_points={"console_scripts": ["config=config.__main__:application.run [cli]"]},
     classifiers=[
@@ -53,6 +58,8 @@ setuptools.setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: Implementation :: CPython",
+        "Programming Language :: Python :: Implementation :: PyPy"
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Java Libraries",
     ],
