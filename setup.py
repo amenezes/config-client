@@ -42,8 +42,12 @@ setuptools.setup(
         "mypy>=0.761",
     ],
     extras_require={
-        "cli": ["cleo>=0.7.6"],
-        "docs": ["portray>=1.3.1"]
+        "cli": [
+            "cleo>=0.7.6",
+            "python-dotenv>=0.10.3"
+        ],
+        "docs": ["portray>=1.3.1"],
+        "all": ["cli", "docs"],
     },
     setup_requires=["setuptools>=38.6.0"],
     entry_points={"console_scripts": ["config=config.__main__:application.run [cli]"]},

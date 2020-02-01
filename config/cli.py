@@ -1,15 +1,20 @@
 import json
-import os
 import logging
+import os
 import random
+from pathlib import Path
 from typing import List
 
 from cleo import Command
+from dotenv import load_dotenv
 
 from config.spring import ConfigClient
 
+logging.disable(logging.ERROR)
 
-#logging.disable(logging.ERROR)
+
+env_path = Path(".") / ".env"
+load_dotenv(dotenv_path=env_path)
 
 
 class CloudFoundryCommand(Command):
@@ -67,25 +72,27 @@ class ConfigClientCommand(Command):
     ]
 
     def handle(self):
-        url = os.getenv("CONFIGSERVER_CUSTOM_URL") or f"{self.option('address')}/{self.option('branch')}/{self.argument('app')}-{self.option('profile')}.json"
         filter_options = self.argument("filter") or ""
+        host = os.getenv("CONFIGSERVER_ADDRESS", self.option("address"))
+        url = os.getenv("CONFIGSERVER_CUSTOM_URL")
+        if not url:
+            url = f"{host}/{self.option('branch')}/{self.argument('app')}-{self.option('profile')}.json"
 
         client = ConfigClient(
-            address=os.getenv('CONFIGSERVER_ADDRESS', self.option('address')),
+            address=os.getenv("CONFIGSERVER_ADDRESS", self.option("address")),
             branch=os.getenv("BRANCH", self.option("branch")),
             app_name=os.getenv("APP_NAME", self.argument("app")),
             profile=os.getenv("PROFILE", self.option("profile")),
             url=self.option("url") or url,
             fail_fast=False,
         )
-        print(url)
 
         content = self.request_config(client, filter_options)
 
         if self.option("json"):
             self.save_file("output.json", content)
         else:
-            self.table_output(filter_options, content)
+            self.std_output(filter_options, content)
 
     def request_config(self, client: ConfigClient, filter_options: str):
         self.line("<options=bold>\U000023f3 contacting server...</>")
@@ -115,12 +122,12 @@ class ConfigClientCommand(Command):
     def has_content(self, content, filter_options) -> None:
         if len(content) == 0:
             emoji = random.choice(self.EMOJI_NOT_FOUND)
-            self.overwrite(
-                f"{emoji} no result found for your filter: <comment>'{filter_options}'<comment>"
+            self.line(
+                f"{emoji} no result found for your filter: <comment>'{filter_options}'</comment>"
             )
             raise SystemExit(0)
 
-    def table_output(self, filter_options: str, content: str) -> None:
+    def std_output(self, filter_options: str, content: str) -> None:
         if self.option("all"):
             filter_options = "all"
         self.line(

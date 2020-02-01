@@ -18,8 +18,9 @@ tests:
 	@echo "> unittest"
 	python -m pytest -v --cov-report xml --cov-report term --cov=config tests
 
-doc: 
+docs:
 	@echo "> generate project documentation..."
+	portray server
 
 install-deps:
 	@echo "> installing dependencies..."
@@ -44,7 +45,7 @@ about:
 	@echo "make lint         - Runs: [isort > black > flake8 > mypy]"
 	@echo "make tests        - Execute tests."
 	@echo "make tox          - Runs tox."
-	@echo "make doc          - Generate project documentation."
+	@echo "make docs         - Generate project documentation."
 	@echo "make install-deps - Install development dependencies."
 	@echo "make venv         - Install virtualenv and create venv directory."
 	@echo ""
@@ -64,4 +65,4 @@ endif
 all: lint tests doc install-deps venv
 
 
-.PHONY: lint tests doc install-deps venv ci all
+.PHONY: lint tests docs install-deps venv ci all

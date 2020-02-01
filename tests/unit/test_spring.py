@@ -64,7 +64,7 @@ class TestConfigClient:
     }
 
     @pytest.fixture
-    def client(self):
+    def client(self, monkeypatch):
         return ConfigClient(app_name="test_app")
 
     def test_get_config(self, client, monkeypatch):
@@ -87,16 +87,18 @@ class TestConfigClient:
 
     def test_default_url_property(self, client):
         assert isinstance(client.url, str)
-        assert client.url == "http://localhost:8888/master/test_app-development"
+        assert client.url == "http://localhost:8888/master/test_app-development.json"
 
     def test_custom_url_property(self):
         client = ConfigClient(
             app_name="test_app", url="{address}/{branch}/{profile}-{app_name}.yaml"
         )
-        assert client.url == "http://localhost:8888/master/development-test_app.yaml"
+        assert client.url == "http://localhost:8888/master/development-test_app.json"
 
-    def test_decorator_failed(self, client):
-        @config_client()
+    def test_decorator_failed(self, client, monkeypatch):
+        monkeypatch.setattr(requests, "get", Exception)
+
+        @config_client(app_name="myapp")
         def inner(c=None):
             assert isinstance(c, ConfigClient)
 
@@ -106,21 +108,22 @@ class TestConfigClient:
     def test_decorator(self, client, monkeypatch):
         monkeypatch.setattr(requests, "get", ResponseMock)
 
-        @config_client()
+        @config_client(app_name="myapp")
         def inner(c=None):
             assert isinstance(c, ConfigClient)
 
         inner()
 
-    def test_fail_fast_disabled(self):
+    def test_fail_fast_disabled(self, monkeypatch):
+        monkeypatch.setattr(requests, "get", Exception)
         client = ConfigClient(app_name="test_app", fail_fast=False)
         with pytest.raises(ConnectionError):
             client.get_config()
 
     def test_create_config_client_with_singleton(self, monkeypatch):
         monkeypatch.setattr(requests, "get", ResponseMock)
-        client1 = create_config_client()
-        client2 = create_config_client()
+        client1 = create_config_client(app_name="app1")
+        client2 = create_config_client(app_name="app2")
         assert id(client1) == id(client2)
 
     def test_get_keys(self, client):

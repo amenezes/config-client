@@ -1,4 +1,5 @@
 import pytest
+import requests
 from cleo import Application, CommandTester
 
 from config.cli import CloudFoundryCommand, ConfigClientCommand
@@ -49,7 +50,8 @@ class TestClientCommand:
         command.execute("app 'db'")
         assert "report for filter: 'db'" in command.io.fetch_output()
 
-    def test_connection_error(self, command):
+    def test_connection_error(self, command, monkeypatch):
+        monkeypatch.setattr(requests, "get", SystemExit)
         with pytest.raises(SystemExit):
             command.execute("app --all")
 
@@ -61,3 +63,9 @@ class TestClientCommand:
     def test_save_as_json(self, command, attribute_mock):
         command.execute("app 'db' --json")
         assert "generating json file" in command.io.fetch_output()
+
+    def test_custom_url_via_env(self, command, monkeypatch):
+        monkeypatch.setenv("CONFIGSERVER_CUSTOM_URL", "http://localhost")
+        monkeypatch.setattr(ConfigClient, "get_config", print)
+        with pytest.raises(SystemExit):
+            command.execute("app 'db' --json")

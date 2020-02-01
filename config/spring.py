@@ -18,18 +18,34 @@ class ConfigClient:
     """Spring Cloud Config Client."""
 
     address = attr.ib(
-        type=str, default=os.getenv("CONFIGSERVER_ADDRESS", "http://localhost:8888")
-    )
-    branch = attr.ib(type=str, default=os.getenv("BRANCH", "master"))
-    app_name = attr.ib(
         type=str,
-        default=os.getenv("APP_NAME", ""),
+        default=os.getenv("CONFIGSERVER_ADDRESS", "http://localhost:8888"),
         validator=attr.validators.instance_of(str),
     )
-    profile = attr.ib(type=str, default=os.getenv("PROFILE", "development"))
-    url = attr.ib(type=str, default="{address}/{branch}/{app_name}-{profile}.json")
+    branch = attr.ib(
+        type=str,
+        default=os.getenv("BRANCH", "master"),
+        validator=attr.validators.instance_of(str),
+    )
+    app_name = attr.ib(
+        type=str,
+        default=os.getenv("APP_NAME", None),
+        validator=attr.validators.instance_of(str),
+    )
+    profile = attr.ib(
+        type=str,
+        default=os.getenv("PROFILE", "development"),
+        validator=attr.validators.instance_of(str),
+    )
+    url = attr.ib(
+        type=str,
+        default="{address}/{branch}/{app_name}-{profile}.json",
+        validator=attr.validators.instance_of(str),
+    )
     fail_fast = attr.ib(
-        type=bool, default=True, validator=attr.validators.instance_of(bool)
+        type=bool,
+        default=bool(os.getenv("CONFIG_FAIL_FAST", True)),
+        validator=attr.validators.instance_of(bool),
     )
     _config = attr.ib(
         type=dict,
@@ -50,22 +66,21 @@ class ConfigClient:
         self._ensure_request_json()
 
     def _ensure_request_json(self):
-        if not self.url.endswith('.json'):
-            self.url = self.url.replace(
-                    self.url[self.url.rfind('.'):], '.json'
-            )
+        if not self.url.endswith(".json"):
+            self.url = self.url.replace(self.url[self.url.rfind(".") :], ".json")
             logging.warning(
-                'URL suffix adjusted to a supported format. '
-                'For more details see: '
-                'https://github.com/amenezes/config-client/#default-values'
+                "URL suffix adjusted to a supported format. "
+                "For more details see: "
+                "https://github.com/amenezes/config-client/#default-values"
             )
-        logging.debug(f'ConfigServer Target(URL: {self.url})')
+        logging.debug(f"ConfigServer Target(URL: {self.url})")
 
     def get_config(self, headers: dict = {}) -> None:
         response = self._request_config(headers)
         if response.ok:
             self._config = response.json()
         else:
+            print(self.url)
             raise RequestFailedException(
                 "Failed to request the configurations. "
                 f"HTTP Response(Address={self.address}, code:{response.status_code})"
