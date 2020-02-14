@@ -27,6 +27,11 @@ class CFenv:
         )
     )
 
+    if "config-server" in attr.asdict(vcap_services)['_default']:
+        val = "config-server"
+    else:
+        val = "p-config-server"
+
     @property
     def space_name(self) -> Any:
         return glom(self.vcap_application, 'space_name', default='')
@@ -43,14 +48,14 @@ class CFenv:
     def uris(self) -> Any:
         return glom(self.vcap_application, 'uris', default=[])
 
-    def configserver_uri(self, vcap_path: str = 'p-config-server.0.credentials.uri') -> Any:
+    def configserver_uri(self, vcap_path: str = val + '.0.credentials.uri') -> Any:
         return glom(self.vcap_services, vcap_path, default='')
 
-    def configserver_access_token_uri(self, vcap_path: str = 'p-config-server.0.credentials.access_token_uri') -> Any:
+    def configserver_access_token_uri(self, vcap_path: str = val + '.0.credentials.access_token_uri') -> Any:
         return glom(self.vcap_services, vcap_path, default='')
 
-    def configserver_client_id(self, vcap_path: str = 'p-config-server.0.credentials.client_id') -> Any:
+    def configserver_client_id(self, vcap_path: str = val + '.0.credentials.client_id') -> Any:
         return glom(self.vcap_services, vcap_path, default='')
 
-    def configserver_client_secret(self, vcap_path: str = 'p-config-server.0.credentials.client_secret') -> Any:
+    def configserver_client_secret(self, vcap_path: str = val + '.0.credentials.client_secret') -> Any:
         return glom(self.vcap_services, vcap_path, default='')
