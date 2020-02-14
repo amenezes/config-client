@@ -65,15 +65,19 @@ class ConfigClient:
         )
         self._ensure_request_json()
 
-    def _ensure_request_json(self):
+    def _ensure_request_json(self) -> None:
         if not self.url.endswith(".json"):
-            self.url = self.url.replace(self.url[self.url.rfind(".") :], ".json")
+            dot_position = self.url.rfind(".")
+            if dot_position > 0:
+                self.url = self.url.replace(self.url[dot_position:], ".json")
+            else:
+                self.url = f"{self.url}.json"
             logging.warning(
                 "URL suffix adjusted to a supported format. "
                 "For more details see: "
                 "https://github.com/amenezes/config-client/#default-values"
             )
-        logging.debug(f"ConfigServer Target(URL: {self.url})")
+        logging.debug(f"Target URL configured: {self.url}")
 
     def get_config(self, headers: dict = {}) -> None:
         response = self._request_config(headers)

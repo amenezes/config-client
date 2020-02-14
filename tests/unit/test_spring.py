@@ -135,3 +135,12 @@ class TestConfigClient:
         response = client.get_attribute("spring.cloud.consul.host")
         assert response is not None
         assert response == "discovery"
+
+    def test_fix_valid_url_extension(self, client):
+        client.url == "http://localhost:8888/master/test-app-development.json"
+
+    def test_fix_url_extension_without_profile(self):
+        client = ConfigClient(
+            app_name="simpleweb000", url="{address}/{branch}/{app_name}"
+        )
+        client.url == "http://localhost:8888/master/simpleweb000.json"

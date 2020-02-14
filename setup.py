@@ -18,9 +18,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     license="Apache-2.0",
     url="https://github.com/amenezes/config-client",
-    packages=setuptools.find_packages(
-        include=['config']
-    ),
+    packages=setuptools.find_packages(include=["config"]),
     python_requires=">=3.6.0",
     project_urls=OrderedDict(
         (
@@ -42,12 +40,9 @@ setuptools.setup(
         "mypy>=0.761",
     ],
     extras_require={
-        "cli": [
-            "cleo>=0.7.6",
-            "python-dotenv>=0.10.3"
-        ],
+        "cli": ["cleo>=0.7.6", "python-dotenv>=0.10.3"],
         "docs": ["portray>=1.3.1"],
-        "all": ["cli", "docs"],
+        "all": ["cleo>=0.7.6", "python-dotenv>=0.10.3", "portray>=1.3.1"],
     },
     setup_requires=["setuptools>=38.6.0"],
     entry_points={"console_scripts": ["config=config.__main__:application.run [cli]"]},
