@@ -1,0 +1,7 @@
+version: '3'
+services:
+  config-server:
+    container_name: config-server
+    image: amenezes/spring-cloud-configserver
+    ports:
+      - 8888:8888
