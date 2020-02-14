@@ -9,7 +9,7 @@ default_vcap_services = json.dumps(
                     "uri": "",
                     "access_token_uri": "",
                     "client_id": "",
-                    "client_secret": ""
+                    "client_secret": "",
                 }
             }
         ]

@@ -40,3 +40,15 @@ class TestCFenv(unittest.TestCase):
             self.cfenv.configserver_client_secret(),
             ''
         )
+
+    def test_default_vcap_service_prefix(self):
+        self.assertIn('p-config-server', self.cfenv.vcap_services.keys())
+
+    def test_custom_vcap_service_prefix(self):
+        cfenv = CFenv(vcap_service_prefix='config-server')
+        self.assertIn('config-server', cfenv.vcap_services.keys())
+        self.assertNotEqual(self.cfenv.vcap_services, cfenv.vcap_services)
+
+    def test_format_vcap_path(self):
+        path = self.cfenv._format_vcap_path('.0.credentials.uri')
+        self.assertEqual(path, 'p-config-server.0.credentials.uri')

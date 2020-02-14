@@ -16,45 +16,29 @@ class OAuth2:
     access_token_uri = attr.ib(type=str)
     client_id = attr.ib(type=str)
     client_secret = attr.ib(type=str)
-    grant_type = attr.ib(
-        type=str,
-        default='client_credentials'
-    )
-    _token = attr.ib(
-        type=str,
-        default='',
-        validator=attr.validators.instance_of(str)
-    )
+    grant_type = attr.ib(type=str, default="client_credentials")
+    _token = attr.ib(type=str, default="", validator=attr.validators.instance_of(str))
 
     @property
     def token(self) -> str:
         return self._token
 
-    def request_token(self,
-                      client_auth: HTTPBasicAuth,
-                      data: Dict[str, str]) -> None:
+    def request_token(self, client_auth: HTTPBasicAuth, data: Dict[str, str]) -> None:
         try:
-            response = requests.post(
-                self.access_token_uri,
-                auth=client_auth,
-                data=data
-            )
+            response = requests.post(self.access_token_uri, auth=client_auth, data=data)
             if response.ok:
-                self._token = response.json().get('access_token')
-                logging.info('Access token successfully obtained.')
+                self._token = response.json().get("access_token")
+                logging.info("Access token successfully obtained.")
                 logging.debug(f"access_token: {self._token}")
             else:
                 raise Exception(
-                    'Failed to retrieve oauth2 access_token. '
-                    f'HTTP Response code: {response.status_code}.'
+                    "Failed to retrieve oauth2 access_token. "
+                    f"HTTP Response code: {response.status_code}."
                 )
         except requests.exceptions.MissingSchema:
-            logging.error('Access token URI it\'s empty')
+            logging.error("Access token URI it's empty")
 
     def configure(self) -> None:
-        client_auth = HTTPBasicAuth(
-            self.client_id,
-            self.client_secret
-        )
-        data = {'grant_type': f"{self.grant_type}"}
+        client_auth = HTTPBasicAuth(self.client_id, self.client_secret)
+        data = {"grant_type": f"{self.grant_type}"}
         self.request_token(client_auth, data)

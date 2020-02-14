@@ -205,6 +205,8 @@ print(id(d))
 
 ### [cloudfoundry](https://docs.pivotal.io/spring-cloud-services/1-5/common/config-server/index.html) integration
 
+#### Default usage
+
 ````python
 from config.cf import CF
 
@@ -216,6 +218,16 @@ It's necessary bind Config Server with the application first.
 
 A example application it's available on:
 - https://github.com/amenezes/simpleweb
+
+#### Custom usage
+
+````python
+from config.cf import CF
+from config.spring import ConfigClient
+
+cf = CF(client=ConfigClient(app_name='simpleweb000', url="{address}/{branch}/{app_name}.json"))
+cf.get_config()
+````
 
 ## Development
 

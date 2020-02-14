@@ -91,7 +91,7 @@ class TestConfigClient(unittest.TestCase):
         self.assertIsInstance(self.obj.url, str)
         self.assertEqual(
             self.obj.url,
-            "http://localhost:8888/master/test-app-.json"
+            "http://localhost:8888/master/test-app-development.json"
         )
 
     def test_custom_url_property(self):
@@ -104,7 +104,7 @@ class TestConfigClient(unittest.TestCase):
         self.assertEqual(obj.branch, 'development')
         self.assertEqual(
             obj.url,
-            "http://localhost:8888/development/-test-app.json"
+            "http://localhost:8888/development/development-test-app.json"
         )
 
     def test_get_attribute(self):
@@ -136,11 +136,15 @@ class TestConfigClient(unittest.TestCase):
             inner_method()
 
     def test_fix_valid_url_extension(self):
-        self.assertTrue(self.obj.url.endswith('json'))
+        self.assertEqual(self.obj.url, "http://localhost:8888/master/test-app-development.json")
+
+    def test_fix_url_extension_without_profile(self):
+        client = ConfigClient(app_name="simpleweb000", url="{address}/{branch}/{app_name}")
+        self.assertEqual(client.url, "http://localhost:8888/master/simpleweb000.json")
 
     @patch('config.spring.requests.get', return_value=ResponseMock())
     def test_create_config_client_with_singleton(self, RequestMock):
-        client1 = create_config_client()
-        client2 = create_config_client()
+        client1 = create_config_client(app_name='simpleweb000')
+        client2 = create_config_client(app_name='simpleweb999')
 
         self.assertEqual(client1, client2)
