@@ -27,9 +27,10 @@ class ConfigClient:
         default=os.getenv("BRANCH", "master"),
         validator=attr.validators.instance_of(str),
     )
+    branch = attr.ib(type=str, default=os.getenv("BRANCH", "master"))
     app_name = attr.ib(
         type=str,
-        default=os.getenv("APP_NAME", None),
+        default=os.getenv("APP_NAME", ""),
         validator=attr.validators.instance_of(str),
     )
     profile = attr.ib(
@@ -37,6 +38,7 @@ class ConfigClient:
         default=os.getenv("PROFILE", "development"),
         validator=attr.validators.instance_of(str),
     )
+    profile = attr.ib(type=str, default=os.getenv("PROFILE", "development"))
     url = attr.ib(
         type=str,
         default="{address}/{branch}/{app_name}-{profile}.json",
@@ -49,7 +51,7 @@ class ConfigClient:
     )
     _config = attr.ib(
         type=dict,
-        default={},
+        factory=dict,
         init=False,
         validator=attr.validators.instance_of(dict),
         repr=False,
