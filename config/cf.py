@@ -7,14 +7,15 @@ from config.auth import OAuth2
 from config.cfenv import CFenv
 from config.spring import ConfigClient
 
-
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 @attr.s(slots=True)
 class CF:
 
-    cfenv = attr.ib(type=CFenv, default=CFenv())
+    cfenv = attr.ib(
+        type=CFenv, factory=CFenv, validator=attr.validators.instance_of(CFenv),
+    )
     oauth2 = attr.ib(type=OAuth2, default=None)
     client = attr.ib(type=ConfigClient, default=None)
 
@@ -23,13 +24,13 @@ class CF:
             self.oauth2 = OAuth2(
                 access_token_uri=self.cfenv.configserver_access_token_uri(),
                 client_id=self.cfenv.configserver_client_id(),
-                client_secret=self.cfenv.configserver_client_secret()
+                client_secret=self.cfenv.configserver_client_secret(),
             )
 
         if not self.client:
             self.client = ConfigClient(
                 address=self.cfenv.configserver_uri(),
-                app_name=self.cfenv.application_name
+                app_name=self.cfenv.application_name,
             )
         self.oauth2.configure()
 
@@ -42,7 +43,7 @@ class CF:
         return self.cfenv.vcap_application
 
     def get_config(self) -> None:
-        header = {'Authorization': f"Bearer {self.oauth2.token}"}
+        header = {"Authorization": f"Bearer {self.oauth2.token}"}
         self.client.get_config(header)
 
     @property

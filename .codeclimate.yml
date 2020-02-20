@@ -15,5 +15,7 @@ plugins:
     enabled: true
     config:
       python_version: 3
+  sonar-python:
+    enabled: true
 exclude_patterns:
 - "venv"

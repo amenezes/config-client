@@ -11,6 +11,7 @@ ignore = E501 # line too long
          D103 # missing docstring in public function
          D105 # missing docstring in magic method
          D107 # missing docstring in __init__
+         E203 # black bug?! whitespace before ':'
 verbose = 2
 doctests = True
 format = [%(code)s] %(path)s [%(row)d,%(col)d] %(text)s
