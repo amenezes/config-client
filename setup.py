@@ -22,7 +22,7 @@ setuptools.setup(
     python_requires=">=3.6.0",
     project_urls=OrderedDict(
         (
-            ("Documentation", "https://github.com/amenezes/config-client"),
+            ("Documentation", "https://config-client.amenezes.net"),
             ("Code", "https://github.com/amenezes/config-client"),
             ("Issue tracker", "https://github.com/amenezes/config-client/issues"),
         )

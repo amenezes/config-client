@@ -3,7 +3,7 @@ import logging
 import os
 import random
 from pathlib import Path
-from typing import List
+from typing import Any, List
 
 from cleo import Command
 from dotenv import load_dotenv
@@ -71,7 +71,7 @@ class ConfigClientCommand(Command):
         "\U0001f605",
     ]
 
-    def handle(self):
+    def handle(self) -> None:
         filter_options = self.argument("filter") or ""
         host = os.getenv("CONFIGSERVER_ADDRESS", self.option("address"))
         url = os.getenv("CONFIGSERVER_CUSTOM_URL")
@@ -94,7 +94,7 @@ class ConfigClientCommand(Command):
         else:
             self.std_output(filter_options, content)
 
-    def request_config(self, client: ConfigClient, filter_options: str):
+    def request_config(self, client: ConfigClient, filter_options: str) -> Any:
         self.line("<options=bold>\U000023f3 contacting server...</>")
         try:
             client.get_config()
@@ -108,19 +108,19 @@ class ConfigClientCommand(Command):
         self.has_content(content, filter_options)
         return content
 
-    def get_config(self, client, filter_options):
+    def get_config(self, client: ConfigClient, filter_options: str) -> Any:
         if self.option("all"):
             content = client.config
         else:
             content = client.get_attribute(f"{filter_options}")
         return content
 
-    def print_contact_server_ok(self):
+    def print_contact_server_ok(self) -> None:
         emoji = random.choice(self.EMOJI_SUCCESS)
         self.line(f"<options=bold>{emoji} Ok! {emoji}</>")
 
-    def has_content(self, content, filter_options) -> None:
-        if len(content) == 0:
+    def has_content(self, content, filter_options: str) -> None:
+        if len(str(content)) == 0:
             emoji = random.choice(self.EMOJI_NOT_FOUND)
             self.line(
                 f"{emoji} no result found for your filter: <comment>'{filter_options}'</comment>"
@@ -135,7 +135,7 @@ class ConfigClientCommand(Command):
         )
         self.line(f"{json.dumps(content, indent=4, sort_keys=True)}")
 
-    def save_file(self, filename: str, content: str):
+    def save_file(self, filename: str, content: str) -> None:
         extension = filename[-4:]
         self.line(f"generating <info>{extension}</info> file...")
         with open(f"{filename}", "w") as f:

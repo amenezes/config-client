@@ -18,9 +18,12 @@ class CFenv:
     vcap_application = attr.ib(
         type=dict,
         default=json.loads(os.getenv("VCAP_APPLICATION", default_vcap_application)),
+        validator=attr.validators.instance_of(dict),
     )
     vcap_services = attr.ib(
-        type=dict, default=json.loads(os.getenv("VCAP_SERVICES", default_vcap_services))
+        type=dict,
+        default=json.loads(os.getenv("VCAP_SERVICES", default_vcap_services)),
+        validator=attr.validators.instance_of(dict),
     )
 
     def __attrs_post_init__(self) -> None:
@@ -69,5 +72,5 @@ class CFenv:
         path = self._format_vcap_path(vcap_path)
         return glom(self.vcap_services, path, default="")
 
-    def _format_vcap_path(self, path) -> str:
+    def _format_vcap_path(self, path: str) -> str:
         return f"{self.vcap_service_prefix}{path}"

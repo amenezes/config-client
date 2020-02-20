@@ -5,3 +5,10 @@ services:
     image: amenezes/spring-cloud-configserver
     ports:
       - 8888:8888
+  # config-client:
+  #   container_name: config-client
+  #   build:
+  #     context: .
+  #   command:
+  #     - client
+  #     - -h

@@ -14,7 +14,7 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 class CF:
 
     cfenv = attr.ib(
-        type=CFenv, default=CFenv(), validator=attr.validators.instance_of(CFenv)
+        type=CFenv, factory=CFenv, validator=attr.validators.instance_of(CFenv),
     )
     oauth2 = attr.ib(type=OAuth2, default=None)
     client = attr.ib(type=ConfigClient, default=None)

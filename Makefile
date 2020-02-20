@@ -1,17 +1,20 @@
 .DEFAULT_GOAL := about
 VENV_DIR := $(shell [ ! -d "venv" ] && echo 1 || echo 0)
+SKIP_STYLE := $(shell printenv SKIP_STYLE | wc -l)
 
 lint:
+ifeq ($(SKIP_STYLE), 0)
 	@echo "> running isort..."
 	isort -rc config/
 	isort -rc tests/
 	@echo "> running black..."
 	black config
 	black tests
-	@echo "> running flake8 to check codestyle..."
+endif
+	@echo "> running flake8..."
 	flake8 config
 	flake8 tests
-	@echo "> running mypy static type checker..."
+	@echo "> running mypy..."
 	mypy config
 
 tests:
