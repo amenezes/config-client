@@ -1,3 +1,5 @@
+from typing import Any
+
 import attr
 from flask.app import Flask
 from flask.config import Config
@@ -6,7 +8,7 @@ from glom import glom
 from config.spring import ConfigClient
 
 
-def _validate(instance, attribute, value):
+def _validate(instance, attribute, value) -> None:
     client = instance._client
     if client.__class__.__name__ not in ("ConfigClient", "CF"):
         raise TypeError(f"instance must be <ConfigClient> or <CF> (got: {client})")
@@ -31,5 +33,5 @@ class _Config(Config):
         super(_Config, self).__init__(*args, **kwargs)
         Config.update(self, _config)
 
-    def get(self, key, default=None):
+    def get(self, key, default=None) -> Any:
         return glom(self, key, default=default)

@@ -17,7 +17,7 @@ class ResponseMock:
                     "discovery": {
                         "health-check-interval": "10s",
                         "health-check-path": "/manage/health",
-                        "instance-id": "pecas-textos:${random.value}",
+                        "instance-id": "myapp:${random.value}",
                         "prefer-ip-address": True,
                         "register-health-check": True,
                     },
@@ -91,7 +91,7 @@ class TestConfigClient:
 
     def test_custom_url_property(self):
         client = ConfigClient(
-            app_name="test_app", url="{address}/{branch}/{profile}-{app_name}.yaml"
+            app_name="test_app", url="{address}/{branch}/{profile}-{app_name}.yaml",
         )
         assert client.url == "http://localhost:8888/master/development-test_app.json"
 
