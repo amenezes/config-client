@@ -88,8 +88,8 @@ class ConfigClient:
         else:
             print(self.url)
             raise RequestFailedException(
-                "Failed to request the configurations. "
-                f"HTTP Response(Address={self.address}, code:{response.status_code})"
+                "Failed to request the configurations. HTTP Response"
+                f"(Address={self.address}, code:{response.status_code})"
             )
 
     def _request_config(self, headers: dict) -> requests.Response:
