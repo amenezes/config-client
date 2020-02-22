@@ -18,7 +18,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     license="Apache-2.0",
     url="https://github.com/amenezes/config-client",
-    packages=setuptools.find_packages(include=["config"]),
+    packages=setuptools.find_packages(include=["config", "config.*"]),
     python_requires=">=3.6.0",
     project_urls=OrderedDict(
         (
