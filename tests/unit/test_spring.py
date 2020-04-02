@@ -4,8 +4,8 @@ from unittest.mock import PropertyMock
 import pytest
 import requests
 
-from config.exceptions import RequestFailedException
 from config import ConfigClient, config_client, create_config_client
+from config.exceptions import RequestFailedException
 
 
 class ResponseMock:

@@ -2,8 +2,8 @@ import pytest
 import requests
 from cleo import Application, CommandTester
 
-from config.cli import CloudFoundryCommand, ConfigClientCommand
 from config import ConfigClient
+from config.cli import CloudFoundryCommand, ConfigClientCommand
 
 application = Application()
 application.add(CloudFoundryCommand())
