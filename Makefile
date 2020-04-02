@@ -1,16 +1,15 @@
 .DEFAULT_GOAL := about
 VENV_DIR := $(shell [ ! -d "venv" ] && echo 1 || echo 0)
 SKIP_STYLE := $(shell printenv SKIP_STYLE | wc -l)
+VERSION := $(shell cat config/__version__.py | cut -d'"' -f 2)
 
 lint:
-ifeq ($(SKIP_STYLE), 0)
 	@echo "> running isort..."
 	isort -rc config/
 	isort -rc tests/
 	@echo "> running black..."
 	black config
 	black tests
-endif
 	@echo "> running flake8..."
 	flake8 config
 	flake8 tests
@@ -43,7 +42,7 @@ tox:
 	tox -r -p all
 
 about:
-	@echo "> config-client"
+	@echo "> config-client | $(VERSION)"
 	@echo ""
 	@echo "make lint         - Runs: [isort > black > flake8 > mypy]"
 	@echo "make tests        - Execute tests."

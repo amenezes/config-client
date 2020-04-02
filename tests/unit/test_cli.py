@@ -3,7 +3,7 @@ import requests
 from cleo import Application, CommandTester
 
 from config.cli import CloudFoundryCommand, ConfigClientCommand
-from config.spring import ConfigClient
+from config import ConfigClient
 
 application = Application()
 application.add(CloudFoundryCommand())
