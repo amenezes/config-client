@@ -31,6 +31,7 @@ class CF:
             self.client = ConfigClient(
                 address=self.cfenv.configserver_uri(),
                 app_name=self.cfenv.application_name,
+                profile=self.cfenv.space_name.lower(),
             )
         self.oauth2.configure()
 

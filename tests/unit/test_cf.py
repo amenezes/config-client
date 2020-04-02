@@ -3,9 +3,7 @@ from unittest.mock import patch
 import pytest
 import requests
 
-from config.auth import OAuth2
-from config.cf import CF
-from config.spring import ConfigClient
+from config import CF, ConfigClient, OAuth2
 from tests.unit.test_oauth2 import ResponseMock
 
 
