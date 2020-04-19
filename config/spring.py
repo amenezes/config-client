@@ -1,6 +1,7 @@
 """Module for retrieve application's config from Spring Cloud Config."""
 import logging
 import os
+from distutils.util import strtobool
 from typing import Any, Callable, Dict, KeysView
 
 import attr
@@ -46,7 +47,7 @@ class ConfigClient:
     )
     fail_fast = attr.ib(
         type=bool,
-        default=bool(os.getenv("CONFIG_FAIL_FAST", True)),
+        default=bool(strtobool(str(os.getenv("CONFIG_FAIL_FAST", True)))),
         validator=attr.validators.instance_of(bool),
     )
     _config = attr.ib(
@@ -98,9 +99,9 @@ class ConfigClient:
         except Exception:
             logging.error("Failed to establish connection with ConfigServer.")
             if self.fail_fast:
-                logging.info("fail_fast enabled (True). Terminating process.")
+                logging.info("fail_fast enabled. Terminating process.")
                 raise SystemExit(1)
-            raise ConnectionError("fail_fast disabled (False).")
+            raise ConnectionError("fail_fast disabled.")
         return response
 
     @property
