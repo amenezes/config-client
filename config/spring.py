@@ -101,7 +101,7 @@ class ConfigClient:
         try:
             self._config = dict(
                 merge_dicts(
-                    self.get_config_from_server(headers), self.get_config_from_file()
+                    self.get_config_from_file(), self.get_config_from_server(headers)
                 )
             )
         except RequestFailedException:
