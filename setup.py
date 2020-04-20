@@ -1,16 +1,19 @@
-from config import __version__
+from os.path import abspath, dirname, join
+
+about = {}
+with open(join(abspath(dirname(__file__)), 'config', '__version__.py'), 'r') as f:
+    exec(f.read(), about)
 
 from collections import OrderedDict
 
 import setuptools
-
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="config-client",
-    version=f"{__version__}",
+    version=about["__version__"],
     author="alexandre menezes",
     author_email="alexandre.fmenezes@gmail.com",
     description="config service client for Spring Cloud Config Server",
