@@ -79,7 +79,9 @@ class ConfigClient:
         )
         self._ensure_request_json()
 
-        self.filename = self.config_file_path.format(branch=self.branch, app_name=self.app_name, profile=self.profile)
+        self.filename = self.config_file_path.format(
+            branch=self.branch, app_name=self.app_name, profile=self.profile
+        )
 
     def _ensure_request_json(self) -> None:
         if not self.url.endswith(".json"):

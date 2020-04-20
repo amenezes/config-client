@@ -11,6 +11,8 @@ class TestMerge(TestCase):
         # when
         merged = dict(merge_dicts(a_dict, b_dict))
         # then
-        expected = {"first": {"all_rows": {"pass": "dog", "fail": "cat", "number": "5"}}}
+        expected = {
+            "first": {"all_rows": {"pass": "dog", "fail": "cat", "number": "5"}}
+        }
 
         self.assertEqual(expected, merged)

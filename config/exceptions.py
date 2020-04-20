@@ -2,5 +2,5 @@ class RequestTokenException(Exception):
     pass
 
 
-class RequestFailedException(Exception):
+class RequestFailedException(ConnectionError):
     pass
