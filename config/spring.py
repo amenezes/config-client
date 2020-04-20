@@ -2,14 +2,17 @@
 import logging
 import os
 from distutils.util import strtobool
+from os.path import isfile
 from typing import Any, Callable, Dict, KeysView
 
 import attr
 import requests
+import yaml
 from glom import glom
 
 from config.core import singleton
 from config.exceptions import RequestFailedException
+from config.utils import merge_dicts
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -58,6 +61,14 @@ class ConfigClient:
         repr=False,
     )
 
+    filename = attr.ib(type=str, validator=attr.validators.instance_of(str), init=False)
+
+    config_file_path = attr.ib(
+        type=str,
+        default=os.getenv("CONFIG_FILE_PATH", "config/{profile}.yml"),
+        validator=attr.validators.instance_of(str),
+    )
+
     def __attrs_post_init__(self) -> None:
         """Format ConfigClient URL."""
         self.url = self.url.format(
@@ -67,6 +78,12 @@ class ConfigClient:
             profile=self.profile,
         )
         self._ensure_request_json()
+
+        self.filename = self.config_file_path.format(
+            branch=self.branch,
+            app_name=self.app_name,
+            profile=self.profile,
+        )
 
     def _ensure_request_json(self) -> None:
         if not self.url.endswith(".json"):
@@ -83,19 +100,38 @@ class ConfigClient:
         logging.debug(f"Target URL configured: {self.url}")
 
     def get_config(self, headers: dict = {}) -> None:
+        try:
+            self._config = dict(merge_dicts(
+                self.get_config_from_server(headers),
+                self.get_config_from_file()
+            ))
+        except RequestFailedException:
+            self._config = self.get_config_from_file()
+            if not self._config:
+                raise
+
+    def get_config_from_server(self, headers: dict = {}):
         response = self._request_config(headers)
         if response.ok:
-            self._config = response.json()
+            return response.json()
         else:
-            print(self.url)
+            logging.error("Error on request url %s", self.url)
             raise RequestFailedException(
                 "Failed to request the configurations. HTTP Response"
                 f"(Address={self.address}, code:{response.status_code})"
             )
 
+    def get_config_from_file(self):
+        logging.debug("Using config file %s", self.filename)
+        if not isfile(self.filename):
+            logging.debug("%s does not found", self.filename)
+            return {}
+        return yaml.full_load(open(self.filename))
+
     def _request_config(self, headers: dict) -> requests.Response:
         try:
             response = requests.get(self.url, headers=headers)
+            response.raise_for_status()
         except Exception:
             logging.error("Failed to establish connection with ConfigServer.")
             if self.fail_fast:

@@ -36,11 +36,17 @@ class ResponseMock:
     def json(self):
         return self.CONFIG
 
+    def raise_for_status(self):
+        pass
+
 
 class ResponseMockError:
     def __init__(self, *arsgs, **kwargs):
         self.ok = False
         self.status_code = 404
+
+    def raise_for_status(self):
+        pass
 
 
 class TestConfigClient:
