@@ -8,8 +8,8 @@ def get_info(info):
         if line.startswith(info):
             delim = '"' if '"' in line else "'"
             return line.split(delim)[1]
-    else:
-        raise RuntimeError("Unable to find version string.")
+
+    raise RuntimeError("Unable to find version string.")
 
 
 with open("README.md", "r") as fh:
