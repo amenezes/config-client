@@ -136,7 +136,7 @@ class ConfigClient:
             if self.fail_fast:
                 logging.info("fail_fast enabled. Terminating process.")
                 raise SystemExit(1)
-            raise ConnectionError("fail_fast disabled.")
+            raise RequestFailedException("fail_fast disabled.")
         return response
 
     @property
