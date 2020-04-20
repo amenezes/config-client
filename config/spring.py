@@ -79,11 +79,7 @@ class ConfigClient:
         )
         self._ensure_request_json()
 
-        self.filename = self.config_file_path.format(
-            branch=self.branch,
-            app_name=self.app_name,
-            profile=self.profile,
-        )
+        self.filename = self.config_file_path.format(branch=self.branch, app_name=self.app_name, profile=self.profile)
 
     def _ensure_request_json(self) -> None:
         if not self.url.endswith(".json"):
@@ -101,10 +97,11 @@ class ConfigClient:
 
     def get_config(self, headers: dict = {}) -> None:
         try:
-            self._config = dict(merge_dicts(
-                self.get_config_from_server(headers),
-                self.get_config_from_file()
-            ))
+            self._config = dict(
+                merge_dicts(
+                    self.get_config_from_server(headers), self.get_config_from_file()
+                )
+            )
         except RequestFailedException:
             self._config = self.get_config_from_file()
             if not self._config:
