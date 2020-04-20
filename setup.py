@@ -1,19 +1,23 @@
-from os.path import abspath, dirname, join
-
-about = {}
-with open(join(abspath(dirname(__file__)), 'config', '__version__.py'), 'r') as f:
-    exec(f.read(), about)
-
 from collections import OrderedDict
 
 import setuptools
+
+
+def get_info(info):
+    for line in open("config/__version__.py").readlines():
+        if line.startswith(info):
+            delim = '"' if '"' in line else "'"
+            return line.split(delim)[1]
+    else:
+        raise RuntimeError("Unable to find version string.")
+
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name="config-client",
-    version=about["__version__"],
+    version=get_info("__version__"),
     author="alexandre menezes",
     author_email="alexandre.fmenezes@gmail.com",
     description="config service client for Spring Cloud Config Server",

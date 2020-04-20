@@ -109,7 +109,7 @@ class ConfigClient:
             if not self._config:
                 raise
 
-    def get_config_from_server(self, headers: dict = {}):
+    def get_config_from_server(self, headers: dict):
         response = self._request_config(headers)
         if response.ok:
             return response.json()
