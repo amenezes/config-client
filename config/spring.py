@@ -87,8 +87,8 @@ class ConfigClient:
             )
         logging.debug(f"Target URL configured: {self.url}")
 
-    def get_config(self, headers: dict = {}) -> None:
-        response = self._request_config(headers)
+    def get_config(self, **kwargs) -> None:
+        response = self._request_config(**kwargs)
         if response.ok:
             self._config = response.json()
         else:
@@ -98,9 +98,11 @@ class ConfigClient:
                 f"(Address={self.address}, code:{response.status_code})"
             )
 
-    def _request_config(self, headers: dict) -> requests.Response:
+    def _request_config(self, **kwargs) -> requests.Response:
         try:
-            response = requests.get(self.url, headers=headers, timeout=self.timeout)
+            kwargs.setdefault("timeout", self.timeout)
+            response = requests.get(self.url, **kwargs)
+            response.raise_for_status()
         except Exception:
             logging.error("Failed to establish connection with ConfigServer.")
             if self.fail_fast:

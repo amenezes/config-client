@@ -1,5 +1,5 @@
 """Test spring module."""
-from unittest.mock import PropertyMock
+from unittest.mock import PropertyMock, patch
 
 import pytest
 import requests
@@ -36,11 +36,17 @@ class ResponseMock:
     def json(self):
         return self.CONFIG
 
+    def raise_for_status(self):
+        pass
+
 
 class ResponseMockError:
     def __init__(self, *arsgs, **kwargs):
         self.ok = False
         self.status_code = 404
+
+    def raise_for_status(self):
+        pass
 
 
 class TestConfigClient:
@@ -72,6 +78,12 @@ class TestConfigClient:
         client.get_config()
         assert isinstance(client.config, dict)
 
+    def test_get_config_with_request_params(self, client, monkeypatch):
+        with patch.object(requests, "get") as get_mock:
+            get_mock.return_value = ResponseMock()
+            client.get_config(timeout=6)
+            get_mock.assert_called_with(client.url, timeout=6)
+
     def test_get_config_failed(self, client, monkeypatch):
         monkeypatch.setattr(requests, "get", ResponseMockError)
         with pytest.raises(RequestFailedException):
@@ -96,7 +108,7 @@ class TestConfigClient:
         assert client.url == "http://localhost:8888/master/development-test_app.json"
 
     def test_decorator_failed(self, client, monkeypatch):
-        monkeypatch.setattr(requests, "get", Exception)
+        monkeypatch.setattr(requests, "get", Exception())
 
         @config_client(app_name="myapp")
         def inner(c=None):
@@ -115,7 +127,7 @@ class TestConfigClient:
         inner()
 
     def test_fail_fast_disabled(self, monkeypatch):
-        monkeypatch.setattr(requests, "get", Exception)
+        monkeypatch.setattr(requests, "get", Exception())
         client = ConfigClient(app_name="test_app", fail_fast=False)
         with pytest.raises(ConnectionError):
             client.get_config()
