@@ -78,7 +78,8 @@ class TestConfigClient:
         client.get_config()
         assert isinstance(client.config, dict)
 
-    def test_get_config_with_request_params(self, client, monkeypatch):
+    @staticmethod
+    def test_get_config_with_request_timeout(client):
         with patch.object(requests, "get") as get_mock:
             get_mock.return_value = ResponseMock()
             client.get_config(timeout=6)
