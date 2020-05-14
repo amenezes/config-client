@@ -2,9 +2,9 @@ import pytest
 import requests
 from flask import Flask
 
+import conftest
 from config.ext.flask import FlaskConfig, _Config
 from config.spring import ConfigClient
-from tests.unit.test_spring import ResponseMock
 
 
 class TestSpring:
@@ -14,7 +14,7 @@ class TestSpring:
 
     @pytest.fixture
     def resp_mock(self, monkeypatch):
-        monkeypatch.setattr(requests, "get", ResponseMock)
+        monkeypatch.setattr(requests, "get", conftest.ResponseMock)
 
     def test_validate_error(self, app):
         with pytest.raises(TypeError):

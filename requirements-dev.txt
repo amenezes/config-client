@@ -8,7 +8,6 @@ pytest-mock==2.0.0
 glom==19.10.0
 requests>=2.22.0
 cleo==0.7.6
-PyYAML==5.3
 isort==4.3.21
 black==19.10b0
 mypy>=0.761
@@ -21,4 +20,4 @@ Flask==1.1.1
 # aiohttp integration
 aiohttp==3.5.4
 # optional for asdf-vm
-# tox-asdf
+tox-asdf

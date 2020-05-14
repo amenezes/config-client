@@ -51,7 +51,7 @@ class TestClientCommand:
         assert "report for filter: 'db'" in command.io.fetch_output()
 
     def test_connection_error(self, command, monkeypatch):
-        monkeypatch.setattr(requests, "get", SystemExit)
+        monkeypatch.setattr(requests, "get", SystemExit())
         with pytest.raises(SystemExit):
             command.execute("app --all")
 
