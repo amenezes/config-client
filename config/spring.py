@@ -18,11 +18,6 @@ logging.getLogger(__name__).addHandler(logging.NullHandler())
 class ConfigClient:
     """Spring Cloud Config Client."""
 
-    timeout = attr.ib(
-        type=int,
-        default=int(os.getenv("CONFIG_TIMEOUT", 5)),
-        validator=attr.validators.instance_of(int),
-    )
     address = attr.ib(
         type=str,
         default=os.getenv("CONFIGSERVER_ADDRESS", "http://localhost:8888"),
