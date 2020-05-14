@@ -28,7 +28,6 @@ class ConfigClient:
         default=os.getenv("BRANCH", "master"),
         validator=attr.validators.instance_of(str),
     )
-    branch = attr.ib(type=str, default=os.getenv("BRANCH", "master"))
     app_name = attr.ib(
         type=str,
         default=os.getenv("APP_NAME", ""),
@@ -39,7 +38,6 @@ class ConfigClient:
         default=os.getenv("PROFILE", "development"),
         validator=attr.validators.instance_of(str),
     )
-    profile = attr.ib(type=str, default=os.getenv("PROFILE", "development"))
     url = attr.ib(
         type=str,
         default="{address}/{branch}/{app_name}-{profile}.json",
@@ -78,26 +76,29 @@ class ConfigClient:
             logging.warning(
                 "URL suffix adjusted to a supported format. "
                 "For more details see: "
-                "https://github.com/amenezes/config-client/#default-values"
+                "https://config-client.amenezes.net/docs/1.-overview/#default-values"
             )
         logging.debug(f"Target URL configured: {self.url}")
 
     def get_config(self, **kwargs) -> None:
-        self._config = self._request_config(**kwargs).json()
+        response = self._request_config(**kwargs)
+        self._config = response.json()
 
     def _request_config(self, **kwargs) -> requests.Response:
         try:
             response = requests.get(self.url, **kwargs)
             response.raise_for_status()
-        except Exception as e:
-            response = getattr(e, "response", None)
-            status_code = response.status_code if response else "Unknown"
-            msg = f"Failed to request the configurations. HTTP Response url={self.url}, code={status_code})"
-            logging.error(msg)
+        except requests.exceptions.HTTPError:
+            raise RequestFailedException(
+                "Failed to request the configurations. HTTP Response("
+                f"url={self.url}, code={response.status_code})"
+            )
+        except Exception:
+            logging.error("Failed to establish connection with ConfigServer.")
             if self.fail_fast:
                 logging.info("fail_fast enabled. Terminating process.")
                 raise SystemExit(1)
-            raise RequestFailedException(msg)
+            raise ConnectionError("fail_fast disabled.")
         return response
 
     @property

@@ -2,8 +2,8 @@ import pytest
 import requests
 from cleo import Application, CommandTester
 
-from config import ConfigClient
 from config.cli import CloudFoundryCommand, ConfigClientCommand
+from config.spring import ConfigClient
 
 application = Application()
 application.add(CloudFoundryCommand())
@@ -51,7 +51,7 @@ class TestClientCommand:
         assert "report for filter: 'db'" in command.io.fetch_output()
 
     def test_connection_error(self, command, monkeypatch):
-        monkeypatch.setattr(requests, "get", SystemExit)
+        monkeypatch.setattr(requests, "get", SystemExit())
         with pytest.raises(SystemExit):
             command.execute("app --all")
 

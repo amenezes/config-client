@@ -1,6 +1,6 @@
 import pytest
 
-from config import CFenv
+from config.cfenv import CFenv
 
 
 class TestCFEnv:

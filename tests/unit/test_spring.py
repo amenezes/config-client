@@ -1,93 +1,40 @@
 """Test spring module."""
-from unittest.mock import PropertyMock, patch
+from unittest.mock import PropertyMock
 
 import pytest
 import requests
-from requests import HTTPError
 
-from config import ConfigClient, config_client, create_config_client
+import conftest
 from config.exceptions import RequestFailedException
-
-
-class ResponseMock:
-    CONFIG = {
-        "health": {"config": {"enabled": False}},
-        "spring": {
-            "cloud": {
-                "consul": {
-                    "discovery": {
-                        "health-check-interval": "10s",
-                        "health-check-path": "/manage/health",
-                        "instance-id": "myapp:${random.value}",
-                        "prefer-ip-address": True,
-                        "register-health-check": True,
-                    },
-                    "host": "discovery",
-                    "port": 8500,
-                }
-            }
-        },
-    }
-
-    def __init__(self, *args, **kwargs):
-        self.status_code = 200
-        self.ok = True
-        self.headers = {"Content-Type": "application/json"}
-
-    def json(self):
-        return self.CONFIG
-
-    def raise_for_status(self):
-        pass
-
-
-class ResponseMockError:
-    def __init__(self, *arsgs, **kwargs):
-        self.ok = False
-        self.status_code = 404
-
-    def raise_for_status(self):
-        raise HTTPError(response=self)
+from config.spring import ConfigClient, config_client, create_config_client
 
 
 class TestConfigClient:
-    CONFIG_EXAMPLE = {
-        "health": {"config": {"enabled": False}},
-        "spring": {
-            "cloud": {
-                "consul": {
-                    "discovery": {
-                        "health-check-interval": "10s",
-                        "health-check-path": "/manage/health",
-                        "instance-id": "pecas-textos:${random.value}",
-                        "prefer-ip-address": True,
-                        "register-health-check": True,
-                    },
-                    "host": "discovery",
-                    "port": 8500,
-                }
-            }
-        },
-    }
-
     @pytest.fixture
     def client(self, monkeypatch):
         return ConfigClient(app_name="test_app")
 
     def test_get_config(self, client, monkeypatch):
-        monkeypatch.setattr(requests, "get", ResponseMock)
+        monkeypatch.setattr(requests, "get", conftest.response_mock_success)
         client.get_config()
         assert isinstance(client.config, dict)
 
-    @staticmethod
-    def test_get_config_with_request_timeout(client):
-        with patch.object(requests, "get") as get_mock:
-            get_mock.return_value = ResponseMock()
-            client.get_config(timeout=6)
-            get_mock.assert_called_with(client.url, timeout=6)
+    def test_get_config_failed(self, client, monkeypatch):
+        monkeypatch.setattr(requests, "get", conftest.response_mock_http_error)
+        with pytest.raises(RequestFailedException):
+            client.get_config()
+
+    def test_get_config_with_request_timeout(self, client, mocker):
+        TIMEOUT = 5.0
+        mocker.patch.object(requests, "get")
+        requests.get.return_value = conftest.ResponseMock()
+        client.get_config(timeout=TIMEOUT, headers={"Accept": "application/json"})
+        requests.get.assert_called_with(
+            client.url, timeout=TIMEOUT, headers={"Accept": "application/json"}
+        )
 
     def test_get_config_response_failed(self, client, monkeypatch):
-        monkeypatch.setattr(requests, "get", ResponseMockError)
+        monkeypatch.setattr(requests, "get", conftest.response_mock_system_error)
         with pytest.raises(SystemExit):
             client.get_config()
 
@@ -115,7 +62,7 @@ class TestConfigClient:
             inner()
 
     def test_decorator(self, client, monkeypatch):
-        monkeypatch.setattr(requests, "get", ResponseMock)
+        monkeypatch.setattr(requests, "get", conftest.response_mock_success)
 
         @config_client(app_name="myapp")
         def inner(c=None):
@@ -126,21 +73,21 @@ class TestConfigClient:
     def test_fail_fast_disabled(self, monkeypatch):
         monkeypatch.setattr(requests, "get", Exception)
         client = ConfigClient(app_name="test_app", fail_fast=False)
-        with pytest.raises(RequestFailedException):
+        with pytest.raises(ConnectionError):
             client.get_config()
 
     def test_create_config_client_with_singleton(self, monkeypatch):
-        monkeypatch.setattr(requests, "get", ResponseMock)
+        monkeypatch.setattr(requests, "get", conftest.response_mock_success)
         client1 = create_config_client(app_name="app1")
         client2 = create_config_client(app_name="app2")
         assert id(client1) == id(client2)
 
     def test_get_keys(self, client):
-        type(client)._config = PropertyMock(return_value=self.CONFIG_EXAMPLE)
-        assert client.get_keys() == self.CONFIG_EXAMPLE.keys()
+        type(client)._config = PropertyMock(return_value=conftest.CONFIG)
+        assert client.get_keys() == conftest.CONFIG.keys()
 
     def test_get_attribute(self, client):
-        type(client)._config = PropertyMock(return_value=self.CONFIG_EXAMPLE)
+        type(client)._config = PropertyMock(return_value=conftest.CONFIG)
         response = client.get_attribute("spring.cloud.consul.host")
         assert response is not None
         assert response == "discovery"
