@@ -5,8 +5,8 @@ import pytest
 import requests
 
 import conftest
-from config import ConfigClient, config_client, create_config_client
 from config.exceptions import RequestFailedException
+from config.spring import ConfigClient, config_client, create_config_client
 
 
 class TestConfigClient:

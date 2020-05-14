@@ -90,7 +90,7 @@ class ConfigClient:
             response.raise_for_status()
         except requests.exceptions.HTTPError:
             raise RequestFailedException(
-                "Failed to request the configurations. HTTP Response"
+                "Failed to request the configurations. HTTP Response("
                 f"url={self.url}, code={response.status_code})"
             )
         except Exception:

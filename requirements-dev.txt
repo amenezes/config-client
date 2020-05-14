@@ -7,7 +7,7 @@ pytest-cov==2.8.1
 pytest-mock==2.0.0
 glom==19.10.0
 requests>=2.22.0
-cleo==0.7.6
+cleo>=0.7.6
 isort==4.3.21
 black==19.10b0
 mypy>=0.761
