@@ -105,7 +105,7 @@ class TestConfigClient:
         assert client.url == "http://localhost:8888/master/development-test_app.json"
 
     def test_decorator_failed(self, client, monkeypatch):
-        monkeypatch.setattr(requests, "get", Exception())
+        monkeypatch.setattr(requests, "get", Exception)
 
         @config_client(app_name="myapp")
         def inner(c=None):
@@ -124,7 +124,7 @@ class TestConfigClient:
         inner()
 
     def test_fail_fast_disabled(self, monkeypatch):
-        monkeypatch.setattr(requests, "get", Exception())
+        monkeypatch.setattr(requests, "get", Exception)
         client = ConfigClient(app_name="test_app", fail_fast=False)
         with pytest.raises(RequestFailedException):
             client.get_config()
