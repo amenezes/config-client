@@ -84,6 +84,19 @@ class ConfigClient:
         response = self._request_config(**kwargs)
         self._config = response.json()
 
+    def get_plaintext_file(self, path: str = None, **kwargs):
+        """ Get plain text file
+        https://cloud.spring.io/spring-cloud-config/multi/multi__serving_plain_text.html
+        :param path: Path to file on server
+        :return: File content
+        """
+        path = path or f"{self.app_name}-{self.profile}.json"
+        url = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{path}"
+        logging.debug("Getting plain text file from url %s", url)
+        response = requests.get(url, **kwargs)
+        response.raise_for_status()
+        return response.text
+
     def _request_config(self, **kwargs) -> requests.Response:
         try:
             response = requests.get(self.url, **kwargs)
