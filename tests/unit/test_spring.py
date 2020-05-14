@@ -3,6 +3,7 @@ from unittest.mock import PropertyMock, patch
 
 import pytest
 import requests
+from requests import HTTPError
 
 from config import ConfigClient, config_client, create_config_client
 from config.exceptions import RequestFailedException
@@ -46,7 +47,7 @@ class ResponseMockError:
         self.status_code = 404
 
     def raise_for_status(self):
-        pass
+        raise HTTPError(response=self)
 
 
 class TestConfigClient:
@@ -85,13 +86,8 @@ class TestConfigClient:
             client.get_config(timeout=6)
             get_mock.assert_called_with(client.url, timeout=6)
 
-    def test_get_config_failed(self, client, monkeypatch):
-        monkeypatch.setattr(requests, "get", ResponseMockError)
-        with pytest.raises(RequestFailedException):
-            client.get_config()
-
     def test_get_config_response_failed(self, client, monkeypatch):
-        monkeypatch.setattr(requests, "get", ResponseMock(code=404, ok=False))
+        monkeypatch.setattr(requests, "get", ResponseMockError)
         with pytest.raises(SystemExit):
             client.get_config()
 
@@ -130,7 +126,7 @@ class TestConfigClient:
     def test_fail_fast_disabled(self, monkeypatch):
         monkeypatch.setattr(requests, "get", Exception())
         client = ConfigClient(app_name="test_app", fail_fast=False)
-        with pytest.raises(ConnectionError):
+        with pytest.raises(RequestFailedException):
             client.get_config()
 
     def test_create_config_client_with_singleton(self, monkeypatch):

@@ -8,6 +8,7 @@ from typing import Any, List
 from cleo import Command
 from dotenv import load_dotenv
 
+from config.exceptions import RequestFailedException
 from config.spring import ConfigClient
 
 logging.disable(logging.ERROR)
@@ -98,7 +99,7 @@ class ConfigClientCommand(Command):
         self.line("<options=bold>\U000023f3 contacting server...</>")
         try:
             client.get_config()
-        except ConnectionError:
+        except RequestFailedException:
             emoji = random.choice(self.EMOJI_ERRORS)
             self.line(f"<options=bold>{emoji} failed to contact server... {emoji}</>")
             raise SystemExit(1)
