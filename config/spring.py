@@ -82,26 +82,22 @@ class ConfigClient:
             )
         logging.debug(f"Target URL configured: {self.url}")
 
-    def get_config(self, headers: dict = {}) -> None:
-        response = self._request_config(headers)
-        if response.ok:
-            self._config = response.json()
-        else:
-            print(self.url)
-            raise RequestFailedException(
-                "Failed to request the configurations. HTTP Response"
-                f"(Address={self.address}, code:{response.status_code})"
-            )
+    def get_config(self, **kwargs) -> None:
+        self._config = self._request_config(**kwargs).json()
 
-    def _request_config(self, headers: dict) -> requests.Response:
+    def _request_config(self, **kwargs) -> requests.Response:
         try:
-            response = requests.get(self.url, headers=headers)
-        except Exception:
-            logging.error("Failed to establish connection with ConfigServer.")
+            response = requests.get(self.url, **kwargs)
+            response.raise_for_status()
+        except Exception as e:
+            response = getattr(e, "response", None)
+            status_code = response.status_code if response else "Unknown"
+            msg = f"Failed to request the configurations. HTTP Response url={self.url}, code={status_code})"
+            logging.error(msg)
             if self.fail_fast:
                 logging.info("fail_fast enabled. Terminating process.")
                 raise SystemExit(1)
-            raise ConnectionError("fail_fast disabled.")
+            raise RequestFailedException(msg)
         return response
 
     @property
