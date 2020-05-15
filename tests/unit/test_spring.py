@@ -101,22 +101,11 @@ class TestConfigClient:
         )
         client.url == "http://localhost:8888/master/simpleweb000.json"
 
-    def test_get_plaintext_file_without_path(self, client, mocker):
+    def test_get_file_with_path(self, client, mocker):
         """ Should get file as plaintext """
         mocker.patch.object(requests, "get")
         requests.get.return_value = conftest.ResponseMock(text="some text")
-        content = client.get_plaintext_file()
-        requests.get.assert_called_with(
-            f"{client.address}/{client.app_name}/{client.profile}/{client.branch}"
-            f"/{client.app_name}-{client.profile}.json"
-        )
-        assert content == "some text"
-
-    def test_get_plaintext_file_with_path(self, client, mocker):
-        """ Should get file as plaintext """
-        mocker.patch.object(requests, "get")
-        requests.get.return_value = conftest.ResponseMock(text="some text")
-        content = client.get_plaintext_file("nginx.conf")
+        content = client.get_file("nginx.conf")
         requests.get.assert_called_with(
             f"{client.address}/{client.app_name}/{client.profile}/{client.branch}/nginx.conf"
         )

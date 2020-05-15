@@ -81,30 +81,27 @@ class ConfigClient:
         logging.debug(f"Target URL configured: {self.url}")
 
     def get_config(self, **kwargs) -> None:
-        response = self._request_config(**kwargs)
+        response = self._request(self.url, **kwargs)
         self._config = response.json()
 
-    def get_plaintext_file(self, path: str = None, **kwargs):
+    def get_file(self, path: str, **kwargs) -> str:
         """ Get plain text file
         https://cloud.spring.io/spring-cloud-config/multi/multi__serving_plain_text.html
         :param path: Path to file on server
         :return: File content
         """
-        path = path or f"{self.app_name}-{self.profile}.json"
-        url = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{path}"
-        logging.debug("Getting plain text file from url %s", url)
-        response = requests.get(url, **kwargs)
-        response.raise_for_status()
+        uri = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{path}"
+        logging.debug("Getting plain text file from uri %s", uri)
+        response = self._request(uri, **kwargs)
         return response.text
 
-    def _request_config(self, **kwargs) -> requests.Response:
+    def _request(self, uri, **kwargs) -> requests.Response:
         try:
-            response = requests.get(self.url, **kwargs)
+            response = requests.get(uri, **kwargs)
             response.raise_for_status()
         except requests.exceptions.HTTPError:
             raise RequestFailedException(
-                "Failed to request the configurations. HTTP Response("
-                f"url={self.url}, code={response.status_code})"
+                f"Failed to request URI(path={uri}, code={response.status_code}"
             )
         except Exception:
             logging.error("Failed to establish connection with ConfigServer.")
