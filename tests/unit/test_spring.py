@@ -21,7 +21,7 @@ class TestConfigClient:
 
     def test_get_config_failed(self, client, monkeypatch):
         monkeypatch.setattr(requests, "get", conftest.response_mock_http_error)
-        with pytest.raises(RequestFailedException):
+        with pytest.raises(SystemExit):
             client.get_config()
 
     def test_get_config_with_request_timeout(self, client, mocker):

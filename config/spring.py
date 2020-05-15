@@ -9,7 +9,6 @@ import requests
 from glom import glom
 
 from config.core import singleton
-from config.exceptions import RequestFailedException
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -81,8 +80,16 @@ class ConfigClient:
         logging.debug(f"Target URL configured: {self.url}")
 
     def get_config(self, **kwargs) -> None:
-        response = self._request(self.url, **kwargs)
-        self._config = response.json()
+        try:
+            response = self._request(self.url, **kwargs)
+            self._config = response.json()
+        except Exception as ex:
+            logging.error(f"Failed to request: {self.url}")
+            logging.error(ex)
+            if self.fail_fast:
+                logging.info("fail_fast enabled. Terminating process.")
+                raise SystemExit(1)
+            raise ConnectionError("fail_fast disabled.")
 
     def get_file(self, path: str, **kwargs) -> str:
         """ Get plain text file
@@ -96,19 +103,8 @@ class ConfigClient:
         return response.text
 
     def _request(self, uri, **kwargs) -> requests.Response:
-        try:
-            response = requests.get(uri, **kwargs)
-            response.raise_for_status()
-        except requests.exceptions.HTTPError:
-            raise RequestFailedException(
-                f"Failed to request URI(path={uri}, code={response.status_code}"
-            )
-        except Exception:
-            logging.error("Failed to establish connection with ConfigServer.")
-            if self.fail_fast:
-                logging.info("fail_fast enabled. Terminating process.")
-                raise SystemExit(1)
-            raise ConnectionError("fail_fast disabled.")
+        response = requests.get(uri, **kwargs)
+        response.raise_for_status()
         return response
 
     @property
