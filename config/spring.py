@@ -9,7 +9,6 @@ import requests
 from glom import glom
 
 from config.core import singleton
-from config.exceptions import RequestFailedException
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -81,24 +80,31 @@ class ConfigClient:
         logging.debug(f"Target URL configured: {self.url}")
 
     def get_config(self, **kwargs) -> None:
-        response = self._request_config(**kwargs)
-        self._config = response.json()
-
-    def _request_config(self, **kwargs) -> requests.Response:
         try:
-            response = requests.get(self.url, **kwargs)
-            response.raise_for_status()
-        except requests.exceptions.HTTPError:
-            raise RequestFailedException(
-                "Failed to request the configurations. HTTP Response("
-                f"url={self.url}, code={response.status_code})"
-            )
-        except Exception:
-            logging.error("Failed to establish connection with ConfigServer.")
+            response = self._request(self.url, **kwargs)
+            self._config = response.json()
+        except Exception as ex:
+            logging.error(f"Failed to request: {self.url}")
+            logging.error(ex)
             if self.fail_fast:
                 logging.info("fail_fast enabled. Terminating process.")
                 raise SystemExit(1)
             raise ConnectionError("fail_fast disabled.")
+
+    def get_file(self, path: str, **kwargs) -> str:
+        """ Get plain text file
+        https://cloud.spring.io/spring-cloud-config/multi/multi__serving_plain_text.html
+        :param path: Path to file on server
+        :return: File content
+        """
+        uri = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{path}"
+        logging.debug("Getting plain text file from uri %s", uri)
+        response = self._request(uri, **kwargs)
+        return response.text
+
+    def _request(self, uri, **kwargs) -> requests.Response:
+        response = requests.get(uri, **kwargs)
+        response.raise_for_status()
         return response
 
     @property

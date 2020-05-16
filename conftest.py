@@ -27,6 +27,7 @@ class ResponseMock:
         self.status_code = kwargs.get('status_code') or 404
         self.raise_type = kwargs.get('raise_type') or False
         self.headers = {"Content-Type": "application/json"}
+        self.text = kwargs.get('text', '')
 
     def raise_for_status(self):
         if self.raise_type == 'http_error':

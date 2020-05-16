@@ -21,7 +21,7 @@ class TestConfigClient:
 
     def test_get_config_failed(self, client, monkeypatch):
         monkeypatch.setattr(requests, "get", conftest.response_mock_http_error)
-        with pytest.raises(RequestFailedException):
+        with pytest.raises(SystemExit):
             client.get_config()
 
     def test_get_config_with_request_timeout(self, client, mocker):
@@ -100,3 +100,13 @@ class TestConfigClient:
             app_name="simpleweb000", url="{address}/{branch}/{app_name}"
         )
         client.url == "http://localhost:8888/master/simpleweb000.json"
+
+    def test_get_file_with_path(self, client, mocker):
+        """ Should get file as plaintext """
+        mocker.patch.object(requests, "get")
+        requests.get.return_value = conftest.ResponseMock(text="some text")
+        content = client.get_file("nginx.conf")
+        requests.get.assert_called_with(
+            f"{client.address}/{client.app_name}/{client.profile}/{client.branch}/nginx.conf"
+        )
+        assert content == "some text"
