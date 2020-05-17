@@ -101,8 +101,7 @@ class TestConfigClient:
         )
         client.url == "http://localhost:8888/master/simpleweb000.json"
 
-    def test_get_file_with_path(self, client, mocker):
-        """ Should get file as plaintext """
+    def test_get_file(self, client, mocker):
         mocker.patch.object(requests, "get")
         requests.get.return_value = conftest.ResponseMock(text="some text")
         content = client.get_file("nginx.conf")
@@ -110,3 +109,7 @@ class TestConfigClient:
             f"{client.address}/{client.app_name}/{client.profile}/{client.branch}/nginx.conf"
         )
         assert content == "some text"
+
+    def test_get_file_error(self, client):
+        with pytest.raises(RequestFailedException):
+            client.get_file("nginx.conf")
