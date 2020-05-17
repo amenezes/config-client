@@ -53,4 +53,3 @@ def response_mock_http_error(*args, **kwargs):
 
 def response_mock_system_error(*args, **kwargs):
     return ResponseMock(raise_type='system')
-

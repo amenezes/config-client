@@ -8,6 +8,7 @@ from typing import Any, List
 from cleo import Command
 from dotenv import load_dotenv
 
+from config.exceptions import RequestFailedException
 from config.spring import ConfigClient
 
 logging.disable(logging.ERROR)
@@ -39,7 +40,8 @@ class ConfigClientCommand(Command):
         {--b|branch=master : Branch config.}
         {--p|profile=development : Profile config.}
         {--u|url : Base URL format. <option=bold>(default: "<address>/<branch>/<app>-<profile>")</>}
-        {--json : Save output as json}
+        {--file : Gets remote file from server and saves locally.}
+        {--json : Save output as json.}
         {--all : Show all config.}
     """
 
@@ -87,8 +89,11 @@ class ConfigClientCommand(Command):
             fail_fast=False,
         )
 
-        content = self.request_config(client, filter_options)
+        if self.option("file"):
+            self.request_file(client, filter_options)
+            raise SystemExit(0)
 
+        content = self.request_config(client, filter_options)
         if self.option("json"):
             self.save_file("output.json", content)
         else:
@@ -107,6 +112,18 @@ class ConfigClientCommand(Command):
         content = self.get_config(client, filter_options)
         self.has_content(content, filter_options)
         return content
+
+    def request_file(self, client: ConfigClient, filter_options: str) -> None:
+        self.line("<options=bold>\U000023f3 contacting server...</>")
+        try:
+            response = client.get_file(filter_options)
+        except RequestFailedException:
+            emoji = random.choice(self.EMOJI_ERRORS)
+            self.line(f"<options=bold>{emoji} failed to contact server... {emoji}</>")
+            raise SystemExit(1)
+        with open(f"{filter_options}", "w") as f:
+            f.write(response)
+        self.line(f"file saved: <info>{filter_options}</info>")
 
     def get_config(self, client: ConfigClient, filter_options: str) -> Any:
         if self.option("all"):

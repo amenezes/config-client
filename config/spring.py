@@ -9,6 +9,7 @@ import requests
 from glom import glom
 
 from config.core import singleton
+from config.exceptions import RequestFailedException
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
@@ -79,10 +80,9 @@ class ConfigClient:
             )
         logging.debug(f"Target URL configured: {self.url}")
 
-    def get_config(self, **kwargs) -> None:
+    def get_config(self, **kwargs: dict) -> None:
         try:
             response = self._request(self.url, **kwargs)
-            self._config = response.json()
         except Exception as ex:
             logging.error(f"Failed to request: {self.url}")
             logging.error(ex)
@@ -90,16 +90,16 @@ class ConfigClient:
                 logging.info("fail_fast enabled. Terminating process.")
                 raise SystemExit(1)
             raise ConnectionError("fail_fast disabled.")
+        self._config = response.json()
 
-    def get_file(self, path: str, **kwargs) -> str:
-        """ Get plain text file
-        https://cloud.spring.io/spring-cloud-config/multi/multi__serving_plain_text.html
-        :param path: Path to file on server
-        :return: File content
-        """
-        uri = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{path}"
-        logging.debug("Getting plain text file from uri %s", uri)
-        response = self._request(uri, **kwargs)
+    def get_file(self, filename: str, **kwargs: dict) -> str:
+        uri = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{filename}"
+        logging.debug(f"URI to request file: {uri}")
+        try:
+            response = self._request(uri, **kwargs)
+        except Exception:
+            logging.error(f"Failed to request URI: {uri}")
+            raise RequestFailedException(f"Failed to request URI: {uri}")
         return response.text
 
     def _request(self, uri, **kwargs) -> requests.Response:

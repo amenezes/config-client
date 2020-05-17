@@ -2,6 +2,7 @@ import pytest
 import requests
 from cleo import Application, CommandTester
 
+import conftest
 from config.cli import CloudFoundryCommand, ConfigClientCommand
 from config.spring import ConfigClient
 
@@ -69,3 +70,13 @@ class TestClientCommand:
         monkeypatch.setattr(ConfigClient, "get_config", print)
         with pytest.raises(SystemExit):
             command.execute("app 'db' --json")
+
+    def test_get_file(self, command, monkeypatch):
+        monkeypatch.setattr(ConfigClient, "_request", conftest.response_mock_success)
+        with pytest.raises(SystemExit):
+            command.execute("app nginx.conf --file")
+
+    def test_get_file_error(self, command, monkeypatch):
+        monkeypatch.setattr(requests, "get", SystemExit())
+        with pytest.raises(SystemExit):
+            command.execute("app nginx.conf --file")
