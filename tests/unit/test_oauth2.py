@@ -1,7 +1,7 @@
 import pytest
 import requests
 
-from config import OAuth2
+from config.auth import OAuth2
 from config.exceptions import RequestTokenException
 
 

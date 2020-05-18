@@ -45,7 +45,7 @@ setuptools.setup(
         "isort==4.3.21",
         "black==19.10b0",
         "mypy>=0.761",
-        "flask>=0.12",
+        "flask>=1.0.0",
     ],
     extras_require={
         "cli": ["cleo>=0.7.6", "python-dotenv>=0.10.3"],

@@ -1,3 +1,5 @@
+output.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -104,3 +106,4 @@ venv.bak/
 .mypy_cache/
 .vscode
 .idea/
+nginx.conf

@@ -36,7 +36,6 @@ class ConfigClient:
         default=os.getenv("BRANCH", "master"),
         validator=attr.validators.instance_of(str),
     )
-    branch = attr.ib(type=str, default=os.getenv("BRANCH", "master"))
     app_name = attr.ib(
         type=str,
         default=os.getenv("APP_NAME", ""),
@@ -47,7 +46,6 @@ class ConfigClient:
         default=os.getenv("PROFILE", "development"),
         validator=attr.validators.instance_of(str),
     )
-    profile = attr.ib(type=str, default=os.getenv("PROFILE", "development"))
     url = attr.ib(
         type=str,
         default="{address}/{branch}/{app_name}-{profile}.json",
@@ -98,15 +96,15 @@ class ConfigClient:
             logging.warning(
                 "URL suffix adjusted to a supported format. "
                 "For more details see: "
-                "https://github.com/amenezes/config-client/#default-values"
+                "https://config-client.amenezes.net/docs/1.-overview/#default-values"
             )
         logging.debug(f"Target URL configured: {self.url}")
 
-    def get_config(self, headers: dict = {}) -> None:
+    def get_config(self, **kwargs: dict) -> None:
         try:
             self._config = dict(
                 merge_dicts(
-                    self.get_config_from_file(), self.get_config_from_server(headers)
+                    self.get_config_from_file(), self.get_config_from_server(**kwargs)
                 )
             )
         except RequestFailedException:
@@ -114,16 +112,18 @@ class ConfigClient:
             if not self._config:
                 raise
 
-    def get_config_from_server(self, headers: dict):
-        response = self._request_config(headers)
-        if response.ok:
-            return response.json()
-        else:
-            logging.error("Error on request url %s", self.url)
-            raise RequestFailedException(
-                "Failed to request the configurations. HTTP Response"
-                f"(Address={self.address}, code:{response.status_code})"
-            )
+    def get_config_from_server(self, **kwargs: dict) -> None:
+        try:
+            timeout = kwargs.pop("timeout", self.timeout)
+            response = self._request(self.url, timeout=timeout, **kwargs)
+        except Exception as ex:
+            logging.error(f"Failed to request: {self.url}")
+            logging.error(ex)
+            if self.fail_fast:
+                logging.info("fail_fast enabled. Terminating process.")
+                raise SystemExit(1)
+            raise ConnectionError("fail_fast disabled.")
+        return response.json()
 
     def get_config_from_file(self):
         logging.debug("Using config file %s", self.filename)
@@ -132,16 +132,19 @@ class ConfigClient:
             return {}
         return yaml.full_load(open(self.filename))
 
-    def _request_config(self, headers: dict) -> requests.Response:
+    def get_file(self, filename: str, **kwargs: dict) -> str:
+        uri = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{filename}"
+        logging.debug(f"URI to request file: {uri}")
         try:
-            response = requests.get(self.url, headers=headers, timeout=self.timeout)
-            response.raise_for_status()
+            response = self._request(uri, **kwargs)
         except Exception:
-            logging.error("Failed to establish connection with ConfigServer.")
-            if self.fail_fast:
-                logging.info("fail_fast enabled. Terminating process.")
-                raise SystemExit(1)
-            raise RequestFailedException("fail_fast disabled.")
+            logging.error(f"Failed to request URI: {uri}")
+            raise RequestFailedException(f"Failed to request URI: {uri}")
+        return response.text
+
+    def _request(self, uri, **kwargs) -> requests.Response:
+        response = requests.get(uri, **kwargs)
+        response.raise_for_status()
         return response
 
     @property

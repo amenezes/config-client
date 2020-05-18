@@ -45,7 +45,7 @@ class CF:
 
     def get_config(self) -> None:
         header = {"Authorization": f"Bearer {self.oauth2.token}"}
-        self.client.get_config(header)
+        self.client.get_config(headers=header)
 
     @property
     def config(self) -> Dict:
