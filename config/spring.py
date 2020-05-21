@@ -1,5 +1,4 @@
 """Module for retrieve application's config from Spring Cloud Config."""
-import logging
 import os
 from distutils.util import strtobool
 from typing import Any, Callable, Dict, KeysView
@@ -10,9 +9,7 @@ from glom import glom
 
 from config.core import singleton
 from config.exceptions import RequestFailedException
-
-logger = logging.getLogger(__name__)
-logger.addHandler(logging.NullHandler())
+from . import logger
 
 
 @attr.s(slots=True)
