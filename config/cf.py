@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, KeysView
 
 import attr
@@ -7,12 +6,9 @@ from config.auth import OAuth2
 from config.cfenv import CFenv
 from config.spring import ConfigClient
 
-logging.getLogger(__name__).addHandler(logging.NullHandler())
-
 
 @attr.s(slots=True)
 class CF:
-
     cfenv = attr.ib(
         type=CFenv, factory=CFenv, validator=attr.validators.instance_of(CFenv),
     )
