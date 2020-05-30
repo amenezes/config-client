@@ -7,9 +7,9 @@ import attr
 import requests
 from glom import glom
 
+from config import logger
 from config.core import singleton
 from config.exceptions import RequestFailedException
-from . import logger
 
 
 @attr.s(slots=True)

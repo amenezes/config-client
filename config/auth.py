@@ -4,8 +4,8 @@ import attr
 import requests
 from requests.auth import HTTPBasicAuth
 
+from config import logger
 from config.exceptions import RequestTokenException
-from . import logger
 
 
 @attr.s(slots=True)
