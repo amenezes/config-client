@@ -110,6 +110,7 @@ class TestConfigClient:
         )
         assert content == "some text"
 
-    def test_get_file_error(self, client):
+    def test_get_file_error(self, client, monkeypatch):
+        monkeypatch.setattr(requests, "get", conftest.response_mock_http_error)
         with pytest.raises(RequestFailedException):
             client.get_file("nginx.conf")
