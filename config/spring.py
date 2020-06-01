@@ -110,7 +110,7 @@ class ConfigClient:
             if not self._config:
                 raise
 
-    def get_config_from_server(self, **kwargs: dict) -> None:
+    def get_config_from_server(self, **kwargs: dict) -> Dict:
         try:
             timeout = kwargs.pop("timeout", self.timeout)
             response = self._request(self.url, timeout=timeout, **kwargs)
@@ -121,14 +121,14 @@ class ConfigClient:
                 logger.info("fail_fast enabled. Terminating process.")
                 raise SystemExit(1)
             raise ConnectionError("fail_fast disabled.")
-        return response.json()
+        return dict(response.json())
 
-    def get_config_from_file(self):
+    def get_config_from_file(self) -> Dict:
         logger.debug("Using config file %s", self.filename)
         if not isfile(self.filename):
             logger.debug("%s does not found", self.filename)
             return {}
-        return yaml.full_load(open(self.filename))
+        return dict(yaml.full_load(open(self.filename)))
 
     def get_file(self, filename: str, **kwargs: dict) -> str:
         uri = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{filename}"
