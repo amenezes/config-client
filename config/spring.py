@@ -1,5 +1,4 @@
 """Module for retrieve application's config from Spring Cloud Config."""
-import logging
 import os
 from distutils.util import strtobool
 from os.path import isfile
@@ -10,11 +9,10 @@ import requests
 import yaml
 from glom import glom
 
+from config import logger
 from config.core import singleton
 from config.exceptions import RequestFailedException
 from config.utils import merge_dicts
-
-logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 @attr.s(slots=True)
@@ -93,12 +91,12 @@ class ConfigClient:
                 self.url = self.url.replace(self.url[dot_position:], ".json")
             else:
                 self.url = f"{self.url}.json"
-            logging.warning(
+            logger.warning(
                 "URL suffix adjusted to a supported format. "
                 "For more details see: "
                 "https://config-client.amenezes.net/docs/1.-overview/#default-values"
             )
-        logging.debug(f"Target URL configured: {self.url}")
+        logger.debug(f"Target URL configured: {self.url}")
 
     def get_config(self, **kwargs: dict) -> None:
         try:
@@ -117,10 +115,10 @@ class ConfigClient:
             timeout = kwargs.pop("timeout", self.timeout)
             response = self._request(self.url, timeout=timeout, **kwargs)
         except Exception as ex:
-            logging.error(f"Failed to request: {self.url}")
-            logging.error(ex)
+            logger.error(f"Failed to request: {self.url}")
+            logger.error(ex)
             if self.fail_fast:
-                logging.info("fail_fast enabled. Terminating process.")
+                logger.info("fail_fast enabled. Terminating process.")
                 raise SystemExit(1)
             raise ConnectionError("fail_fast disabled.")
         return response.json()
@@ -134,11 +132,11 @@ class ConfigClient:
 
     def get_file(self, filename: str, **kwargs: dict) -> str:
         uri = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{filename}"
-        logging.debug(f"URI to request file: {uri}")
+        logger.debug(f"URI to request file: {uri}")
         try:
             response = self._request(uri, **kwargs)
         except Exception:
-            logging.error(f"Failed to request URI: {uri}")
+            logger.error(f"Failed to request URI: {uri}")
             raise RequestFailedException(f"Failed to request URI: {uri}")
         return response.text
 
@@ -196,11 +194,11 @@ def config_client(*args, **kwargs) -> Callable[[Dict[str, str]], ConfigClient]:
     :raises: ConnectionError: If fail_fast enabled.
     :return: ConfigClient instance.
     """
-    logging.debug(f"args: {args}")
-    logging.debug(f"kwargs: {kwargs}")
+    logger.debug(f"args: {args}")
+    logger.debug(f"kwargs: {kwargs}")
 
     def wrap_function(function):
-        logging.debug(f"caller: {function}")
+        logger.debug(f"caller: {function}")
 
         def enable_config():
             obj = ConfigClient(*args, **kwargs)

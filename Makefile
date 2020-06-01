@@ -1,10 +1,9 @@
 .DEFAULT_GOAL := about
 VENV_DIR := $(shell [ ! -d "venv" ] && echo 1 || echo 0)
 VERSION := $(shell cat config/__version__.py | cut -d'"' -f 2)
-SKIP_STYLE=0
 
 lint:
-ifeq ($(SKIP_STYLE), 0)
+ifeq ($(SKIP_STYLE), )
 	@echo "> running isort..."
 	isort -rc config/
 	isort -rc tests/
