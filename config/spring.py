@@ -124,9 +124,9 @@ class ConfigClient:
         return response.json()
 
     def get_config_from_file(self):
-        logging.debug("Using config file %s", self.filename)
+        logger.debug("Using config file %s", self.filename)
         if not isfile(self.filename):
-            logging.debug("%s does not found", self.filename)
+            logger.debug("%s does not found", self.filename)
             return {}
         return yaml.full_load(open(self.filename))
 
