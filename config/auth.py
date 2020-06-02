@@ -1,18 +1,15 @@
-import logging
 from typing import Dict
 
 import attr
 import requests
 from requests.auth import HTTPBasicAuth
 
+from config import logger
 from config.exceptions import RequestTokenException
-
-logging.getLogger(__name__).addHandler(logging.NullHandler())
 
 
 @attr.s(slots=True)
 class OAuth2:
-
     access_token_uri = attr.ib(type=str, validator=attr.validators.instance_of(str))
     client_id = attr.ib(type=str, validator=attr.validators.instance_of(str))
     client_secret = attr.ib(type=str, validator=attr.validators.instance_of(str))
@@ -32,15 +29,15 @@ class OAuth2:
             response = requests.post(self.access_token_uri, auth=client_auth, data=data)
             if response.ok:
                 self._token = response.json().get("access_token")
-                logging.info("Access token successfully obtained.")
-                logging.debug(f"access_token: {self._token}")
+                logger.info("Access token successfully obtained.")
+                logger.debug(f"access_token: {self._token}")
             else:
                 raise RequestTokenException(
                     "Failed to retrieve oauth2 access_token. "
                     f"HTTP Response code: {response.status_code}."
                 )
         except requests.exceptions.MissingSchema:
-            logging.error("Access token URI it's empty")
+            logger.error("Access token URI it's empty")
 
     def configure(self) -> None:
         client_auth = HTTPBasicAuth(self.client_id, self.client_secret)
