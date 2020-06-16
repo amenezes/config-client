@@ -1,8 +1,8 @@
 import pytest
-import requests
 from aiohttp.web import Application
 
 import conftest
+from config import requests
 from config.ext.aiohttp import AioHttpConfig
 from config.spring import ConfigClient
 

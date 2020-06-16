@@ -1,8 +1,8 @@
 import pytest
-import requests
 from flask import Flask
 
 import conftest
+from config import requests
 from config.ext.flask import FlaskConfig, _Config
 from config.spring import ConfigClient
 

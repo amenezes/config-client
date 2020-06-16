@@ -2,9 +2,9 @@
 from unittest.mock import PropertyMock
 
 import pytest
-import requests
 
 import conftest
+from config import requests
 from config.exceptions import RequestFailedException
 from config.spring import ConfigClient, config_client, create_config_client
 
