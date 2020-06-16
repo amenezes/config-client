@@ -6,8 +6,7 @@ from typing import Any, Callable, Dict, KeysView
 import attr
 from glom import glom
 
-from config import logger
-from config import requests
+from config import logger, requests
 from config.core import singleton
 from config.exceptions import RequestFailedException
 
