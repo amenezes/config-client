@@ -142,7 +142,7 @@ def create_config_client(**kwargs) -> ConfigClient:
     return obj
 
 
-def config_client(*args, **kwargs) -> Callable[[Dict[str, str]], ConfigClient]:
+def config_client(**kwargs) -> Callable[[Dict[str, str]], ConfigClient]:
     """ConfigClient decorator.
 
     Usage:
@@ -154,15 +154,18 @@ def config_client(*args, **kwargs) -> Callable[[Dict[str, str]], ConfigClient]:
     :raises: ConnectionError: If fail_fast enabled.
     :return: ConfigClient instance.
     """
-    logger.debug(f"args: {args}")
-    logger.debug(f"kwargs: {kwargs}")
+    logger.debug("kwargs: %r", kwargs)
+
+    fields = attr.fields_dict(ConfigClient).keys()
+    init_kwargs = {k: v for k, v in kwargs.items() if k in fields}
+    get_config_kwargs = {k: v for k, v in kwargs.items() if k not in fields}
 
     def wrap_function(function):
-        logger.debug(f"caller: {function}")
+        logger.debug("caller: %s", function.__name__)
 
         def enable_config():
-            obj = ConfigClient(*args, **kwargs)
-            obj.get_config()
+            obj = ConfigClient(**init_kwargs)
+            obj.get_config(**get_config_kwargs)
             return function(obj)
 
         return enable_config

@@ -70,6 +70,19 @@ class TestConfigClient:
 
         inner()
 
+    def test_decorator_pass_kwargs(self, client, mocker):
+        mocker.patch.object(requests, "get")
+
+        @config_client(app_name="test_app", timeout=5)
+        def inner(c):
+            assert isinstance(c, ConfigClient)
+
+        inner()
+
+        requests.get.assert_called_with(
+            f"{client.address}/{client.branch}/{client.app_name}-{client.profile}.json", timeout=5
+        )
+
     def test_fail_fast_disabled(self, monkeypatch):
         monkeypatch.setattr(requests, "get", Exception)
         client = ConfigClient(app_name="test_app", fail_fast=False)
