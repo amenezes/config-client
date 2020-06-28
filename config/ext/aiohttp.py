@@ -15,11 +15,11 @@ class AioHttpConfig:
 
     def _validate_app(self, app: web.Application) -> None:
         if not isinstance(app, web.Application):
-            raise TypeError(f"instance must be <aiohttp.web.Application>")
+            raise TypeError("instance must be <aiohttp.web.Application>")
 
     def _validate_client(self, client) -> None:
         if client.__class__.__name__ not in ("ConfigClient", "CF"):
-            raise TypeError(f"instance must be <ConfigClient> or <CF>")
+            raise TypeError("instance must be <ConfigClient> or <CF>")
 
 
 class _Config(dict):
