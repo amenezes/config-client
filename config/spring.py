@@ -1,6 +1,7 @@
 """Module for retrieve application's config from Spring Cloud Config."""
 import os
 from distutils.util import strtobool
+from functools import wraps
 from typing import Any, Callable, Dict, KeysView
 
 import attr
@@ -156,16 +157,22 @@ def config_client(**kwargs) -> Callable[[Dict[str, str]], ConfigClient]:
     """
     logger.debug("kwargs: %r", kwargs)
 
-    fields = attr.fields_dict(ConfigClient).keys()
-    init_kwargs = {k: v for k, v in kwargs.items() if k in fields}
-    get_config_kwargs = {k: v for k, v in kwargs.items() if k not in fields}
+    cls_attributes = attr.fields_dict(ConfigClient).keys()
+    instance_params = {}
+    get_config_params = {}
+    for key, value in kwargs.items():
+        if key in cls_attributes:
+            instance_params.update({key: value})
+        else:
+            get_config_params.update({key: value})
 
     def wrap_function(function):
         logger.debug("caller: %s", function.__name__)
 
+        @wraps(function)
         def enable_config():
-            obj = ConfigClient(**init_kwargs)
-            obj.get_config(**get_config_kwargs)
+            obj = ConfigClient(**instance_params)
+            obj.get_config(**get_config_params)
             return function(obj)
 
         return enable_config

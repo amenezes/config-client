@@ -70,6 +70,15 @@ class TestConfigClient:
 
         inner()
 
+    def test_decorator_wraps(self, client, monkeypatch):
+        monkeypatch.setattr(requests, "get", conftest.response_mock_success)
+
+        @config_client(app_name="myapp")
+        def inner(c=None):
+            return c
+
+        assert inner.__name__ == "inner"
+
     def test_decorator_pass_kwargs(self, client, mocker):
         mocker.patch.object(requests, "get")
 
@@ -80,7 +89,8 @@ class TestConfigClient:
         inner()
 
         requests.get.assert_called_with(
-            f"{client.address}/{client.branch}/{client.app_name}-{client.profile}.json", timeout=5
+            f"{client.address}/{client.branch}/{client.app_name}-{client.profile}.json",
+            timeout=5,
         )
 
     def test_fail_fast_disabled(self, monkeypatch):
