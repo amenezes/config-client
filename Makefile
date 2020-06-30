@@ -55,7 +55,7 @@ about:
 	@echo "mailto: alexandre.fmenezes@gmail.com"
 
 ci: lint tests
-ifeq ($(CI), true)
+ifeq ($(TRAVIS_PULL_REQUEST), false)
 	@echo "> download CI dependencies"
 	curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
 	chmod +x ./cc-test-reporter
