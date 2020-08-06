@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import random
+import re
 from pathlib import Path
 from typing import Any, List
 
@@ -158,3 +159,59 @@ class ConfigClientCommand(Command):
         with open(f"{filename}", "w") as f:
             json.dump(content, f, indent=4, sort_keys=True)
         self.line(f"file saved: <info>{filename}</info>")
+
+
+class DecryptCommand(Command):
+    """
+    Decrypt a input via Spring Cloud Config.
+
+    decrypt
+        {data : Data to decrypt.}
+        {--a|address=http://localhost:8888 : ConfigServer address.}
+        {--p|path=/decrypt : decrypt path.}
+    """
+
+    def handle(self):
+        client = ConfigClient(
+            address=os.getenv("CONFIGSERVER_ADDRESS", self.option("address")),
+            fail_fast=False,
+        )
+        try:
+            data = re.match(r"^.?{cipher}?(?P<name>\w.*)", self.argument("data")).group(
+                "name"
+            )
+        except AttributeError:
+            data = self.argument("data")
+        try:
+            resp = client.decrypt(data, path=self.option("path"))
+        except Exception:
+            self.line("<options=bold>failed to contact server... </>")
+            raise SystemExit(1)
+        self.line(resp)
+
+
+class EncryptCommand(Command):
+    """
+    Encrypt a input via Spring Cloud Config.
+
+    encrypt
+        {data : Data to encrypt.}
+        {--a|address=http://localhost:8888 : ConfigServer address.}
+        {--p|path=/encrypt : encrypt path.}
+        {--raw=no : Format output including {cipher}?}
+    """
+
+    def handle(self):
+        client = ConfigClient(
+            address=os.getenv("CONFIGSERVER_ADDRESS", self.option("address")),
+            fail_fast=False,
+        )
+        try:
+            resp = client.encrypt(self.argument("data"), path=self.option("path"))
+        except Exception:
+            self.line("<options=bold>failed to contact server... </>")
+            raise SystemExit(1)
+        if not self.option("raw") == "yes":
+            self.line(f"'{{cipher}}{resp}'")
+        else:
+            self.line(resp)

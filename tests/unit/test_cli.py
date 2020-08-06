@@ -3,15 +3,25 @@ import requests
 from cleo import Application, CommandTester
 
 import conftest
-from config.cli import CloudFoundryCommand, ConfigClientCommand
+from config import http
+from config.cli import (
+    CloudFoundryCommand,
+    ConfigClientCommand,
+    DecryptCommand,
+    EncryptCommand,
+)
 from config.spring import ConfigClient
 
 application = Application()
 application.add(CloudFoundryCommand())
 application.add(ConfigClientCommand())
+application.add(DecryptCommand())
+application.add(EncryptCommand())
 
 
 SAMPLE_CONFIG = {"db": {"user": "root", "pass": "123"}}
+DATA = "my-secret"
+ENCRYPTED_DATA = "AQC4HPhv2tHW3irTDlFUQ7nBEuPiRiK/RNp0JOHfoS0MrgOxqUAYYnKo5YEu+lDOVm+8EKeRhuw8o+rPmSxDCiNZ7FrriFRAde4ZTJ45FTVzW6COFFEkuXJQktZ2dCqGKLeRrTwWQ98g0X7ee9nEsQXK40yKQRhPCXPFgLY9J0BEukn8i1omFtxSFJ0MGILt5n/Sen9/MOGp+yJXGw7FMLejBpVMc4m9rFDyTskyk8OiobbFfG/osAaNRc2R/cTDEHAXVJVw9QwMWp3EJKpOwnx1YVmL3+4msGLYtRpB0XSrGo2AbUNa+5xTwdXIehmIAbn/TckOJE4sBc6vTSjxmtkNcE9cLDC+nlH0ANR9r/9uPqNFErXWrUlbEMJQ9SU4XdU="
 
 
 class TestCloudFoundryCommand:
@@ -72,7 +82,7 @@ class TestClientCommand:
             command.execute("app 'db' --json")
 
     def test_get_file(self, command, monkeypatch):
-        monkeypatch.setattr(ConfigClient, "_request", conftest.response_mock_success)
+        monkeypatch.setattr(http, "request", conftest.response_mock_success)
         with pytest.raises(SystemExit):
             command.execute("app nginx.conf --file")
 
@@ -80,3 +90,51 @@ class TestClientCommand:
         monkeypatch.setattr(requests, "get", SystemExit())
         with pytest.raises(SystemExit):
             command.execute("app nginx.conf --file")
+
+
+class TestDecryptCommand:
+    def _mock_decrypt(self, *args, **kwargs):
+        return DATA
+
+    def test_decrypt_command(self, monkeypatch):
+        monkeypatch.setattr(ConfigClient, "decrypt", self._mock_decrypt)
+        command = application.find("decrypt")
+        ct = CommandTester(command)
+        ct.execute(ENCRYPTED_DATA)
+        assert DATA in ct.io.fetch_output()
+
+    def test_decrypt_command_error(self, monkeypatch):
+        monkeypatch.setattr(requests, "post", SystemExit())
+        with pytest.raises(SystemExit):
+            command = application.find("decrypt")
+            ct = CommandTester(command)
+            ct.execute(ENCRYPTED_DATA)
+
+
+class TestEncryptCommand:
+    def _mock_encrypt(self, *args, **kwargs):
+        return f"{{cipher}}{ENCRYPTED_DATA}"
+
+    def _mock_encrypt_raw(self, *args, **kwargs):
+        return ENCRYPTED_DATA
+
+    def test_encrypt_command(self, monkeypatch):
+        monkeypatch.setattr(ConfigClient, "encrypt", self._mock_encrypt)
+        command = application.find("encrypt")
+        ct = CommandTester(command)
+        ct.execute(DATA)
+        assert ENCRYPTED_DATA in ct.io.fetch_output()
+
+    def test_encrypt_command_raw(self, monkeypatch):
+        monkeypatch.setattr(ConfigClient, "encrypt", self._mock_encrypt_raw)
+        command = application.find("encrypt")
+        ct = CommandTester(command)
+        ct.execute(f"{DATA} --raw=yes")
+        assert ENCRYPTED_DATA in ct.io.fetch_output()
+
+    def test_encrypt_command_error(self, monkeypatch):
+        monkeypatch.setattr(requests, "post", SystemExit())
+        with pytest.raises(SystemExit):
+            command = application.find("encrypt")
+            ct = CommandTester(command)
+            ct.execute(DATA)
