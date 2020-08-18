@@ -10,8 +10,11 @@ from config.spring import ConfigClient, config_client, create_config_client
 
 
 class TestConfigClient:
+    DATA = "my-secret"
+    ENCRYPTED_DATA = "AQC4HPhv2tHW3irTDlFUQ7nBEuPiRiK/RNp0JOHfoS0MrgOxqUAYYnKo5YEu+lDOVm+8EKeRhuw8o+rPmSxDCiNZ7FrriFRAde4ZTJ45FTVzW6COFFEkuXJQktZ2dCqGKLeRrTwWQ98g0X7ee9nEsQXK40yKQRhPCXPFgLY9J0BEukn8i1omFtxSFJ0MGILt5n/Sen9/MOGp+yJXGw7FMLejBpVMc4m9rFDyTskyk8OiobbFfG/osAaNRc2R/cTDEHAXVJVw9QwMWp3EJKpOwnx1YVmL3+4msGLYtRpB0XSrGo2AbUNa+5xTwdXIehmIAbn/TckOJE4sBc6vTSjxmtkNcE9cLDC+nlH0ANR9r/9uPqNFErXWrUlbEMJQ9SU4XdU="
+
     @pytest.fixture
-    def client(self, monkeypatch):
+    def client(self, monkeypatch, scope="module"):
         return ConfigClient(app_name="test_app")
 
     def test_get_config(self, client, monkeypatch):
@@ -137,3 +140,57 @@ class TestConfigClient:
         monkeypatch.setattr(requests, "get", conftest.response_mock_http_error)
         with pytest.raises(RequestFailedException):
             client.get_file("nginx.conf")
+
+    def test_encrypt_failed(self, client, monkeypatch):
+        monkeypatch.setattr(requests, "post", conftest.response_mock_http_error)
+        with pytest.raises(RequestFailedException):
+            client.encrypt(self.DATA)
+
+    def test_decrypt_failed(self, client, monkeypatch):
+        monkeypatch.setattr(requests, "post", conftest.response_mock_http_error)
+        with pytest.raises(RequestFailedException):
+            client.decrypt(self.ENCRYPTED_DATA)
+
+    def test_encrypt(self, client, mocker):
+        mocker.patch.object(requests, "post")
+        requests.post.return_value = conftest.ResponseMock(text=self.ENCRYPTED_DATA)
+        response = client.encrypt(self.DATA)
+        requests.post.assert_called_with(
+            f"{client.address}/encrypt",
+            data=self.DATA,
+            headers={"Content-Type": "text/plain"},
+        )
+        assert response == self.ENCRYPTED_DATA
+
+    def test_encrypt_with_custom_path(self, client, mocker):
+        mocker.patch.object(requests, "post")
+        requests.post.return_value = conftest.ResponseMock(text=self.ENCRYPTED_DATA)
+        response = client.encrypt(self.DATA, path="/configuration/encrypt")
+        requests.post.assert_called_with(
+            f"{client.address}/configuration/encrypt",
+            data=self.DATA,
+            headers={"Content-Type": "text/plain"},
+        )
+        assert response == self.ENCRYPTED_DATA
+
+    def test_decrypt(self, client, mocker):
+        mocker.patch.object(requests, "post")
+        requests.post.return_value = conftest.ResponseMock(text=self.DATA)
+        response = client.decrypt(self.ENCRYPTED_DATA)
+        requests.post.assert_called_with(
+            f"{client.address}/decrypt",
+            data=self.ENCRYPTED_DATA,
+            headers={"Content-Type": "text/plain"},
+        )
+        assert response == self.DATA
+
+    def test_decrypt_with_custom_path(self, client, mocker):
+        mocker.patch.object(requests, "post")
+        requests.post.return_value = conftest.ResponseMock(text=self.DATA)
+        response = client.decrypt(self.ENCRYPTED_DATA, path="/configuration/decrypt")
+        requests.post.assert_called_with(
+            f"{client.address}/configuration/decrypt",
+            data=self.ENCRYPTED_DATA,
+            headers={"Content-Type": "text/plain"},
+        )
+        assert response == self.DATA

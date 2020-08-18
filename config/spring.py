@@ -5,10 +5,9 @@ from functools import wraps
 from typing import Any, Callable, Dict, KeysView
 
 import attr
-import requests
 from glom import glom
 
-from config import logger
+from config import http, logger
 from config.core import singleton
 from config.exceptions import RequestFailedException
 
@@ -66,6 +65,7 @@ class ConfigClient:
         self._ensure_request_json()
 
     def _ensure_request_json(self) -> None:
+        """Ensure that the URI to retrieve the configuration will have the .json extension"""
         if not self.url.endswith(".json"):
             dot_position = self.url.rfind(".")
             if dot_position > 0:
@@ -80,8 +80,9 @@ class ConfigClient:
         logger.debug(f"Target URL configured: {self.url}")
 
     def get_config(self, **kwargs: dict) -> None:
+        """Request the configuration from the config server."""
         try:
-            response = self._request(self.url, **kwargs)
+            response = http.request(self.url, **kwargs)
         except Exception as ex:
             logger.error(f"Failed to request: {self.url}")
             logger.error(ex)
@@ -92,19 +93,49 @@ class ConfigClient:
         self._config = response.json()
 
     def get_file(self, filename: str, **kwargs: dict) -> str:
+        """Request a file from the config server."""
         uri = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{filename}"
         logger.debug(f"URI to request file: {uri}")
         try:
-            response = self._request(uri, **kwargs)
+            response = http.request(uri, **kwargs)
         except Exception:
             logger.error(f"Failed to request URI: {uri}")
             raise RequestFailedException(f"Failed to request URI: {uri}")
         return response.text
 
-    def _request(self, uri, **kwargs) -> requests.Response:
-        response = requests.get(uri, **kwargs)
-        response.raise_for_status()
-        return response
+    def encrypt(
+        self,
+        value: str,
+        path: str = "/encrypt",
+        headers: dict = {"Content-Type": "text/plain"},
+        **kwargs: dict,
+    ) -> str:
+        """Request a encryption from a value to the config server."""
+        try:
+            response = http.post(
+                uri=f"{self.address}{path}", data=value, headers=headers, **kwargs
+            )
+        except Exception:
+            logger.error(f"Failed to request URI: {self.address}{path}")
+            raise RequestFailedException(f"Failed to request URI: {self.address}{path}")
+        return response.text
+
+    def decrypt(
+        self,
+        value: str,
+        path: str = "/decrypt",
+        headers: dict = {"Content-Type": "text/plain"},
+        **kwargs: dict,
+    ) -> str:
+        """Request a decryption from a value to the config server.."""
+        try:
+            response = http.post(
+                uri=f"{self.address}{path}", data=value, headers=headers, **kwargs
+            )
+        except Exception:
+            logger.error(f"Failed to request URI: {self.address}{path}")
+            raise RequestFailedException(f"Failed to request URI: {self.address}{path}")
+        return response.text
 
     @property
     def config(self) -> Dict:
