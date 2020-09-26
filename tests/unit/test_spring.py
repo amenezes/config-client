@@ -5,6 +5,7 @@ import pytest
 import requests
 
 import conftest
+from config.auth import OAuth2
 from config.exceptions import RequestFailedException
 from config.spring import ConfigClient, config_client, create_config_client
 
@@ -16,6 +17,20 @@ class TestConfigClient:
     @pytest.fixture
     def client(self, monkeypatch, scope="module"):
         return ConfigClient(app_name="test_app")
+
+    @pytest.fixture
+    def client_with_auth(self, monkeypatch, mocker):
+        monkeypatch.setattr(requests, "post", conftest.response_mock_success)
+        mocker.patch.object(requests, "get")
+        requests.get.return_value = conftest.ResponseMock()
+        return ConfigClient(
+            app_name="test_app",
+            oauth2=OAuth2(
+                access_token_uri="https://p-spring-cloud-services.uaa.sys.example.com/oauth/token",
+                client_id="p-config-server-example-client-id",
+                client_secret="EXAMPLE_SECRET",
+            ),
+        )
 
     def test_get_config(self, client, monkeypatch):
         monkeypatch.setattr(requests, "get", conftest.response_mock_success)
@@ -50,7 +65,8 @@ class TestConfigClient:
 
     def test_custom_url_property(self):
         client = ConfigClient(
-            app_name="test_app", url="{address}/{branch}/{profile}-{app_name}.yaml",
+            app_name="test_app",
+            url="{address}/{branch}/{profile}-{app_name}.yaml",
         )
         assert client.url == "http://localhost:8888/master/development-test_app.json"
 
@@ -112,9 +128,19 @@ class TestConfigClient:
         type(client)._config = PropertyMock(return_value=conftest.CONFIG)
         assert client.get_keys() == conftest.CONFIG.keys()
 
+    def test_keys(self, client):
+        type(client)._config = PropertyMock(return_value=conftest.CONFIG)
+        assert client.keys() == conftest.CONFIG.keys()
+
     def test_get_attribute(self, client):
         type(client)._config = PropertyMock(return_value=conftest.CONFIG)
         response = client.get_attribute("spring.cloud.consul.host")
+        assert response is not None
+        assert response == "discovery"
+
+    def test_getitem(self, client):
+        type(client)._config = PropertyMock(return_value=conftest.CONFIG)
+        response = client["spring.cloud.consul.host"]
         assert response is not None
         assert response == "discovery"
 
@@ -194,3 +220,22 @@ class TestConfigClient:
             headers={"Content-Type": "text/plain"},
         )
         assert response == self.DATA
+
+    def test_client_with_auth(self, client_with_auth):
+        client_with_auth.get_config()
+        requests.get.assert_called_with(
+            client_with_auth.url, headers={"Authorization": "Bearer eyJz93a...k4laUWw"}
+        )
+
+    def test_client_with_auth_and_headers(self, client_with_auth):
+        client_with_auth.get_config(
+            headers={"X-Client-ID": "test-client"}, verify=False
+        )
+        requests.get.assert_called_with(
+            client_with_auth.url,
+            headers={
+                "X-Client-ID": "test-client",
+                "Authorization": "Bearer eyJz93a...k4laUWw",
+            },
+            verify=False,
+        )

@@ -10,7 +10,9 @@ from config.spring import ConfigClient
 @attr.s(slots=True)
 class CF:
     cfenv = attr.ib(
-        type=CFenv, factory=CFenv, validator=attr.validators.instance_of(CFenv),
+        type=CFenv,
+        factory=CFenv,
+        validator=attr.validators.instance_of(CFenv),
     )
     oauth2 = attr.ib(type=OAuth2, default=None)
     client = attr.ib(type=ConfigClient, default=None)
@@ -28,8 +30,8 @@ class CF:
                 address=self.cfenv.configserver_uri(),
                 app_name=self.cfenv.application_name,
                 profile=self.cfenv.space_name.lower(),
+                oauth2=self.oauth2,
             )
-        self.oauth2.configure()
 
     @property
     def vcap_services(self):
@@ -39,9 +41,8 @@ class CF:
     def vcap_application(self):
         return self.cfenv.vcap_application
 
-    def get_config(self) -> None:
-        header = {"Authorization": f"Bearer {self.oauth2.token}"}
-        self.client.get_config(headers=header)
+    def get_config(self, **kwargs) -> None:
+        self.client.get_config(**kwargs)
 
     @property
     def config(self) -> Dict:
@@ -50,5 +51,11 @@ class CF:
     def get_attribute(self, value: str) -> Any:
         return self.client.get_attribute(value)
 
+    def __getitem__(self, key):
+        return self.client[key]
+
     def get_keys(self) -> KeysView:
+        return self.client.get_keys()
+
+    def keys(self) -> KeysView:
         return self.client.get_keys()

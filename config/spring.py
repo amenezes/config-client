@@ -1,13 +1,16 @@
 """Module for retrieve application's config from Spring Cloud Config."""
 import os
+
+# from contextlib import suppress
 from distutils.util import strtobool
 from functools import wraps
-from typing import Any, Callable, Dict, KeysView
+from typing import Any, Callable, Dict, KeysView, Optional
 
 import attr
 from glom import glom
 
 from config import http, logger
+from config.auth import OAuth2
 from config.core import singleton
 from config.exceptions import RequestFailedException
 
@@ -45,6 +48,12 @@ class ConfigClient:
         type=bool,
         default=bool(strtobool(str(os.getenv("CONFIG_FAIL_FAST", True)))),
         validator=attr.validators.instance_of(bool),
+        converter=bool,
+    )
+    oauth2 = attr.ib(
+        type=Optional[OAuth2],
+        default=None,
+        validator=attr.validators.optional(attr.validators.instance_of(OAuth2)),
     )
     _config = attr.ib(
         type=dict,
@@ -81,6 +90,7 @@ class ConfigClient:
 
     def get_config(self, **kwargs: dict) -> None:
         """Request the configuration from the config server."""
+        kwargs = self._configure_oauth2(**kwargs)
         try:
             response = http.request(self.url, **kwargs)
         except Exception as ex:
@@ -92,14 +102,21 @@ class ConfigClient:
             raise ConnectionError("fail_fast disabled.")
         self._config = response.json()
 
+    def _configure_oauth2(self, **kwargs):
+        if self.oauth2:
+            self.oauth2.configure()
+            try:
+                kwargs["headers"].update(self.oauth2.authorization_header)
+            except KeyError:
+                kwargs.update(dict(headers=self.oauth2.authorization_header))
+        return kwargs
+
     def get_file(self, filename: str, **kwargs: dict) -> str:
         """Request a file from the config server."""
         uri = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{filename}"
-        logger.debug(f"URI to request file: {uri}")
         try:
             response = http.request(uri, **kwargs)
         except Exception:
-            logger.error(f"Failed to request URI: {uri}")
             raise RequestFailedException(f"Failed to request URI: {uri}")
         return response.text
 
@@ -116,7 +133,6 @@ class ConfigClient:
                 uri=f"{self.address}{path}", data=value, headers=headers, **kwargs
             )
         except Exception:
-            logger.error(f"Failed to request URI: {self.address}{path}")
             raise RequestFailedException(f"Failed to request URI: {self.address}{path}")
         return response.text
 
@@ -133,7 +149,6 @@ class ConfigClient:
                 uri=f"{self.address}{path}", data=value, headers=headers, **kwargs
             )
         except Exception:
-            logger.error(f"Failed to request URI: {self.address}{path}")
             raise RequestFailedException(f"Failed to request URI: {self.address}{path}")
         return response.text
 
@@ -142,6 +157,12 @@ class ConfigClient:
         """Getter from configurations retrieved from ConfigClient."""
         return self._config
 
+    def __getitem__(self, key: str) -> Any:
+        return glom(self._config, key, default="")
+
+    def keys(self):
+        return self._config.keys()
+
     def get_attribute(self, value: str) -> Any:
         """
         Get attribute from configuration.
@@ -149,10 +170,14 @@ class ConfigClient:
         :value value: -- The filter to query on dict.
         :return: The value matches or ''
         """
+        logger.warning(
+            "get_attribute it's deprecated, access attribute directly now like: spring_config['my.config']."
+        )
         return glom(self._config, value, default="")
 
     def get_keys(self) -> KeysView:
         """List all keys from configuration retrieved."""
+        logger.warning("get_keys it's deprecated, please use keys() method.")
         return self._config.keys()
 
 

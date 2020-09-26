@@ -6,7 +6,7 @@ import requests
 from config.auth import OAuth2
 from config.cf import CF
 from config.spring import ConfigClient
-from tests.unit.test_oauth2 import ResponseMock
+from conftest import response_mock_success
 
 
 class TestCF:
@@ -56,11 +56,17 @@ class TestCF:
     def test_get_attribute(self, cf):
         assert cf.get_attribute("") == ""
 
+    def test_getitem(self, cf):
+        assert cf[""] == ""
+
     def test_get_keys(self, cf):
         assert isinstance(list(cf.get_keys()), list)
 
+    def test_keys(self, cf):
+        assert isinstance(list(cf.keys()), list)
+
     def test_custom_properties(self, monkeypatch):
-        monkeypatch.setattr(requests, "post", ResponseMock)
+        monkeypatch.setattr(requests, "post", response_mock_success)
         oauth2 = OAuth2(
             access_token_uri="http://localhost/token",
             client_id="id",
