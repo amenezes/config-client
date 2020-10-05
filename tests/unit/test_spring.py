@@ -140,7 +140,7 @@ class TestConfigClient:
 
     def test_getitem(self, client):
         type(client)._config = PropertyMock(return_value=conftest.CONFIG)
-        response = client["spring.cloud.consul.host"]
+        response = client.get("spring.cloud.consul.host")
         assert response is not None
         assert response == "discovery"
 

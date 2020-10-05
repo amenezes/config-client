@@ -51,11 +51,11 @@ class CF:
     def get_attribute(self, value: str) -> Any:
         return self.client.get_attribute(value)
 
-    def __getitem__(self, key):
-        return self.client[key]
+    def get(self, key, default: Any = ""):
+        return self.client.get(key, default)
 
     def get_keys(self) -> KeysView:
         return self.client.get_keys()
 
     def keys(self) -> KeysView:
-        return self.client.get_keys()
+        return self.client.keys()

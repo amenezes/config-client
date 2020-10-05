@@ -1,0 +1,6 @@
+glom
+requests
+attrs
+cleo
+python-dotenv
+portray

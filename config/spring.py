@@ -157,10 +157,10 @@ class ConfigClient:
         """Getter from configurations retrieved from ConfigClient."""
         return self._config
 
-    def __getitem__(self, key: str) -> Any:
-        return glom(self._config, key, default="")
+    def get(self, key: str, default: Any = "") -> Any:
+        return glom(self._config, key, default=default)
 
-    def keys(self):
+    def keys(self) -> KeysView:
         return self._config.keys()
 
     def get_attribute(self, value: str) -> Any:
@@ -170,9 +170,7 @@ class ConfigClient:
         :value value: -- The filter to query on dict.
         :return: The value matches or ''
         """
-        logger.warning(
-            "get_attribute it's deprecated, access attribute directly now like: spring_config['my.config']."
-        )
+        logger.warning("get_attribute it's deprecated, please use get() method.")
         return glom(self._config, value, default="")
 
     def get_keys(self) -> KeysView:

@@ -57,7 +57,7 @@ class TestCF:
         assert cf.get_attribute("") == ""
 
     def test_getitem(self, cf):
-        assert cf[""] == ""
+        assert cf.get("") == ""
 
     def test_get_keys(self, cf):
         assert isinstance(list(cf.get_keys()), list)
