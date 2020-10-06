@@ -27,7 +27,7 @@ setuptools.setup(
             ("Issue tracker", "https://github.com/amenezes/config-client/issues"),
         )
     ),
-    install_requires=["attrs<=20.2.*", "glom<=19.10.*", "requests>=2.22.0"],
+    install_requires=["attrs>=19.1.0", "glom>=19.2.0", "requests>=2.22.0"],
     tests_require=[
         "pytest",
         "flake8",
@@ -60,6 +60,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
         "Topic :: Software Development :: Libraries",
