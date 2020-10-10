@@ -3,7 +3,7 @@ import os
 from typing import Any
 
 import attr
-from glom import glom
+from glom import Path, glom
 
 from config.cloudfoundry import default_vcap_application, default_vcap_services
 
@@ -50,27 +50,26 @@ class CFenv:
     def uris(self) -> Any:
         return glom(self.vcap_application, "uris", default=[])
 
-    def configserver_uri(self, vcap_path: str = ".0.credentials.uri") -> Any:
+    def configserver_uri(self, vcap_path: str = "0.credentials.uri") -> Any:
         path = self._format_vcap_path(vcap_path)
         return glom(self.vcap_services, path, default="")
 
     def configserver_access_token_uri(
-        self, vcap_path: str = ".0.credentials.access_token_uri"
+        self, vcap_path: str = "0.credentials.access_token_uri"
     ) -> Any:
         path = self._format_vcap_path(vcap_path)
         return glom(self.vcap_services, path, default="")
 
-    def configserver_client_id(
-        self, vcap_path: str = ".0.credentials.client_id"
-    ) -> Any:
+    def configserver_client_id(self, vcap_path: str = "0.credentials.client_id") -> Any:
         path = self._format_vcap_path(vcap_path)
         return glom(self.vcap_services, path, default="")
 
     def configserver_client_secret(
-        self, vcap_path: str = ".0.credentials.client_secret"
+        self, vcap_path: str = "0.credentials.client_secret"
     ) -> Any:
         path = self._format_vcap_path(vcap_path)
         return glom(self.vcap_services, path, default="")
 
-    def _format_vcap_path(self, path: str) -> str:
-        return f"{self.vcap_service_prefix}{path}"
+    def _format_vcap_path(self, path: str) -> Path:
+        subpath = path.split(".")
+        return Path(Path(self.vcap_service_prefix), *subpath)

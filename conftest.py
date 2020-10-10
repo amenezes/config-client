@@ -1,4 +1,32 @@
+import json
+
 import requests
+
+
+CUSTOM_VCAP_SERVICES = json.dumps(
+    {
+        "p-config-server": [
+            {
+                "credentials": {
+                    "uri": "http://example_uri",
+                    "access_token_uri": "http://example_access_token_uri",
+                    "client_id": "example_client_id",
+                    "client_secret": "example_client_secret",
+                }
+            }
+        ]
+    }
+)
+
+
+CUSTOM_VCAP_APPLICATION = json.dumps(
+    {
+        "application_name": "myapp",
+        "space_name": "test",
+        "organization_name": "test",
+        "uris": []
+    }
+)
 
 
 CONFIG = {
