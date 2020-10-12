@@ -20,6 +20,6 @@ pip install config-client
 ## Links
 
 - License: [Apache License](https://choosealicense.com/licenses/apache-2.0/)
-- Code: https://github.com/amenezes/config-client
-- Issue tracker: https://github.com/amenezes/config-client/issues
-- Docs: https://config-client.amenezes.net
+- Code: [https://github.com/amenezes/config-client](https://github.com/amenezes/config-client)
+- Issue tracker: [https://github.com/amenezes/config-client/issues](https://github.com/amenezes/config-client/issues)
+- Docs: [https://config-client.amenezes.net](https://config-client.amenezes.net)

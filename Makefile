@@ -1,12 +1,11 @@
 .DEFAULT_GOAL := about
-VENV_DIR := $(shell [ ! -d "venv" ] && echo 1 || echo 0)
 VERSION := $(shell cat config/__version__.py | cut -d'"' -f 2)
 
 lint:
 ifeq ($(SKIP_STYLE), )
 	@echo "> running isort..."
-	isort -rc config/
-	isort -rc tests/
+	isort config/
+	isort tests/
 	@echo "> running black..."
 	black config
 	black tests
@@ -29,28 +28,19 @@ install-deps:
 	@echo "> installing dependencies..."
 	pip install -r requirements-dev.txt
 
-venv:
-ifeq ($(VENV_DIR), 1)
-	@echo "> preparing local development environment"
-	pip install virtualenv
-	virtualenv venv
-else
-	@echo "> venv already exists!"
-endif
-
 tox:
 	@echo "> running tox..."
 	tox -r -p all
 
 about:
-	@echo "> config-client | $(VERSION)"
+	@echo "> config-client: $(VERSION)"
 	@echo ""
 	@echo "make lint         - Runs: [isort > black > flake8 > mypy]"
 	@echo "make tests        - Execute tests."
+	@echo "make ci           - Runs: [lint > tests]"
 	@echo "make tox          - Runs tox."
 	@echo "make docs         - Generate project documentation."
 	@echo "make install-deps - Install development dependencies."
-	@echo "make venv         - Install virtualenv and create venv directory."
 	@echo ""
 	@echo "mailto: alexandre.fmenezes@gmail.com"
 
@@ -65,7 +55,7 @@ ifeq ($(TRAVIS_PULL_REQUEST), false)
 	./cc-test-reporter upload-coverage -i codeclimate.json -r $$CC_TEST_REPORTER_ID
 endif
 
-all: lint tests doc install-deps venv
+all: ci
 
 
-.PHONY: lint tests docs install-deps venv ci all
+.PHONY: lint tests docs install-deps ci all

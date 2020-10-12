@@ -1,11 +1,9 @@
-from typing import Dict
-
 import attr
 import requests
 from requests.auth import HTTPBasicAuth
 
 from config import logger
-from config.exceptions import RequestTokenException
+from config.exceptions import RequestFailedException, RequestTokenException
 
 
 @attr.s(slots=True)
@@ -24,7 +22,11 @@ class OAuth2:
     def token(self) -> str:
         return self._token
 
-    def request_token(self, client_auth: HTTPBasicAuth, data: Dict[str, str]) -> None:
+    @property
+    def authorization_header(self) -> dict:
+        return {"Authorization": f"Bearer {self._token}"}
+
+    def request_token(self, client_auth: HTTPBasicAuth, data: dict) -> None:
         try:
             response = requests.post(self.access_token_uri, auth=client_auth, data=data)
             if response.ok:
@@ -36,8 +38,9 @@ class OAuth2:
                     "Failed to retrieve oauth2 access_token. "
                     f"HTTP Response code: {response.status_code}."
                 )
-        except requests.exceptions.MissingSchema:
-            logger.error("Access token URI it's empty")
+        except requests.exceptions.MissingSchema as err:
+            logger.error(err)
+            raise RequestFailedException("Access token URI it's empty")
 
     def configure(self) -> None:
         client_auth = HTTPBasicAuth(self.client_id, self.client_secret)

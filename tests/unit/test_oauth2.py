@@ -2,22 +2,13 @@ import pytest
 import requests
 
 from config.auth import OAuth2
-from config.exceptions import RequestTokenException
+from config.exceptions import RequestFailedException, RequestTokenException
+from conftest import response_mock_error, response_mock_success
 
 
-class ResponseMock:
+class RequestMockMissingSchema:
     def __init__(self, *args, **kwargs):
-        self.ok = True
-        self.status_coede = 202
-
-    def json(self):
-        return {"access_token": "eyJz93a...k4laUWw"}
-
-
-class ResponseMockError:
-    def __init__(self, *args, **kwargs):
-        self.ok = False
-        self.status_code = 404
+        raise requests.exceptions.MissingSchema
 
 
 class TestOAuth2:
@@ -33,11 +24,21 @@ class TestOAuth2:
         assert oauth2.token == ""
 
     def test_configure(self, oauth2, monkeypatch):
-        monkeypatch.setattr(requests, "post", ResponseMock)
+        monkeypatch.setattr(requests, "post", response_mock_success)
         oauth2.configure()
         assert oauth2.token is not None
 
     def test_configure_failed(self, oauth2, monkeypatch):
-        monkeypatch.setattr(requests, "post", ResponseMockError)
+        monkeypatch.setattr(requests, "post", response_mock_error)
         with pytest.raises(RequestTokenException):
             oauth2.configure()
+
+    def test_configure_request_failed(self, oauth2, monkeypatch):
+        monkeypatch.setattr(requests, "post", RequestMockMissingSchema)
+        with pytest.raises(RequestFailedException):
+            oauth2.configure()
+
+    def test_authorization_header(self, oauth2, monkeypatch):
+        monkeypatch.setattr(requests, "post", response_mock_success)
+        oauth2.configure()
+        assert isinstance(oauth2.authorization_header, dict)
