@@ -41,9 +41,12 @@ class TestClientCommand:
         command = application.find("client")
         return CommandTester(command)
 
+    def dumb_func(self, *args, **kwargs):
+        return True
+
     @pytest.fixture
     def connection_mock(self, monkeypatch):
-        monkeypatch.setattr(ConfigClient, "get_config", print)
+        monkeypatch.setattr(ConfigClient, "get_config", self.dumb_func)
 
     @pytest.fixture
     def config_mock(self, connection_mock, monkeypatch):
@@ -67,7 +70,7 @@ class TestClientCommand:
             command.execute("app --all")
 
     def test_empty_response(self, command, monkeypatch):
-        monkeypatch.setattr(ConfigClient, "get_config", print)
+        monkeypatch.setattr(ConfigClient, "get_config", self.dumb_func)
         with pytest.raises(SystemExit):
             command.execute("app")
 
@@ -77,7 +80,7 @@ class TestClientCommand:
 
     def test_custom_url_via_env(self, command, monkeypatch):
         monkeypatch.setenv("CONFIGSERVER_CUSTOM_URL", "http://localhost")
-        monkeypatch.setattr(ConfigClient, "get_config", print)
+        monkeypatch.setattr(ConfigClient, "get_config", self.dumb_func)
         with pytest.raises(SystemExit):
             command.execute("app 'db' --json")
 
@@ -90,6 +93,27 @@ class TestClientCommand:
         monkeypatch.setattr(requests, "get", SystemExit())
         with pytest.raises(SystemExit):
             command.execute("app nginx.conf --file")
+
+    @pytest.mark.parametrize(
+        "cmdline", ["app --all --auth user:pass", "app --all --digest user:pass"]
+    )
+    def test_get_config(self, command, monkeypatch, cmdline, config_mock):
+        command.execute(cmdline)
+        assert "report for filter: 'all'" in command.io.fetch_output()
+
+    @pytest.mark.parametrize(
+        "cmdline,error",
+        [
+            ("app --all --auth user:pass", conftest.connection_error),
+            ("app --all --auth user:pass", conftest.value_error),
+            ("app --all --digest user:pass", conftest.connection_error),
+            ("app --all --digest user:pass", conftest.value_error),
+        ],
+    )
+    def test_get_config_with_auth_error(self, command, monkeypatch, cmdline, error):
+        monkeypatch.setattr(ConfigClient, "get_config", error)
+        with pytest.raises(SystemExit):
+            command.execute(cmdline)
 
 
 class TestDecryptCommand:

@@ -31,8 +31,6 @@ setuptools.setup(
     tests_require=[
         "pytest",
         "flake8",
-        "flake8-blind-except",
-        "flake8-polyfill",
         "pytest-cov",
         "pytest-mock",
         "isort",

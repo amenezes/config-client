@@ -8,6 +8,7 @@ from typing import Any, List
 
 from cleo import Command
 from dotenv import load_dotenv
+from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 
 from config.exceptions import RequestFailedException
 from config.spring import ConfigClient
@@ -44,6 +45,8 @@ class ConfigClientCommand(Command):
         {--file : Gets remote file from server and saves locally.}
         {--json : Save output as json.}
         {--all : Show all config.}
+        {--auth= : Basic authentication credentials.}
+        {--digest= : Digest authentication credentials.}
     """
 
     EMOJI_ERRORS: List[str] = [
@@ -103,7 +106,20 @@ class ConfigClientCommand(Command):
     def request_config(self, client: ConfigClient, filter_options: str) -> Any:
         self.line("<options=bold>\U000023f3 contacting server...</>")
         try:
-            client.get_config()
+            auth = None
+            if self.option("auth"):
+                username, password = self.option("auth").split(":")
+                auth = HTTPBasicAuth(username, password)
+            elif self.option("digest"):
+                username, password = self.option("digest").split(":")
+                auth = HTTPDigestAuth(username, password)  # type: ignore
+            client.get_config(auth=auth)  # type: ignore
+        except ValueError:
+            emoji = random.choice(self.EMOJI_ERRORS)
+            self.line(
+                f"<options=bold>{emoji} bad credentials format for auth method. Format expected: user:password {emoji}</>"
+            )
+            raise SystemExit(1)
         except ConnectionError:
             emoji = random.choice(self.EMOJI_ERRORS)
             self.line(f"<options=bold>{emoji} failed to contact server... {emoji}</>")

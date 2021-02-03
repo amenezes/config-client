@@ -81,3 +81,11 @@ def response_mock_http_error(*args, **kwargs):
 
 def response_mock_system_error(*args, **kwargs):
     return ResponseMock(raise_type='system')
+
+
+def connection_error(*args, **kwargs):
+        raise ConnectionError
+
+
+def value_error(*args, **kwargs):
+    raise ValueError
