@@ -4,12 +4,8 @@ from cleo import Application, CommandTester
 
 import conftest
 from config import http
-from config.cli import (
-    CloudFoundryCommand,
-    ConfigClientCommand,
-    DecryptCommand,
-    EncryptCommand,
-)
+from config.cli import (CloudFoundryCommand, ConfigClientCommand,
+                        DecryptCommand, EncryptCommand)
 from config.spring import ConfigClient
 
 application = Application()

@@ -70,6 +70,32 @@ class TestConfigClient:
         )
         assert client.url == "http://localhost:8888/master/development-test_app.json"
 
+    @pytest.mark.parametrize(
+        "pattern,expected",
+        [
+            (
+                "{address}/{branch}/{profile}-{app_name}.yaml",
+                "http://localhost:8888/master/development-test_app.json",
+            ),
+            (
+                "{address}/{branch}/{profile}-{app_name}.txt",
+                "http://localhost:8888/master/development-test_app.json",
+            ),
+            (
+                "{address}/{branch}/{profile}-{app_name}",
+                "http://localhost:8888/master/development-test_app.json",
+            ),
+            (
+                "{address}/{branch}/{profile}-{app_name}.toml",
+                "http://localhost:8888/master/development-test_app.json",
+            ),
+        ],
+    )
+    def test_url_setter(self, pattern, expected):
+        client = ConfigClient(app_name="test_app")
+        client.url = pattern
+        assert client.url == expected
+
     def test_decorator_failed(self, client, monkeypatch):
         monkeypatch.setattr(requests, "get", Exception)
 

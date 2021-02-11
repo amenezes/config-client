@@ -8,6 +8,9 @@ from typing import Any, List
 
 from cleo import Command
 from dotenv import load_dotenv
+from pygments import highlight
+from pygments.formatters.terminal import TerminalFormatter
+from pygments.lexers import JsonLexer
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 
 from config.exceptions import RequestFailedException
@@ -167,7 +170,9 @@ class ConfigClientCommand(Command):
         self.line(
             f"<options=bold>\U0001f4c4 report for filter: <comment>'{filter_options}'</comment>:</>"
         )
-        self.line(f"{json.dumps(content, indent=4, sort_keys=True)}")
+        self.line(
+            f"{highlight(json.dumps(content, indent=4, sort_keys=True), JsonLexer(), TerminalFormatter())}"
+        )
 
     def save_file(self, filename: str, content: str) -> None:
         extension = filename[-4:]
