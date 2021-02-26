@@ -13,6 +13,6 @@ codecov
 # flask integration
 Flask==1.1.1
 # aiohttp integration
-aiohttp==3.5.4
+aiohttp==3.7.4
 # optional for asdf-vm
 tox-asdf
