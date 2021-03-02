@@ -1,8 +1,6 @@
-from unittest.mock import patch
-
 import pytest
-import requests
 
+from config import http
 from config.auth import OAuth2
 from config.cf import CF
 from config.spring import ConfigClient
@@ -21,8 +19,7 @@ class TestCF:
 
         mocker.patch("config.spring.ConfigClient.get_config", get_mock)
 
-    @patch("config.auth.requests")
-    def configure_custom_client(self, MockRequests):
+    def configure_custom_client(self):
         custom_client = ConfigClient(
             address="http://localhost:8888/configuration", app_name="myapp"
         )
@@ -66,7 +63,7 @@ class TestCF:
         assert isinstance(list(cf.keys()), list)
 
     def test_custom_properties(self, monkeypatch):
-        monkeypatch.setattr(requests, "post", response_mock_success)
+        monkeypatch.setattr(http, "post", response_mock_success)
         oauth2 = OAuth2(
             access_token_uri="http://localhost/token",
             client_id="id",

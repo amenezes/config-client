@@ -2,7 +2,6 @@ import json
 
 import requests
 
-
 CUSTOM_VCAP_SERVICES = json.dumps(
     {
         "p-config-server": [
@@ -24,7 +23,7 @@ CUSTOM_VCAP_APPLICATION = json.dumps(
         "application_name": "myapp",
         "space_name": "test",
         "organization_name": "test",
-        "uris": []
+        "uris": [],
     }
 )
 
@@ -51,17 +50,10 @@ CONFIG = {
 
 class ResponseMock:
     def __init__(self, *args, **kwargs):
-        self.ok = kwargs.get('ok') or False
-        self.status_code = kwargs.get('status_code') or 404
-        self.raise_type = kwargs.get('raise_type') or False
+        self.ok = kwargs.get("ok") or False
+        self.status_code = kwargs.get("status_code") or 404
         self.headers = {"Content-Type": "application/json"}
-        self.text = kwargs.get('text', '')
-
-    def raise_for_status(self):
-        if self.raise_type == 'http_error':
-            raise requests.exceptions.HTTPError()
-        elif self.raise_type == 'system':
-            raise SystemExit
+        self.text = kwargs.get("text", "")
 
     def json(self):
         return {"access_token": "eyJz93a...k4laUWw"}
@@ -75,17 +67,25 @@ def response_mock_error(*args, **kwargs):
     return ResponseMock()
 
 
-def response_mock_http_error(*args, **kwargs):
-    return ResponseMock(raise_type='http_error')
-
-
-def response_mock_system_error(*args, **kwargs):
-    return ResponseMock(raise_type='system')
-
-
 def connection_error(*args, **kwargs):
-        raise ConnectionError
+    raise ConnectionError
 
 
 def value_error(*args, **kwargs):
     raise ValueError
+
+
+def base_exception_error(*args, **kwargs):
+    raise Exception
+
+
+def system_error(*args, **kwargs):
+    raise SystemExit
+
+
+def http_error(*args, **kwargs):
+    raise requests.exceptions.HTTPError
+
+
+def missing_schema_error(*args, **kwargs):
+    raise requests.exceptions.MissingSchema

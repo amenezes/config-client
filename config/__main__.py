@@ -1,6 +1,6 @@
 from cleo import Application
 
-from config.__version__ import __version__
+from config import __version__
 from config.cli import (
     CloudFoundryCommand,
     ConfigClientCommand,

@@ -5,9 +5,11 @@ lint:
 ifeq ($(SKIP_STYLE), )
 	@echo "> running isort..."
 	isort config/
+	isort conftest.py
 	isort tests/
 	@echo "> running black..."
 	black config
+	black conftest.py
 	black tests
 endif
 	@echo "> running flake8..."
@@ -45,7 +47,7 @@ about:
 	@echo "mailto: alexandre.fmenezes@gmail.com"
 
 ci: lint tests
-ifeq ($(TRAVIS_PULL_REQUEST), false)
+ifeq ($(GITHUB_HEAD_REF), false)
 	@echo "> download CI dependencies"
 	curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
 	chmod +x ./cc-test-reporter

@@ -1,8 +1,8 @@
 import pytest
-import requests
 from flask import Flask
 
 import conftest
+from config import http
 from config.ext.flask import FlaskConfig, _Config
 from config.spring import ConfigClient
 
@@ -14,7 +14,7 @@ class TestSpring:
 
     @pytest.fixture
     def resp_mock(self, monkeypatch):
-        monkeypatch.setattr(requests, "get", conftest.ResponseMock)
+        monkeypatch.setattr(http, "get", conftest.ResponseMock)
 
     def test_validate_error(self, app):
         with pytest.raises(TypeError):
@@ -28,7 +28,7 @@ class TestSpring:
         FlaskConfig(app, ConfigClient(app_name="myapp"))
         assert isinstance(app.config, _Config)
 
-    def test_config_get(self, app, resp_mock):
+    def test_get_config(self, app, resp_mock):
         FlaskConfig(app)
         assert app.config.get("spring.cloud.consul.host") == "discovery"
 

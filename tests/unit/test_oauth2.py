@@ -1,14 +1,9 @@
 import pytest
-import requests
 
+import conftest
+from config import http
 from config.auth import OAuth2
 from config.exceptions import RequestFailedException, RequestTokenException
-from conftest import response_mock_error, response_mock_success
-
-
-class RequestMockMissingSchema:
-    def __init__(self, *args, **kwargs):
-        raise requests.exceptions.MissingSchema
 
 
 class TestOAuth2:
@@ -24,21 +19,21 @@ class TestOAuth2:
         assert oauth2.token == ""
 
     def test_configure(self, oauth2, monkeypatch):
-        monkeypatch.setattr(requests, "post", response_mock_success)
+        monkeypatch.setattr(http, "post", conftest.response_mock_success)
         oauth2.configure()
         assert oauth2.token is not None
 
     def test_configure_failed(self, oauth2, monkeypatch):
-        monkeypatch.setattr(requests, "post", response_mock_error)
+        monkeypatch.setattr(http, "post", conftest.http_error)
         with pytest.raises(RequestTokenException):
             oauth2.configure()
 
     def test_configure_request_failed(self, oauth2, monkeypatch):
-        monkeypatch.setattr(requests, "post", RequestMockMissingSchema)
+        monkeypatch.setattr(http, "post", conftest.missing_schema_error)
         with pytest.raises(RequestFailedException):
             oauth2.configure()
 
     def test_authorization_header(self, oauth2, monkeypatch):
-        monkeypatch.setattr(requests, "post", response_mock_success)
+        monkeypatch.setattr(http, "post", conftest.response_mock_success)
         oauth2.configure()
         assert isinstance(oauth2.authorization_header, dict)

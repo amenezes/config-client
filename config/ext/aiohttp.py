@@ -1,3 +1,5 @@
+from typing import Any
+
 from aiohttp import web
 from glom import glom
 
@@ -23,5 +25,5 @@ class AioHttpConfig:
 
 
 class _Config(dict):
-    def get(self, key, default=None):
+    def get(self, key, default: Any = None) -> Any:
         return glom(self, key, default=default)

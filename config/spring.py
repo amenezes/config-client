@@ -72,7 +72,7 @@ class ConfigClient:
         return self._ensure_request_json(uri)
 
     @url.setter
-    def url(self, pattern: str):
+    def url(self, pattern: str) -> None:
         self._url = pattern
 
     def _ensure_request_json(self, uri: str) -> str:
@@ -95,7 +95,7 @@ class ConfigClient:
         """Request the configuration from the config server."""
         kwargs = self._configure_oauth2(**kwargs)
         try:
-            response = http.request(self.url, **kwargs)
+            response = http.get(self.url, **kwargs)
         except Exception as ex:
             logger.error(f"Failed to request: {self.url}")
             logger.error(ex)
@@ -105,7 +105,7 @@ class ConfigClient:
             raise ConnectionError("fail_fast disabled.")
         self._config = response.json()
 
-    def _configure_oauth2(self, **kwargs):
+    def _configure_oauth2(self, **kwargs) -> dict:
         if self.oauth2:
             self.oauth2.configure()
             try:
@@ -118,7 +118,7 @@ class ConfigClient:
         """Request a file from the config server."""
         uri = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{filename}"
         try:
-            response = http.request(uri, **kwargs)
+            response = http.get(uri, **kwargs)
         except Exception:
             raise RequestFailedException(f"Failed to request URI: {uri}")
         return response.text
