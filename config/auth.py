@@ -16,7 +16,9 @@ class OAuth2:
         default="client_credentials",
         validator=attr.validators.instance_of(str),
     )
-    _token = attr.ib(type=str, default="", validator=attr.validators.instance_of(str))
+    _token = attr.ib(
+        type=str, factory=str, validator=attr.validators.instance_of(str), repr=False
+    )
 
     @property
     def token(self) -> str:
@@ -34,7 +36,6 @@ class OAuth2:
     def request_token(self, client_auth: HTTPBasicAuth, data: dict) -> None:
         try:
             response = http.post(self.access_token_uri, auth=client_auth, data=data)
-            # response.raise_for_status()
         except MissingSchema:
             raise RequestFailedException("Access token URI it's empty")
         except HTTPError:

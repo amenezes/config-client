@@ -5,11 +5,9 @@ lint:
 ifeq ($(SKIP_STYLE), )
 	@echo "> running isort..."
 	isort config/
-	isort conftest.py
 	isort tests/
 	@echo "> running black..."
 	black config
-	black conftest.py
 	black tests
 endif
 	@echo "> running flake8..."

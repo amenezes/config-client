@@ -1,9 +1,9 @@
 import pytest
 
-import conftest
 from config import http
 from config.auth import OAuth2
 from config.exceptions import RequestFailedException, RequestTokenException
+from tests import conftest
 
 
 class TestOAuth2:

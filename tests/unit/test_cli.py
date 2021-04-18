@@ -1,7 +1,6 @@
 import pytest
 from cleo import Application, CommandTester
 
-import conftest
 from config import http
 from config.cli import (
     CloudFoundryCommand,
@@ -10,6 +9,7 @@ from config.cli import (
     EncryptCommand,
 )
 from config.spring import ConfigClient
+from tests import conftest
 
 application = Application()
 application.add(CloudFoundryCommand())

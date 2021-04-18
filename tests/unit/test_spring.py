@@ -3,11 +3,11 @@ from unittest.mock import PropertyMock
 
 import pytest
 
-import conftest
 from config import http
 from config.auth import OAuth2
 from config.exceptions import RequestFailedException
 from config.spring import ConfigClient, config_client, create_config_client
+from tests import conftest
 
 
 class TestConfigClient:

@@ -4,7 +4,7 @@ import pytest
 from glom import Path
 
 from config.cfenv import CFenv
-from conftest import CUSTOM_VCAP_APPLICATION, CUSTOM_VCAP_SERVICES
+from tests.conftest import CUSTOM_VCAP_APPLICATION, CUSTOM_VCAP_SERVICES
 
 
 class TestCFEnv:

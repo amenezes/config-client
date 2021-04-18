@@ -1,10 +1,10 @@
 import pytest
 from aiohttp.web import Application
 
-import conftest
 from config import http
 from config.ext.aiohttp import AioHttpConfig
 from config.spring import ConfigClient
+from tests import conftest
 
 
 class TestAioHttpIntegration:

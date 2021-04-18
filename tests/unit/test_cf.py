@@ -4,7 +4,7 @@ from config import http
 from config.auth import OAuth2
 from config.cf import CF
 from config.spring import ConfigClient
-from conftest import response_mock_success
+from tests.conftest import response_mock_success
 
 
 class TestCF:

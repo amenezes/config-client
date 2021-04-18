@@ -41,6 +41,7 @@ class ConfigClient:
         type=str,
         default="{address}/{branch}/{app_name}-{profile}.json",
         validator=attr.validators.instance_of(str),
+        repr=False,
     )
     fail_fast = attr.ib(
         type=bool,
