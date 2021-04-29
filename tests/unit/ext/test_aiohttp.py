@@ -1,10 +1,10 @@
 import pytest
-import requests
 from aiohttp.web import Application
 
-import conftest
+from config import http
 from config.ext.aiohttp import AioHttpConfig
 from config.spring import ConfigClient
+from tests import conftest
 
 
 class TestAioHttpIntegration:
@@ -14,7 +14,7 @@ class TestAioHttpIntegration:
 
     @pytest.fixture
     def resp_mock(self, monkeypatch):
-        monkeypatch.setattr(requests, "get", conftest.ResponseMock)
+        monkeypatch.setattr(http, "get", conftest.ResponseMock)
 
     def test_integration_with_config_client(self, app, resp_mock):
         AioHttpConfig(app)
@@ -24,7 +24,7 @@ class TestAioHttpIntegration:
         AioHttpConfig(app, client=ConfigClient(app_name="myapp"))
         assert isinstance(app["config"], dict)
 
-    def test_config_get(self, app, resp_mock):
+    def test_get_config(self, app, resp_mock):
         AioHttpConfig(app)
         assert app["config"].get("spring.cloud.consul.host") == "discovery"
 

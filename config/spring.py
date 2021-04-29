@@ -1,7 +1,5 @@
 """Module for retrieve application's config from Spring Cloud Config."""
 import os
-
-# from contextlib import suppress
 from distutils.util import strtobool
 from functools import wraps
 from typing import Any, Callable, Dict, KeysView, Optional
@@ -39,10 +37,11 @@ class ConfigClient:
         default=os.getenv("PROFILE", "development"),
         validator=attr.validators.instance_of(str),
     )
-    url = attr.ib(
+    _url = attr.ib(
         type=str,
         default="{address}/{branch}/{app_name}-{profile}.json",
         validator=attr.validators.instance_of(str),
+        repr=False,
     )
     fail_fast = attr.ib(
         type=bool,
@@ -63,36 +62,41 @@ class ConfigClient:
         repr=False,
     )
 
-    def __attrs_post_init__(self) -> None:
-        """Format ConfigClient URL."""
-        self.url = self.url.format(
+    @property
+    def url(self) -> str:
+        uri = self._url.format(
             address=self.address,
             branch=self.branch,
             app_name=self.app_name,
             profile=self.profile,
         )
-        self._ensure_request_json()
+        return self._ensure_request_json(uri)
 
-    def _ensure_request_json(self) -> None:
+    @url.setter
+    def url(self, pattern: str) -> None:
+        self._url = pattern
+
+    def _ensure_request_json(self, uri: str) -> str:
         """Ensure that the URI to retrieve the configuration will have the .json extension"""
-        if not self.url.endswith(".json"):
-            dot_position = self.url.rfind(".")
+        if not uri.endswith(".json"):
+            dot_position = uri.rfind(".")
             if dot_position > 0:
-                self.url = self.url.replace(self.url[dot_position:], ".json")
+                uri = uri.replace(uri[dot_position:], ".json")
             else:
-                self.url = f"{self.url}.json"
+                uri = f"{uri}.json"
             logger.warning(
                 "URL suffix adjusted to a supported format. "
                 "For more details see: "
                 "https://config-client.amenezes.net/docs/1.-overview/#default-values"
             )
-        logger.debug(f"Target URL configured: {self.url}")
+        logger.debug(f"Target URL configured: {self._url}")
+        return uri
 
     def get_config(self, **kwargs: dict) -> None:
         """Request the configuration from the config server."""
         kwargs = self._configure_oauth2(**kwargs)
         try:
-            response = http.request(self.url, **kwargs)
+            response = http.get(self.url, **kwargs)
         except Exception as ex:
             logger.error(f"Failed to request: {self.url}")
             logger.error(ex)
@@ -102,7 +106,7 @@ class ConfigClient:
             raise ConnectionError("fail_fast disabled.")
         self._config = response.json()
 
-    def _configure_oauth2(self, **kwargs):
+    def _configure_oauth2(self, **kwargs) -> dict:
         if self.oauth2:
             self.oauth2.configure()
             try:
@@ -115,7 +119,7 @@ class ConfigClient:
         """Request a file from the config server."""
         uri = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{filename}"
         try:
-            response = http.request(uri, **kwargs)
+            response = http.get(uri, **kwargs)
         except Exception:
             raise RequestFailedException(f"Failed to request URI: {uri}")
         return response.text

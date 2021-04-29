@@ -33,5 +33,5 @@ class _Config(Config):
         super(_Config, self).__init__(*args, **kwargs)
         Config.update(self, _config)
 
-    def get(self, key, default=None) -> Any:
+    def get(self, key, default: Any = None) -> Any:
         return glom(self, key, default=default)

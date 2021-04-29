@@ -50,25 +50,29 @@ class CFenv:
     def uris(self) -> Any:
         return glom(self.vcap_application, "uris", default=[])
 
-    def configserver_uri(self, vcap_path: str = "0.credentials.uri") -> Any:
+    def configserver_uri(
+        self, vcap_path: str = "0.credentials.uri", default: Any = ""
+    ) -> Any:
         path = self._format_vcap_path(vcap_path)
-        return glom(self.vcap_services, path, default="")
+        return glom(self.vcap_services, path, default=default)
 
     def configserver_access_token_uri(
-        self, vcap_path: str = "0.credentials.access_token_uri"
+        self, vcap_path: str = "0.credentials.access_token_uri", default: Any = ""
     ) -> Any:
         path = self._format_vcap_path(vcap_path)
-        return glom(self.vcap_services, path, default="")
+        return glom(self.vcap_services, path, default=default)
 
-    def configserver_client_id(self, vcap_path: str = "0.credentials.client_id") -> Any:
+    def configserver_client_id(
+        self, vcap_path: str = "0.credentials.client_id", default: Any = ""
+    ) -> Any:
         path = self._format_vcap_path(vcap_path)
-        return glom(self.vcap_services, path, default="")
+        return glom(self.vcap_services, path, default=default)
 
     def configserver_client_secret(
-        self, vcap_path: str = "0.credentials.client_secret"
+        self, vcap_path: str = "0.credentials.client_secret", default: Any = ""
     ) -> Any:
         path = self._format_vcap_path(vcap_path)
-        return glom(self.vcap_services, path, default="")
+        return glom(self.vcap_services, path, default=default)
 
     def _format_vcap_path(self, path: str) -> Path:
         subpath = path.split(".")

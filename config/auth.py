@@ -1,8 +1,8 @@
 import attr
-import requests
 from requests.auth import HTTPBasicAuth
+from requests.exceptions import HTTPError, MissingSchema
 
-from config import logger
+from config import http, logger
 from config.exceptions import RequestFailedException, RequestTokenException
 
 
@@ -16,31 +16,32 @@ class OAuth2:
         default="client_credentials",
         validator=attr.validators.instance_of(str),
     )
-    _token = attr.ib(type=str, default="", validator=attr.validators.instance_of(str))
+    _token = attr.ib(
+        type=str, factory=str, validator=attr.validators.instance_of(str), repr=False
+    )
 
     @property
     def token(self) -> str:
         return self._token
 
+    @token.setter
+    def token(self, value) -> None:
+        self._token = value
+        logger.debug(f"access_token set: {self._token}")
+
     @property
     def authorization_header(self) -> dict:
-        return {"Authorization": f"Bearer {self._token}"}
+        return {"Authorization": f"Bearer {self.token}"}
 
     def request_token(self, client_auth: HTTPBasicAuth, data: dict) -> None:
         try:
-            response = requests.post(self.access_token_uri, auth=client_auth, data=data)
-            if response.ok:
-                self._token = response.json().get("access_token")
-                logger.info("Access token successfully obtained.")
-                logger.debug(f"access_token: {self._token}")
-            else:
-                raise RequestTokenException(
-                    "Failed to retrieve oauth2 access_token. "
-                    f"HTTP Response code: {response.status_code}."
-                )
-        except requests.exceptions.MissingSchema as err:
-            logger.error(err)
+            response = http.post(self.access_token_uri, auth=client_auth, data=data)
+        except MissingSchema:
             raise RequestFailedException("Access token URI it's empty")
+        except HTTPError:
+            raise RequestTokenException("Failed to retrieve oauth2 access_token.")
+        self.token = response.json().get("access_token")
+        logger.info("Access token successfully obtained.")
 
     def configure(self) -> None:
         client_auth = HTTPBasicAuth(self.client_id, self.client_secret)

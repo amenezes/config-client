@@ -1,8 +1,6 @@
 import pytest
-import requests
 from cleo import Application, CommandTester
 
-import conftest
 from config import http
 from config.cli import (
     CloudFoundryCommand,
@@ -11,6 +9,7 @@ from config.cli import (
     EncryptCommand,
 )
 from config.spring import ConfigClient
+from tests import conftest
 
 application = Application()
 application.add(CloudFoundryCommand())
@@ -41,9 +40,12 @@ class TestClientCommand:
         command = application.find("client")
         return CommandTester(command)
 
+    def dumb_func(self, *args, **kwargs):
+        return True
+
     @pytest.fixture
     def connection_mock(self, monkeypatch):
-        monkeypatch.setattr(ConfigClient, "get_config", print)
+        monkeypatch.setattr(ConfigClient, "get_config", self.dumb_func)
 
     @pytest.fixture
     def config_mock(self, connection_mock, monkeypatch):
@@ -62,12 +64,12 @@ class TestClientCommand:
         assert "report for filter: 'db'" in command.io.fetch_output()
 
     def test_connection_error(self, command, monkeypatch):
-        monkeypatch.setattr(requests, "get", SystemExit())
+        monkeypatch.setattr(http, "get", SystemExit())
         with pytest.raises(SystemExit):
             command.execute("app --all")
 
     def test_empty_response(self, command, monkeypatch):
-        monkeypatch.setattr(ConfigClient, "get_config", print)
+        monkeypatch.setattr(ConfigClient, "get_config", self.dumb_func)
         with pytest.raises(SystemExit):
             command.execute("app")
 
@@ -77,19 +79,40 @@ class TestClientCommand:
 
     def test_custom_url_via_env(self, command, monkeypatch):
         monkeypatch.setenv("CONFIGSERVER_CUSTOM_URL", "http://localhost")
-        monkeypatch.setattr(ConfigClient, "get_config", print)
+        monkeypatch.setattr(ConfigClient, "get_config", self.dumb_func)
         with pytest.raises(SystemExit):
             command.execute("app 'db' --json")
 
     def test_get_file(self, command, monkeypatch):
-        monkeypatch.setattr(http, "request", conftest.response_mock_success)
+        monkeypatch.setattr(http, "get", conftest.response_mock_success)
         with pytest.raises(SystemExit):
             command.execute("app nginx.conf --file")
 
     def test_get_file_error(self, command, monkeypatch):
-        monkeypatch.setattr(requests, "get", SystemExit())
+        monkeypatch.setattr(http, "get", SystemExit())
         with pytest.raises(SystemExit):
             command.execute("app nginx.conf --file")
+
+    @pytest.mark.parametrize(
+        "cmdline", ["app --all --auth user:pass", "app --all --digest user:pass"]
+    )
+    def test_get_config(self, command, monkeypatch, cmdline, config_mock):
+        command.execute(cmdline)
+        assert "report for filter: 'all'" in command.io.fetch_output()
+
+    @pytest.mark.parametrize(
+        "cmdline,error",
+        [
+            ("app --all --auth user:pass", conftest.connection_error),
+            ("app --all --auth user:pass", conftest.value_error),
+            ("app --all --digest user:pass", conftest.connection_error),
+            ("app --all --digest user:pass", conftest.value_error),
+        ],
+    )
+    def test_get_config_with_auth_error(self, command, monkeypatch, cmdline, error):
+        monkeypatch.setattr(ConfigClient, "get_config", error)
+        with pytest.raises(SystemExit):
+            command.execute(cmdline)
 
 
 class TestDecryptCommand:
@@ -104,7 +127,7 @@ class TestDecryptCommand:
         assert DATA in ct.io.fetch_output()
 
     def test_decrypt_command_error(self, monkeypatch):
-        monkeypatch.setattr(requests, "post", SystemExit())
+        monkeypatch.setattr(http, "post", SystemExit())
         with pytest.raises(SystemExit):
             command = application.find("decrypt")
             ct = CommandTester(command)
@@ -133,7 +156,7 @@ class TestEncryptCommand:
         assert ENCRYPTED_DATA in ct.io.fetch_output()
 
     def test_encrypt_command_error(self, monkeypatch):
-        monkeypatch.setattr(requests, "post", SystemExit())
+        monkeypatch.setattr(http, "post", SystemExit())
         with pytest.raises(SystemExit):
             command = application.find("encrypt")
             ct = CommandTester(command)

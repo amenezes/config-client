@@ -1,7 +1,5 @@
 -r requirements.txt
 flake8
-flake8-blind-except
-flake8-polyfill
 pytest
 pytest-cov
 pytest-mock
@@ -11,8 +9,8 @@ mypy
 tox
 codecov
 # flask integration
-Flask==1.1.1
+Flask
 # aiohttp integration
-aiohttp==3.5.4
+aiohttp
 # optional for asdf-vm
 tox-asdf
