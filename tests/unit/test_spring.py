@@ -4,7 +4,6 @@ from unittest.mock import PropertyMock
 import pytest
 
 from config import http
-from config.auth import OAuth2
 from config.exceptions import RequestFailedException
 from config.spring import ConfigClient, config_client, create_config_client
 from tests import conftest
@@ -13,24 +12,6 @@ from tests import conftest
 class TestConfigClient:
     DATA = "my-secret"
     ENCRYPTED_DATA = "AQC4HPhv2tHW3irTDlFUQ7nBEuPiRiK/RNp0JOHfoS0MrgOxqUAYYnKo5YEu+lDOVm+8EKeRhuw8o+rPmSxDCiNZ7FrriFRAde4ZTJ45FTVzW6COFFEkuXJQktZ2dCqGKLeRrTwWQ98g0X7ee9nEsQXK40yKQRhPCXPFgLY9J0BEukn8i1omFtxSFJ0MGILt5n/Sen9/MOGp+yJXGw7FMLejBpVMc4m9rFDyTskyk8OiobbFfG/osAaNRc2R/cTDEHAXVJVw9QwMWp3EJKpOwnx1YVmL3+4msGLYtRpB0XSrGo2AbUNa+5xTwdXIehmIAbn/TckOJE4sBc6vTSjxmtkNcE9cLDC+nlH0ANR9r/9uPqNFErXWrUlbEMJQ9SU4XdU="
-
-    @pytest.fixture
-    def client(self, monkeypatch, scope="module"):
-        return ConfigClient(app_name="test_app")
-
-    @pytest.fixture
-    def client_with_auth(self, monkeypatch, mocker):
-        monkeypatch.setattr(http, "post", conftest.response_mock_success)
-        mocker.patch.object(http, "get")
-        http.get.return_value = conftest.ResponseMock()
-        return ConfigClient(
-            app_name="test_app",
-            oauth2=OAuth2(
-                access_token_uri="https://p-spring-cloud-services.uaa.sys.example.com/oauth/token",
-                client_id="p-config-server-example-client-id",
-                client_secret="EXAMPLE_SECRET",
-            ),
-        )
 
     def test_get_config(self, client, monkeypatch):
         monkeypatch.setattr(http, "get", conftest.response_mock_success)

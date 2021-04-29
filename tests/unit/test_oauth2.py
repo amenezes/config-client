@@ -1,20 +1,11 @@
 import pytest
 
 from config import http
-from config.auth import OAuth2
 from config.exceptions import RequestFailedException, RequestTokenException
 from tests import conftest
 
 
 class TestOAuth2:
-    @pytest.fixture
-    def oauth2(self):
-        return OAuth2(
-            access_token_uri="https://p-spring-cloud-services.uaa.sys.example.com/oauth/token",
-            client_id="p-config-server-example-client-id",
-            client_secret="EXAMPLE_SECRET",
-        )
-
     def test_token(self, oauth2):
         assert oauth2.token == ""
 

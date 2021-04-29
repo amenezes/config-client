@@ -9,10 +9,6 @@ from tests.conftest import response_mock_success
 
 class TestCF:
     @pytest.fixture
-    def cf(self):
-        return CF()
-
-    @pytest.fixture
     def config_mock(self, mocker):
         def get_mock(self, *args, **kwargs):
             return {}

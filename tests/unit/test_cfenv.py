@@ -1,24 +1,10 @@
-import json
-
 import pytest
 from glom import Path
 
 from config.cfenv import CFenv
-from tests.conftest import CUSTOM_VCAP_APPLICATION, CUSTOM_VCAP_SERVICES
 
 
 class TestCFEnv:
-    @pytest.fixture
-    def cfenv(self):
-        return CFenv()
-
-    @pytest.fixture
-    def custom_cfenv(self):
-        return CFenv(
-            vcap_services=json.loads(CUSTOM_VCAP_SERVICES),
-            vcap_application=json.loads(CUSTOM_VCAP_APPLICATION),
-        )
-
     def test_space_name(self, cfenv):
         assert cfenv.space_name == ""
 
