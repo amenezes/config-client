@@ -18,7 +18,7 @@ endif
 
 tests:
 	@echo "> unittest"
-	python -m pytest -v --cov-report xml --cov-report term --cov=config tests
+	python -m pytest --durations=10 -vv --no-cov-on-fail --color=yes --cov-report xml --cov-report term --cov=config tests
 
 docs:
 	@echo "> generate project documentation..."
@@ -55,7 +55,7 @@ ifeq ($(GITHUB_HEAD_REF), false)
 	./cc-test-reporter upload-coverage -i codeclimate.json -r $$CC_TEST_REPORTER_ID
 endif
 
-all: ci
+all: install-deps ci
 
 
-.PHONY: lint tests docs install-deps ci all
+.PHONY: lint tests ci docs install-deps tox all
