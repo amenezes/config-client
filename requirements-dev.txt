@@ -6,6 +6,7 @@ pytest-mock
 isort
 black
 mypy
+types-requests
 tox
 codecov
 # flask integration
