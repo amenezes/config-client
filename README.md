@@ -7,7 +7,7 @@
 
 # config-client
 
-config-client for [spring cloud config server](https://spring.io/projects/spring-cloud-config).
+config-client for [spring cloud config server](https://spring.io/projects/spring-cloud-config) and [cloud foundry](https://www.cloudfoundry.org).
 
 ## Installing
 

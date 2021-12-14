@@ -13,13 +13,14 @@ setuptools.setup(
     version=f"{__version__}",
     author="alexandre menezes",
     author_email="alexandre.fmenezes@gmail.com",
-    description="config service client for Spring Cloud Config Server",
+    description="config client for Spring Cloud Config Server and Cloud Foundry",
     long_description=long_description,
     long_description_content_type="text/markdown",
     license="Apache-2.0",
     url="https://github.com/amenezes/config-client",
     packages=setuptools.find_packages(include=["config", "config.*"]),
     python_requires=">=3.6.0",
+    keywords=["spring", "cloudfoundry", "springcloud"],
     project_urls=OrderedDict(
         (
             ("Documentation", "https://config-client.amenezes.net"),
