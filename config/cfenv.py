@@ -5,7 +5,7 @@ from typing import Any
 import attr
 from glom import Path, glom
 
-from config.cloudfoundry import default_vcap_application, default_vcap_services
+from .cloudfoundry import default_vcap_application, default_vcap_services
 
 
 @attr.s(slots=True)

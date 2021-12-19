@@ -9,6 +9,7 @@ mypy
 types-requests
 tox
 codecov
+build
 # flask integration
 Flask
 # aiohttp integration

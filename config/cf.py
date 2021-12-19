@@ -2,9 +2,9 @@ from typing import Any, Dict, KeysView
 
 import attr
 
-from config.auth import OAuth2
-from config.cfenv import CFenv
-from config.spring import ConfigClient
+from .auth import OAuth2
+from .cfenv import CFenv
+from .spring import ConfigClient
 
 
 @attr.s(slots=True)

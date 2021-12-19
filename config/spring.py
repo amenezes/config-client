@@ -7,10 +7,11 @@ from typing import Any, Callable, Dict, KeysView, Optional
 import attr
 from glom import glom
 
-from config import http, logger
-from config.auth import OAuth2
-from config.core import singleton
-from config.exceptions import RequestFailedException
+from . import http
+from .auth import OAuth2
+from .core import singleton
+from .exceptions import RequestFailedException
+from .logger import logger
 
 
 @attr.s(slots=True)
@@ -64,33 +65,33 @@ class ConfigClient:
 
     @property
     def url(self) -> str:
-        uri = self._url.format(
+        url = self._url.format(
             address=self.address,
             branch=self.branch,
             app_name=self.app_name,
             profile=self.profile,
         )
-        return self._ensure_request_json(uri)
+        return self._ensure_request_json(url)
 
     @url.setter
     def url(self, pattern: str) -> None:
         self._url = pattern
 
-    def _ensure_request_json(self, uri: str) -> str:
+    def _ensure_request_json(self, url: str) -> str:
         """Ensure that the URI to retrieve the configuration will have the .json extension"""
-        if not uri.endswith(".json"):
-            dot_position = uri.rfind(".")
+        if not url.endswith(".json"):
+            dot_position = url.rfind(".")
             if dot_position > 0:
-                uri = uri.replace(uri[dot_position:], ".json")
+                url = url.replace(url[dot_position:], ".json")
             else:
-                uri = f"{uri}.json"
+                url = f"{url}.json"
             logger.warning(
                 "URL suffix adjusted to a supported format. "
                 "For more details see: "
                 "https://config-client.amenezes.net/docs/1.-overview/#default-values"
             )
-        logger.debug(f"Target URL configured: {self._url}")
-        return uri
+        logger.debug(f"Target URL: [address='{url}']")
+        return url
 
     def get_config(self, **kwargs: dict) -> None:
         """Request the configuration from the config server."""
@@ -108,7 +109,7 @@ class ConfigClient:
 
     def _configure_oauth2(self, **kwargs) -> dict:
         if self.oauth2:
-            self.oauth2.configure()
+            self.oauth2.configure(**kwargs)
             try:
                 kwargs["headers"].update(self.oauth2.authorization_header)
             except KeyError:
