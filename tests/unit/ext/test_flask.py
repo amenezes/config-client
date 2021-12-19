@@ -35,3 +35,7 @@ class TestSpring:
     def test_config_direct_access(self, app, resp_mock):
         FlaskConfig(app)
         assert app.config["spring"]["cloud"]["consul"]["host"] == "discovery"
+
+    def test_invalid_app(self):
+        with pytest.raises(TypeError):
+            FlaskConfig(None)

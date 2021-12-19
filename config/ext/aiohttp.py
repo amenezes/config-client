@@ -1,18 +1,26 @@
-from typing import Any
+from typing import Any, Optional
 
 from aiohttp import web
 from glom import glom
 
+from config.logger import logger
 from config.spring import ConfigClient
 
 
 class AioHttpConfig:
     def __init__(
-        self, app: web.Application, key: str = "config", client=ConfigClient()
+        self,
+        app: web.Application,
+        key: str = "config",
+        client: Optional[ConfigClient] = None,
+        **kwargs,
     ) -> None:
         self._validate_app(app)
+        if not client:
+            client = ConfigClient()
         self._validate_client(client)
-        client.get_config()
+        logger.debug(f"AioHttpConfig get_config params: [kwargs='{kwargs}']")
+        client.get_config(**kwargs)
         app[str(key)] = _Config(client.config)
 
     def _validate_app(self, app: web.Application) -> None:

@@ -2,8 +2,9 @@ import attr
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError, MissingSchema
 
-from config import http, logger
-from config.exceptions import RequestFailedException, RequestTokenException
+from . import http
+from .exceptions import RequestFailedException, RequestTokenException
+from .logger import logger
 
 
 @attr.s(slots=True)
@@ -33,17 +34,19 @@ class OAuth2:
     def authorization_header(self) -> dict:
         return {"Authorization": f"Bearer {self.token}"}
 
-    def request_token(self, client_auth: HTTPBasicAuth, data: dict) -> None:
+    def request_token(self, client_auth: HTTPBasicAuth, data: dict, **kwargs) -> None:
         try:
-            response = http.post(self.access_token_uri, auth=client_auth, data=data)
+            response = http.post(
+                self.access_token_uri, auth=client_auth, data=data, **kwargs
+            )
         except MissingSchema:
-            raise RequestFailedException("Access token URI it's empty")
+            raise RequestFailedException("Access token URL it's empty")
         except HTTPError:
             raise RequestTokenException("Failed to retrieve oauth2 access_token.")
         self.token = response.json().get("access_token")
         logger.info("Access token successfully obtained.")
 
-    def configure(self) -> None:
+    def configure(self, **kwargs) -> None:
         client_auth = HTTPBasicAuth(self.client_id, self.client_secret)
         data = {"grant_type": f"{self.grant_type}"}
-        self.request_token(client_auth, data)
+        self.request_token(client_auth, data, **kwargs)

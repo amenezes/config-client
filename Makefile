@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := about
-VERSION := $(shell cat config/__version__.py | cut -d'"' -f 2)
+VERSION := $(shell cat config/__init__.py | grep '__version__ ' | cut -d'"' -f 2)
 
 lint:
 ifeq ($(SKIP_STYLE), )
@@ -18,7 +18,7 @@ endif
 
 tests:
 	@echo "> unittest"
-	python -m pytest --durations=10 -vv --no-cov-on-fail --color=yes --cov-report xml --cov-report term --cov=config tests
+	python -m pytest -vv --no-cov-on-fail --color=yes --cov-report xml --cov-report term --cov=config tests
 
 docs:
 	@echo "> generate project documentation..."

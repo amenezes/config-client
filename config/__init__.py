@@ -1,8 +1,7 @@
-import logging
+from .auth import OAuth2
+from .cf import CF
+from .cfenv import CFenv
+from .spring import ConfigClient
 
-from .__version__ import __version__
-
-logger = logging.getLogger("config-client")
-logger.addHandler(logging.NullHandler())
-
-__all__ = ["__version__"]
+__version__ = "0.13.1a1"
+__all__ = ["__version__", "ConfigClient", "CFenv", "CF", "OAuth2"]
