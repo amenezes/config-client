@@ -2,28 +2,25 @@ import json
 import os
 from typing import Any
 
-import attr
+from attrs import field, mutable, validators
 from glom import Path, glom
 
 from .cloudfoundry import default_vcap_application, default_vcap_services
 
 
-@attr.s(slots=True)
+@mutable
 class CFenv:
-    vcap_service_prefix = attr.ib(
-        type=str,
+    vcap_service_prefix: str = field(
         default=os.getenv("VCAP_SERVICE_PREFIX", "p-config-server"),
-        validator=attr.validators.instance_of(str),
+        validator=validators.instance_of(str),
     )
-    vcap_application = attr.ib(
-        type=dict,
+    vcap_application: dict = field(
         default=json.loads(os.getenv("VCAP_APPLICATION", default_vcap_application)),
-        validator=attr.validators.instance_of(dict),
+        validator=validators.instance_of(dict),
     )
-    vcap_services = attr.ib(
-        type=dict,
+    vcap_services: dict = field(
         default=json.loads(os.getenv("VCAP_SERVICES", default_vcap_services)),
-        validator=attr.validators.instance_of(dict),
+        validator=validators.instance_of(dict),
     )
 
     def __attrs_post_init__(self) -> None:

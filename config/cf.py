@@ -1,21 +1,20 @@
 from typing import Any, Dict, KeysView
 
-import attr
+from attrs import field, mutable, validators
 
 from .auth import OAuth2
 from .cfenv import CFenv
 from .spring import ConfigClient
 
 
-@attr.s(slots=True)
+@mutable
 class CF:
-    cfenv = attr.ib(
-        type=CFenv,
+    cfenv: CFenv = field(
         factory=CFenv,
-        validator=attr.validators.instance_of(CFenv),
+        validator=validators.instance_of(CFenv),
     )
-    oauth2 = attr.ib(type=OAuth2, default=None)
-    client = attr.ib(type=ConfigClient, default=None)
+    oauth2: OAuth2 = field(default=None)
+    client: ConfigClient = field(default=None)
 
     def __attrs_post_init__(self) -> None:
         if not self.oauth2:

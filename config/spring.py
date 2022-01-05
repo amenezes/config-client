@@ -2,9 +2,9 @@
 import os
 from distutils.util import strtobool
 from functools import wraps
-from typing import Any, Callable, Dict, KeysView, Optional
+from typing import Any, Callable, Dict, KeysView, Optional, Tuple
 
-import attr
+from attrs import field, fields_dict, mutable, validators
 from glom import glom
 
 from . import http
@@ -14,52 +14,44 @@ from .exceptions import RequestFailedException
 from .logger import logger
 
 
-@attr.s(slots=True)
+@mutable
 class ConfigClient:
     """Spring Cloud Config Client."""
 
-    address = attr.ib(
-        type=str,
+    address: str = field(
         default=os.getenv("CONFIGSERVER_ADDRESS", "http://localhost:8888"),
-        validator=attr.validators.instance_of(str),
+        validator=validators.instance_of(str),
     )
-    branch = attr.ib(
-        type=str,
+    branch: str = field(
         default=os.getenv("BRANCH", "master"),
-        validator=attr.validators.instance_of(str),
+        validator=validators.instance_of(str),
     )
-    app_name = attr.ib(
-        type=str,
+    app_name: str = field(
         default=os.getenv("APP_NAME", ""),
-        validator=attr.validators.instance_of(str),
+        validator=validators.instance_of(str),
     )
-    profile = attr.ib(
-        type=str,
+    profile: str = field(
         default=os.getenv("PROFILE", "development"),
-        validator=attr.validators.instance_of(str),
+        validator=validators.instance_of(str),
     )
-    _url = attr.ib(
-        type=str,
+    _url: str = field(
         default="{address}/{branch}/{app_name}-{profile}.json",
-        validator=attr.validators.instance_of(str),
+        validator=validators.instance_of(str),
         repr=False,
     )
-    fail_fast = attr.ib(
-        type=bool,
+    fail_fast: bool = field(
         default=bool(strtobool(str(os.getenv("CONFIG_FAIL_FAST", True)))),
-        validator=attr.validators.instance_of(bool),
+        validator=validators.instance_of(bool),
         converter=bool,
     )
-    oauth2 = attr.ib(
-        type=Optional[OAuth2],
+    oauth2: Optional[OAuth2] = field(
         default=None,
-        validator=attr.validators.optional(attr.validators.instance_of(OAuth2)),
+        validator=validators.optional(validators.instance_of(OAuth2)),
     )
-    _config = attr.ib(
-        type=dict,
+    _config: dict = field(
         factory=dict,
         init=False,
-        validator=attr.validators.instance_of(dict),
+        validator=validators.instance_of(dict),
         repr=False,
     )
 
@@ -197,8 +189,9 @@ def create_config_client(**kwargs) -> ConfigClient:
     :param url:
     :return: ConfigClient instance.
     """
-    obj = ConfigClient(**kwargs)
-    obj.get_config()
+    instance_params, get_config_params = __get_params(**kwargs)
+    obj = ConfigClient(**instance_params)
+    obj.get_config(**get_config_params)
     return obj
 
 
@@ -214,19 +207,10 @@ def config_client(**kwargs) -> Callable[[Dict[str, str]], ConfigClient]:
     :raises: ConnectionError: If fail_fast enabled.
     :return: ConfigClient instance.
     """
-    logger.debug("kwargs: %r", kwargs)
-
-    cls_attributes = attr.fields_dict(ConfigClient).keys()
-    instance_params = {}
-    get_config_params = {}
-    for key, value in kwargs.items():
-        if key in cls_attributes:
-            instance_params.update({key: value})
-        else:
-            get_config_params.update({key: value})
+    instance_params, get_config_params = __get_params(**kwargs)
 
     def wrap_function(function):
-        logger.debug("caller: %s", function.__name__)
+        logger.debug(f"caller: [name='{function.__name__}']")
 
         @wraps(function)
         def enable_config():
@@ -237,3 +221,17 @@ def config_client(**kwargs) -> Callable[[Dict[str, str]], ConfigClient]:
         return enable_config
 
     return wrap_function
+
+
+def __get_params(**kwargs) -> Tuple[Dict, Dict]:
+    instance_params = {}
+    get_config_params = {}
+    for key, value in kwargs.items():
+        if key in fields_dict(ConfigClient).keys():
+            instance_params.update({key: value})
+        else:
+            get_config_params.update({key: value})
+    logger.debug(
+        f"params: [kwargs={kwargs}, instance={instance_params}, get_config={get_config_params}]"
+    )
+    return instance_params, get_config_params

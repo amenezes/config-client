@@ -106,15 +106,15 @@ class TestConfigClient:
         assert inner.__name__ == "inner"
 
     def test_decorator_pass_kwargs(self, client, mocker):
-        mocker.patch.object(http, "get")
+        mocker.patch.object(http, "get", conftest.response_mock_success)
+        spy = mocker.spy(http, "get")
 
         @config_client(app_name="test_app", timeout=5)
         def inner(c):
             assert isinstance(c, ConfigClient)
 
         inner()
-
-        http.get.assert_called_with(
+        spy.assert_called_with(
             f"{client.address}/{client.branch}/{client.app_name}-{client.profile}.json",
             timeout=5,
         )
