@@ -99,7 +99,7 @@ def missing_schema_error(*args, **kwargs):
 
 
 @pytest.fixture
-def client(monkeypatch, scope="module"):
+def client(scope="module"):
     return ConfigClient(app_name="test_app")
 
 

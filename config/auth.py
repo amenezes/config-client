@@ -1,4 +1,4 @@
-import attr
+from attrs import field, mutable, validators
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError, MissingSchema
 
@@ -7,19 +7,16 @@ from .exceptions import RequestFailedException, RequestTokenException
 from .logger import logger
 
 
-@attr.s(slots=True)
+@mutable
 class OAuth2:
-    access_token_uri = attr.ib(type=str, validator=attr.validators.instance_of(str))
-    client_id = attr.ib(type=str, validator=attr.validators.instance_of(str))
-    client_secret = attr.ib(type=str, validator=attr.validators.instance_of(str))
-    grant_type = attr.ib(
-        type=str,
+    access_token_uri: str = field(validator=validators.instance_of(str))
+    client_id: str = field(validator=validators.instance_of(str))
+    client_secret: str = field(validator=validators.instance_of(str))
+    grant_type: str = field(
         default="client_credentials",
-        validator=attr.validators.instance_of(str),
+        validator=validators.instance_of(str),
     )
-    _token = attr.ib(
-        type=str, factory=str, validator=attr.validators.instance_of(str), repr=False
-    )
+    _token: str = field(factory=str, validator=validators.instance_of(str), repr=False)
 
     @property
     def token(self) -> str:
@@ -28,7 +25,7 @@ class OAuth2:
     @token.setter
     def token(self, value) -> None:
         self._token = value
-        logger.debug(f"access_token set: {self._token}")
+        logger.debug(f"set: [access_token='{self._token}']")
 
     @property
     def authorization_header(self) -> dict:
