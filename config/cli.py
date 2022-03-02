@@ -8,10 +8,12 @@ from typing import Any, List
 
 from cleo import Command
 from dotenv import load_dotenv
-from pygments import highlight
-from pygments.formatters.terminal import TerminalFormatter
-from pygments.lexers import JsonLexer
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
+from rich.console import Console
+from rich.json import JSON
+from rich.panel import Panel
+from rich.status import Status
+from rich.table import Table
 
 from config.exceptions import RequestFailedException
 from config.spring import ConfigClient
@@ -19,19 +21,9 @@ from config.spring import ConfigClient
 logging.disable(logging.ERROR)
 
 
+console = Console()
 env_path = Path(".") / ".env"
 load_dotenv(dotenv_path=env_path)
-
-
-class CloudFoundryCommand(Command):
-    """
-    Interact with CloudFoundry via cli.
-
-    cf
-    """
-
-    def handle(self):
-        pass
 
 
 class ConfigClientCommand(Command):
@@ -42,9 +34,8 @@ class ConfigClientCommand(Command):
         {app : Application name.}
         {filter? : Config selector.}
         {--a|address=http://localhost:8888 : ConfigServer address.}
-        {--b|branch=master : Branch config.}
+        {--b|label=master : Branch config.}
         {--p|profile=development : Profile config.}
-        {--u|url : Base URL format. <option=bold>(default: "<address>/<branch>/<app>-<profile>")</>}
         {--file : Gets remote file from server and saves locally.}
         {--json : Save output as json.}
         {--all : Show all config.}
@@ -82,17 +73,11 @@ class ConfigClientCommand(Command):
 
     def handle(self) -> None:
         filter_options = self.argument("filter") or ""
-        host = os.getenv("CONFIGSERVER_ADDRESS", self.option("address"))
-        url = os.getenv("CONFIGSERVER_CUSTOM_URL")
-        if not url:
-            url = f"{host}/{self.option('branch')}/{self.argument('app')}-{self.option('profile')}.json"
-
         client = ConfigClient(
             address=os.getenv("CONFIGSERVER_ADDRESS", self.option("address")),
-            branch=os.getenv("BRANCH", self.option("branch")),
+            label=os.getenv("BRANCH", self.option("label")),
             app_name=os.getenv("APP_NAME", self.argument("app")),
             profile=os.getenv("PROFILE", self.option("profile")),
-            url=self.option("url") or url,
             fail_fast=False,
         )
 
@@ -107,28 +92,49 @@ class ConfigClientCommand(Command):
             self.std_output(filter_options, content)
 
     def request_config(self, client: ConfigClient, filter_options: str) -> Any:
-        self.line("<options=bold>\U000023f3 contacting server...</>")
-        try:
-            auth = None
-            if self.option("auth"):
-                username, password = self.option("auth").split(":")
-                auth = HTTPBasicAuth(username, password)
-            elif self.option("digest"):
-                username, password = self.option("digest").split(":")
-                auth = HTTPDigestAuth(username, password)  # type: ignore
-            client.get_config(auth=auth)  # type: ignore
-        except ValueError:
-            emoji = random.choice(self.EMOJI_ERRORS)
-            self.line(
-                f"<options=bold>{emoji} bad credentials format for auth method. Format expected: user:password {emoji}</>"
-            )
-            raise SystemExit(1)
-        except ConnectionError:
-            emoji = random.choice(self.EMOJI_ERRORS)
-            self.line(f"<options=bold>{emoji} failed to contact server... {emoji}</>")
-            raise SystemExit(1)
+        if self.io.verbosity:
+            table = Table.grid(padding=(0, 1))
+            table.add_column(style="cyan", justify="right")
+            table.add_column(style="magenta")
 
-        self.print_contact_server_ok()
+            table.add_row("address[yellow]:[/yellow] ", client.address)
+            table.add_row("label[yellow]:[/yellow] ", client.label)
+            table.add_row("profile[yellow]:[/yellow] ", client.profile)
+            table.add_row("URL[yellow]:[/yellow] ", client.url)
+            console.print(
+                Panel(
+                    table,
+                    title="[bold yellow]client info[/bold yellow]",
+                    border_style="yellow",
+                    expand=True,
+                )
+            )
+
+        with Status("contacting server...", spinner="dots4") as status:
+            try:
+                if self.option("auth"):
+                    username, password = self.option("auth").split(":")
+                    auth = HTTPBasicAuth(username, password)
+                elif self.option("digest"):
+                    username, password = self.option("digest").split(":")
+                    auth = HTTPDigestAuth(username, password)  # type: ignore
+                else:
+                    auth = None
+                client.get_config(auth=auth)
+            except ValueError:
+                emoji = random.choice(self.EMOJI_ERRORS)
+                self.line(
+                    f"<options=bold>{emoji} bad credentials format for auth method. Format expected: user:password {emoji}</>"
+                )
+                raise SystemExit(1)
+            except ConnectionError:
+                emoji = random.choice(self.EMOJI_ERRORS)
+                self.line(
+                    f"<options=bold>{emoji} failed to contact server... {emoji}</>"
+                )
+                raise SystemExit(1)
+
+            status.update("OK!")
         content = self.get_config(client, filter_options)
         self.has_content(content, filter_options)
         return content
@@ -149,7 +155,7 @@ class ConfigClientCommand(Command):
         if self.option("all"):
             content = client.config
         else:
-            content = client.get_attribute(f"{filter_options}")
+            content = client.get(f"{filter_options}")
         return content
 
     def print_contact_server_ok(self) -> None:
@@ -165,13 +171,17 @@ class ConfigClientCommand(Command):
             raise SystemExit(0)
 
     def std_output(self, filter_options: str, content: str) -> None:
+
         if self.option("all"):
             filter_options = "all"
-        self.line(
-            f"<options=bold>\U0001f4c4 report for filter: <comment>'{filter_options}'</comment>:</>"
-        )
-        self.line(
-            f"{highlight(json.dumps(content, indent=4, sort_keys=True), JsonLexer(), TerminalFormatter())}"
+        console.print(
+            Panel(
+                JSON(json.dumps(content), indent=4, highlight=True, sort_keys=True),
+                title=f"[bold green]report for filter: [yellow]'[/yellow][white italic]{filter_options}[/white italic][yellow]'[/yellow][/bold green]",
+                highlight=True,
+                border_style="white",
+                expand=True,
+            )
         )
 
     def save_file(self, filename: str, content: str) -> None:

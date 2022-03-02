@@ -22,7 +22,7 @@ class ConfigClient:
         default=os.getenv("CONFIGSERVER_ADDRESS", "http://localhost:8888"),
         validator=validators.instance_of(str),
     )
-    branch: str = field(
+    label: str = field(
         default=os.getenv("BRANCH", "master"),
         validator=validators.instance_of(str),
     )
@@ -33,11 +33,6 @@ class ConfigClient:
     profile: str = field(
         default=os.getenv("PROFILE", "development"),
         validator=validators.instance_of(str),
-    )
-    _url: str = field(
-        default="{address}/{branch}/{app_name}-{profile}.json",
-        validator=validators.instance_of(str),
-        repr=False,
     )
     fail_fast: bool = field(
         default=bool(strtobool(str(os.getenv("CONFIG_FAIL_FAST", True)))),
@@ -57,47 +52,29 @@ class ConfigClient:
 
     @property
     def url(self) -> str:
-        url = self._url.format(
-            address=self.address,
-            branch=self.branch,
-            app_name=self.app_name,
-            profile=self.profile,
-        )
-        return self._ensure_request_json(url)
+        return f"{self.address}/{self.app_name}/{self.profile}/{self.label}"
 
-    @url.setter
-    def url(self, pattern: str) -> None:
-        self._url = pattern
-
-    def _ensure_request_json(self, url: str) -> str:
-        """Ensure that the URI to retrieve the configuration will have the .json extension"""
-        if not url.endswith(".json"):
-            dot_position = url.rfind(".")
-            if dot_position > 0:
-                url = url.replace(url[dot_position:], ".json")
-            else:
-                url = f"{url}.json"
-            logger.warning(
-                "URL suffix adjusted to a supported format. "
-                "For more details see: "
-                "https://config-client.amenezes.net/docs/1.-overview/#default-values"
-            )
-        logger.debug(f"Target URL: [address='{url}']")
-        return url
-
-    def get_config(self, **kwargs: dict) -> None:
+    def get_config(self, **kwargs) -> None:
         """Request the configuration from the config server."""
         kwargs = self._configure_oauth2(**kwargs)
         try:
             response = http.get(self.url, **kwargs)
-        except Exception as ex:
+        except Exception as err:
             logger.error(f"Failed to request: {self.url}")
-            logger.error(ex)
+            logger.error(err)
             if self.fail_fast:
                 logger.info("fail_fast enabled. Terminating process.")
                 raise SystemExit(1)
             raise ConnectionError("fail_fast disabled.")
-        self._config = response.json()
+        fconfig = [
+            self._to_dict(config)
+            for config in reversed(
+                glom(response.json(), ("propertySources", ["source"]))
+            )
+        ]
+        server_config: dict = {}
+        [self._merge_dict(server_config, c) for c in fconfig]
+        self._merge_dict(self._config, server_config)
 
     def _configure_oauth2(self, **kwargs) -> dict:
         if self.oauth2:
@@ -108,9 +85,34 @@ class ConfigClient:
                 kwargs.update(dict(headers=self.oauth2.authorization_header))
         return kwargs
 
+    def _to_dict(self, config: dict) -> dict:
+        final_config: dict = {}
+        for k, v in config.items():
+            tconfig = {}
+            last_key = k.split(".")[-1:][0]
+            for ksub in reversed(k.split(".")):
+                if ksub == last_key:
+                    tconfig = {ksub: v}
+                else:
+                    tconfig = {ksub: tconfig}
+            self._merge_dict(final_config, tconfig)
+        return final_config
+
+    def _merge_dict(self, primary_config: dict, secondary_config: dict) -> dict:
+        for k, v in primary_config.items():
+            if isinstance(v, dict):
+                if k in secondary_config and isinstance(secondary_config[k], dict):
+                    self._merge_dict(primary_config[k], secondary_config[k])
+            elif k in secondary_config:
+                primary_config[k] = secondary_config[k]
+        for k, v in secondary_config.items():
+            if k not in primary_config:
+                primary_config.update({k: v})
+        return primary_config
+
     def get_file(self, filename: str, **kwargs: dict) -> str:
         """Request a file from the config server."""
-        uri = f"{self.address}/{self.app_name}/{self.profile}/{self.branch}/{filename}"
+        uri = f"{self.address}/{self.app_name}/{self.profile}/{self.label}/{filename}"
         try:
             response = http.get(uri, **kwargs)
         except Exception:
@@ -158,21 +160,6 @@ class ConfigClient:
         return glom(self._config, key, default=default)
 
     def keys(self) -> KeysView:
-        return self._config.keys()
-
-    def get_attribute(self, value: str) -> Any:
-        """
-        Get attribute from configuration.
-
-        :value value: -- The filter to query on dict.
-        :return: The value matches or ''
-        """
-        logger.warning("get_attribute it's deprecated, please use get() method.")
-        return glom(self._config, value, default="")
-
-    def get_keys(self) -> KeysView:
-        """List all keys from configuration retrieved."""
-        logger.warning("get_keys it's deprecated, please use keys() method.")
         return self._config.keys()
 
 

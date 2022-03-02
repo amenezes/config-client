@@ -7,35 +7,40 @@ from config.spring import ConfigClient
 from tests import conftest
 
 
-class TestAioHttpIntegration:
-    @pytest.fixture
-    def app(self):
-        return Application()
+@pytest.fixture(scope="module")
+def aiohttp_app():
+    return Application()
 
-    @pytest.fixture
-    def resp_mock(self, monkeypatch):
-        monkeypatch.setattr(http, "get", conftest.ResponseMock)
 
-    def test_integration_with_config_client(self, app, resp_mock):
-        AioHttpConfig(app)
-        assert isinstance(app["config"], dict)
+def test_config_client_integration_with_aiohttp(aiohttp_app, monkeypatch):
+    monkeypatch.setattr(http, "get", conftest.config_mock)
+    AioHttpConfig(aiohttp_app)
+    assert isinstance(aiohttp_app["config"], dict)
 
-    def test_integration_with_config_client_inst(self, app, resp_mock):
-        AioHttpConfig(app, client=ConfigClient(app_name="myapp"))
-        assert isinstance(app["config"], dict)
 
-    def test_get_config(self, app, resp_mock):
-        AioHttpConfig(app)
-        assert app["config"].get("spring.cloud.consul.host") == "discovery"
+def test_custom_config_client_integration_with_aiohttp(aiohttp_app, monkeypatch):
+    monkeypatch.setattr(http, "get", conftest.config_mock)
+    AioHttpConfig(aiohttp_app, client=ConfigClient(app_name="myaiohttp_app"))
+    assert isinstance(aiohttp_app["config"], dict)
 
-    def test_config_direct_access(self, app, resp_mock):
-        AioHttpConfig(app)
-        assert app["config"]["spring"]["cloud"]["consul"]["host"] == "discovery"
 
-    def test_invalid_app(self):
-        with pytest.raises(TypeError):
-            AioHttpConfig(int)
+def test_aiohttp_get_config(aiohttp_app, monkeypatch):
+    monkeypatch.setattr(http, "get", conftest.config_mock)
+    AioHttpConfig(aiohttp_app)
+    assert aiohttp_app["config"].get("spring.cloud.consul.host") == "discovery"
 
-    def test_invalid_client(self, app):
-        with pytest.raises(TypeError):
-            AioHttpConfig(app, client=int)
+
+def test_aiohttp_get_config_dict(aiohttp_app, monkeypatch):
+    monkeypatch.setattr(http, "get", conftest.config_mock)
+    AioHttpConfig(aiohttp_app)
+    assert aiohttp_app["config"]["spring"]["cloud"]["consul"]["host"] == "discovery"
+
+
+def test_invalid_aiohttp_app():
+    with pytest.raises(TypeError):
+        AioHttpConfig(int)
+
+
+def test_invalid_config_client_aiohttp_app(aiohttp_app):
+    with pytest.raises(TypeError):
+        AioHttpConfig(aiohttp_app, client=int)

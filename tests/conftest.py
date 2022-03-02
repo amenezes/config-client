@@ -2,8 +2,8 @@ import json
 
 import pytest
 import requests
+import requests_mock
 
-from config import http
 from config.auth import OAuth2
 from config.cf import CF
 from config.cfenv import CFenv
@@ -36,42 +36,90 @@ CUSTOM_VCAP_APPLICATION = json.dumps(
 
 
 CONFIG = {
-    "health": {"config": {"enabled": False}},
-    "spring": {
-        "cloud": {
-            "consul": {
-                "discovery": {
-                    "health-check-interval": "10s",
-                    "health-check-path": "/manage/health",
-                    "instance-id": "myapp:${random.value}",
-                    "prefer-ip-address": True,
-                    "register-health-check": True,
-                },
-                "host": "discovery",
-                "port": 8500,
-            }
-        }
-    },
+    "label": "master",
+    "name": "test_app",
+    "profiles": ["development"],
+    "propertySources": [
+        {
+            "name": "https://github.com/amenezes/spring_config.git/test_app-development.yml",
+            "source": {
+                "info.app.description": "pws test_app - development profile",
+                "info.app.name": "test_app",
+                "python.cache.timeout": 10,
+                "python.cache.type": "simple",
+                "server.port": 8080,
+            },
+        },
+        {
+            "name": "https://github.com/amenezes/spring_config.git/test_app.yml",
+            "source": {
+                "info.app.description": "pws test_app",
+                "info.app.name": "test_app",
+                "info.app.password": "123",
+                "server.port": 8080,
+            },
+        },
+        {
+            "name": "https://github.com/amenezes/spring_config.git/application.yml",
+            "source": {
+                "health.config.enabled": False,
+                "spring.cloud.consul.host": "discovery",
+                "spring.cloud.consul.port": 8500,
+            },
+        },
+    ],
+    "state": None,
+    "version": "b478bb5c9784bb2285c461892fab22361007e0c9",
 }
 
-
-class ResponseMock:
-    def __init__(self, *args, **kwargs):
-        self.ok = kwargs.get("ok") or False
-        self.status_code = kwargs.get("status_code") or 404
-        self.headers = {"Content-Type": "application/json"}
-        self.text = kwargs.get("text", "")
-
-    def json(self):
-        return {"access_token": "eyJz93a...k4laUWw"}
+ENCRYPTED_DATA = "AQC4HPhv2tHW3irTDlFUQ7nBEuPiRiK/RNp0JOHfoS0MrgOxqUAYYnKo5YEu+lDOVm+8EKeRhuw8o+rPmSxDCiNZ7FrriFRAde4ZTJ45FTVzW6COFFEkuXJQktZ2dCqGKLeRrTwWQ98g0X7ee9nEsQXK40yKQRhPCXPFgLY9J0BEukn8i1omFtxSFJ0MGILt5n/Sen9/MOGp+yJXGw7FMLejBpVMc4m9rFDyTskyk8OiobbFfG/osAaNRc2R/cTDEHAXVJVw9QwMWp3EJKpOwnx1YVmL3+4msGLYtRpB0XSrGo2AbUNa+5xTwdXIehmIAbn/TckOJE4sBc6vTSjxmtkNcE9cLDC+nlH0ANR9r/9uPqNFErXWrUlbEMJQ9SU4XdU="
 
 
-def response_mock_success(*args, **kwargs):
-    return ResponseMock(ok=True, status_code=202)
+def config_mock(*args, **kwargs):
+    URL = "http://localhost:8888/test_app/development/master"
+    with requests_mock.Mocker() as m:
+        m.get(URL, json=CONFIG)
+        resp = requests.get(URL)
+        return resp
 
 
-def response_mock_error(*args, **kwargs):
-    return ResponseMock()
+def oauth2_mock(*args, **kwargs):
+    URL = "https://p-spring-cloud-services.uaa.sys.example.com/oauth/token"
+    with requests_mock.Mocker() as m:
+        m.post(URL, json={"access_token": "eyJz93a...k4laUWw"})
+        resp = requests.post(URL)
+        return resp
+
+
+def text_mock(*args, **kwargs):
+    URL = "http://localhost:8888/test_app/development/master/nginx.conf"
+    with requests_mock.Mocker() as m:
+        m.get(URL, text="some text")
+        resp = requests.get(URL)
+        return resp
+
+
+def encrypt_mock(*args, **kwargs):
+    URL = "http://localhost:8888/configuration/encrypt"
+    with requests_mock.Mocker() as m:
+        m.post(URL, text=ENCRYPTED_DATA)
+        resp = requests.post(URL)
+        return resp
+
+
+def decrypt_mock(*args, **kwargs):
+    URL = "http://localhost:8888/configuration/decrypt"
+    with requests_mock.Mocker() as m:
+        m.post(URL, text="my-secret")
+        resp = requests.post(URL)
+        return resp
+
+
+def oauth2_missing_schema_error(*args, **kwargs):
+    URL = "https://p-spring-cloud-services.uaa.sys.example.com/oauth/token"
+    with requests_mock.Mocker() as m:
+        m.post(URL, exc=requests.exceptions.MissingSchema)
+        requests.post(URL)
 
 
 def connection_error(*args, **kwargs):
@@ -86,32 +134,18 @@ def base_exception_error(*args, **kwargs):
     raise Exception
 
 
-def system_error(*args, **kwargs):
-    raise SystemExit
-
-
 def http_error(*args, **kwargs):
-    raise requests.exceptions.HTTPError
+    with requests_mock.Mocker() as m:
+        m.get(requests_mock.ANY, exc=requests.exceptions.HTTPError)
+        requests.get("http://localhost:8888/ANY")
 
 
-def missing_schema_error(*args, **kwargs):
-    raise requests.exceptions.MissingSchema
-
-
-@pytest.fixture
-def client(scope="module"):
+@pytest.fixture(scope="module")
+def client():
     return ConfigClient(app_name="test_app")
 
 
-@pytest.fixture
-def client_with_auth(monkeypatch, mocker, oauth2):
-    monkeypatch.setattr(http, "post", response_mock_success)
-    mocker.patch.object(http, "get")
-    http.get.return_value = ResponseMock()
-    return ConfigClient(app_name="test_app", oauth2=oauth2)
-
-
-@pytest.fixture
+@pytest.fixture(scope="module")
 def oauth2():
     return OAuth2(
         access_token_uri="https://p-spring-cloud-services.uaa.sys.example.com/oauth/token",
@@ -120,12 +154,12 @@ def oauth2():
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def cfenv():
     return CFenv()
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def custom_cfenv():
     return CFenv(
         vcap_services=json.loads(CUSTOM_VCAP_SERVICES),
@@ -133,6 +167,6 @@ def custom_cfenv():
     )
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def cf():
     return CF()

@@ -7,35 +7,40 @@ from config.spring import ConfigClient
 from tests import conftest
 
 
-class TestSpring:
-    @pytest.fixture
-    def app(self):
-        return Flask(__name__)
+@pytest.fixture(scope="module")
+def flask_app():
+    return Flask(__name__)
 
-    @pytest.fixture
-    def resp_mock(self, monkeypatch):
-        monkeypatch.setattr(http, "get", conftest.ResponseMock)
 
-    def test_validate_error(self, app):
-        with pytest.raises(TypeError):
-            FlaskConfig(app, int)
+def test_invalid_config_client(flask_app):
+    with pytest.raises(TypeError):
+        FlaskConfig(flask_app, int)
 
-    def test_integration_with_config_client(self, app, resp_mock):
-        FlaskConfig(app)
-        assert isinstance(app.config, _Config)
 
-    def test_integration_with_config_client_inst(self, app, resp_mock):
-        FlaskConfig(app, ConfigClient(app_name="myapp"))
-        assert isinstance(app.config, _Config)
+def test_config_client_integration_with_flask(flask_app, monkeypatch):
+    monkeypatch.setattr(http, "get", conftest.config_mock)
+    FlaskConfig(flask_app)
+    assert isinstance(flask_app.config, _Config)
 
-    def test_get_config(self, app, resp_mock):
-        FlaskConfig(app)
-        assert app.config.get("spring.cloud.consul.host") == "discovery"
 
-    def test_config_direct_access(self, app, resp_mock):
-        FlaskConfig(app)
-        assert app.config["spring"]["cloud"]["consul"]["host"] == "discovery"
+def test_custom_config_client_integration_with_flask(flask_app, monkeypatch):
+    monkeypatch.setattr(http, "get", conftest.config_mock)
+    FlaskConfig(flask_app, ConfigClient(app_name="myapp"))
+    assert isinstance(flask_app.config, _Config)
 
-    def test_invalid_app(self):
-        with pytest.raises(TypeError):
-            FlaskConfig(None)
+
+def test_flask_get_config(flask_app, monkeypatch):
+    monkeypatch.setattr(http, "get", conftest.config_mock)
+    FlaskConfig(flask_app)
+    assert flask_app.config.get("spring.cloud.consul.host") == "discovery"
+
+
+def test_flask_get_config_dict(flask_app, monkeypatch):
+    monkeypatch.setattr(http, "get", conftest.config_mock)
+    FlaskConfig(flask_app)
+    assert flask_app.config["spring"]["cloud"]["consul"]["host"] == "discovery"
+
+
+def test_invalid_config_client_flask_app():
+    with pytest.raises(TypeError):
+        FlaskConfig(None)
