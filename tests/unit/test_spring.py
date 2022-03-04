@@ -1,4 +1,5 @@
 """Test spring module."""
+import asyncio
 from unittest.mock import PropertyMock
 
 import pytest
@@ -12,6 +13,14 @@ from tests import conftest
 def test_get_config(client, monkeypatch):
     monkeypatch.setattr(http, "get", conftest.config_mock)
     client.get_config()
+    assert isinstance(client.config, dict)
+    assert list(client.config) == ["health", "spring", "info", "server", "python"]
+
+
+def test_get_config_async(client, monkeypatch):
+    loop = asyncio.get_event_loop()
+    monkeypatch.setattr(http, "get", conftest.config_mock)
+    loop.run_until_complete(client.get_config_async())
     assert isinstance(client.config, dict)
     assert list(client.config) == ["health", "spring", "info", "server", "python"]
 

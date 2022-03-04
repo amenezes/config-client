@@ -1,9 +1,9 @@
+import asyncio
+
 import pytest
 
-from config import http
+from config import CF, ConfigClient, http
 from config.auth import OAuth2
-from config.cf import CF
-from config.spring import ConfigClient
 from tests import conftest
 
 
@@ -46,22 +46,22 @@ def test_vcap_application_property(cf):
 
 def test_get_config(cf, config_mock):
     cf.get_config()
-    assert isinstance(cf.client.config, dict)
+    assert isinstance(cf.config, dict)
+
+
+def test_get_config_async(cf, config_mock):
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(cf.get_config_async())
+    assert isinstance(cf.config, dict)
 
 
 def test_config(cf):
     assert isinstance(cf.config, dict)
 
 
-# @pytest.mark.parametrize(
-#     "filter, expected",
-#     [
-#         ("", ""),
-#         ("server.port", 8080),
-#         ("info.app.password", "123")
-#     ]
-# )
-def test_get(cf):
+def test_cf_get(cf, config_mock):
+    cf.get_config()
+    assert cf.get("", None) is None
     assert cf.get("") == ""
 
 

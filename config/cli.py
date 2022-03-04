@@ -34,7 +34,7 @@ class ConfigClientCommand(Command):
         {app : Application name.}
         {filter? : Config selector.}
         {--a|address=http://localhost:8888 : ConfigServer address.}
-        {--b|label=master : Branch config.}
+        {--l|label=master : Branch config.}
         {--p|profile=development : Profile config.}
         {--file : Gets remote file from server and saves locally.}
         {--json : Save output as json.}
@@ -75,7 +75,7 @@ class ConfigClientCommand(Command):
         filter_options = self.argument("filter") or ""
         client = ConfigClient(
             address=os.getenv("CONFIGSERVER_ADDRESS", self.option("address")),
-            label=os.getenv("BRANCH", self.option("label")),
+            label=os.getenv("LABEL", self.option("label")),
             app_name=os.getenv("APP_NAME", self.argument("app")),
             profile=os.getenv("PROFILE", self.option("profile")),
             fail_fast=False,
@@ -87,7 +87,7 @@ class ConfigClientCommand(Command):
 
         content = self.request_config(client, filter_options)
         if self.option("json"):
-            self.save_file("output.json", content)
+            self.save_json("output.json", content)
         else:
             self.std_output(filter_options, content)
 
@@ -123,14 +123,14 @@ class ConfigClientCommand(Command):
                 client.get_config(auth=auth)
             except ValueError:
                 emoji = random.choice(self.EMOJI_ERRORS)
-                self.line(
+                console.print(
                     f"<options=bold>{emoji} bad credentials format for auth method. Format expected: user:password {emoji}</>"
                 )
                 raise SystemExit(1)
             except ConnectionError:
                 emoji = random.choice(self.EMOJI_ERRORS)
-                self.line(
-                    f"<options=bold>{emoji} failed to contact server... {emoji}</>"
+                console.print(
+                    f"[red]failed to contact server![/red] {emoji}", style="bold"
                 )
                 raise SystemExit(1)
 
@@ -140,16 +140,19 @@ class ConfigClientCommand(Command):
         return content
 
     def request_file(self, client: ConfigClient, filter_options: str) -> None:
-        self.line("<options=bold>\U000023f3 contacting server...</>")
-        try:
-            response = client.get_file(filter_options)
-        except RequestFailedException:
-            emoji = random.choice(self.EMOJI_ERRORS)
-            self.line(f"<options=bold>{emoji} failed to contact server... {emoji}</>")
-            raise SystemExit(1)
-        with open(f"{filter_options}", "w") as f:
-            f.write(response)
-        self.line(f"file saved: <info>{filter_options}</info>")
+        with Status("contacting server...", spinner="dots4") as status:
+            try:
+                response = client.get_file(filter_options)
+            except RequestFailedException:
+                emoji = random.choice(self.EMOJI_ERRORS)
+                console.print(
+                    f"[red]failed to contact server![/red] {emoji}", style="bold"
+                )
+                raise SystemExit(1)
+            with open(f"{filter_options}", "w", encoding="utf-8") as f:
+                f.write(response)
+            status.update("OK!")
+        console.print(f"file saved: [cyan]{filter_options}[/cyan]", style="bold")
 
     def get_config(self, client: ConfigClient, filter_options: str) -> Any:
         if self.option("all"):
@@ -158,20 +161,15 @@ class ConfigClientCommand(Command):
             content = client.get(f"{filter_options}")
         return content
 
-    def print_contact_server_ok(self) -> None:
-        emoji = random.choice(self.EMOJI_SUCCESS)
-        self.line(f"<options=bold>{emoji} Ok! {emoji}</>")
-
     def has_content(self, content, filter_options: str) -> None:
         if len(str(content)) == 0:
             emoji = random.choice(self.EMOJI_NOT_FOUND)
-            self.line(
+            console.print(
                 f"{emoji} no result found for your filter: <comment>'{filter_options}'</comment>"
             )
             raise SystemExit(0)
 
     def std_output(self, filter_options: str, content: str) -> None:
-
         if self.option("all"):
             filter_options = "all"
         console.print(
@@ -184,12 +182,10 @@ class ConfigClientCommand(Command):
             )
         )
 
-    def save_file(self, filename: str, content: str) -> None:
-        extension = filename[-4:]
-        self.line(f"generating <info>{extension}</info> file...")
-        with open(f"{filename}", "w") as f:
+    def save_json(self, filename: str, content: str) -> None:
+        with open(f"{filename}", "w", encoding="utf-8") as f:
             json.dump(content, f, indent=4, sort_keys=True)
-        self.line(f"file saved: <info>{filename}</info>")
+        console.print(f"file saved: [cyan]{filename}[/cyan]", style="bold")
 
 
 class DecryptCommand(Command):
@@ -216,9 +212,9 @@ class DecryptCommand(Command):
         try:
             resp = client.decrypt(data, path=self.option("path"))
         except Exception:
-            self.line("<options=bold>failed to contact server... </>")
+            console.print("[red]failed to contact server![/red]", style="bold")
             raise SystemExit(1)
-        self.line(resp)
+        console.print(f"[cyan]{resp}[/cyan]")
 
 
 class EncryptCommand(Command):
@@ -229,7 +225,7 @@ class EncryptCommand(Command):
         {data : Data to encrypt.}
         {--a|address=http://localhost:8888 : ConfigServer address.}
         {--p|path=/encrypt : encrypt path.}
-        {--raw=no : Format output including {cipher}?}
+        {--raw : Format output including {cipher}?}
     """
 
     def handle(self):
@@ -240,9 +236,12 @@ class EncryptCommand(Command):
         try:
             resp = client.encrypt(self.argument("data"), path=self.option("path"))
         except Exception:
-            self.line("<options=bold>failed to contact server... </>")
+            console.print("[red]failed to contact server![/red]", style="bold")
             raise SystemExit(1)
-        if not self.option("raw") == "yes":
-            self.line(f"'{{cipher}}{resp}'")
+        if not self.option("raw"):
+            console.print(
+                f"[yellow]'[/yellow][white]{{cipher}}{resp}[/white][yellow]'[/yellow]",
+                style="bold",
+            )
         else:
-            self.line(resp)
+            console.print(resp)

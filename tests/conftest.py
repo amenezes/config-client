@@ -130,10 +130,6 @@ def value_error(*args, **kwargs):
     raise ValueError
 
 
-def base_exception_error(*args, **kwargs):
-    raise Exception
-
-
 def http_error(*args, **kwargs):
     with requests_mock.Mocker() as m:
         m.get(requests_mock.ANY, exc=requests.exceptions.HTTPError)

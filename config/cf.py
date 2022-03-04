@@ -43,6 +43,9 @@ class CF:
     def get_config(self, **kwargs) -> None:
         self.client.get_config(**kwargs)
 
+    async def get_config_async(self, **kwargs) -> None:
+        await self.client.get_config_async(**kwargs)
+
     @property
     def config(self) -> Dict:
         return self.client.config

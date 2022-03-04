@@ -1,7 +1,8 @@
 """Module for retrieve application's config from Spring Cloud Config."""
+import asyncio
 import os
 from distutils.util import strtobool
-from functools import wraps
+from functools import partial, wraps
 from typing import Any, Callable, Dict, KeysView, Optional, Tuple
 
 from attrs import field, fields_dict, mutable, validators
@@ -23,7 +24,7 @@ class ConfigClient:
         validator=validators.instance_of(str),
     )
     label: str = field(
-        default=os.getenv("BRANCH", "master"),
+        default=os.getenv("LABEL", "master"),
         validator=validators.instance_of(str),
     )
     app_name: str = field(
@@ -75,6 +76,10 @@ class ConfigClient:
         server_config: dict = {}
         [self._merge_dict(server_config, c) for c in fconfig]
         self._merge_dict(self._config, server_config)
+
+    async def get_config_async(self, **kwargs) -> None:
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, partial(self.get_config, **kwargs))
 
     def _configure_oauth2(self, **kwargs) -> dict:
         if self.oauth2:
