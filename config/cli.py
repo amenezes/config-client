@@ -111,6 +111,7 @@ class ConfigClientCommand(Command):
             )
 
         with Status("contacting server...", spinner="dots4") as status:
+            emoji = random.choice(self.EMOJI_ERRORS)
             try:
                 if self.option("auth"):
                     username, password = self.option("auth").split(":")
@@ -122,15 +123,14 @@ class ConfigClientCommand(Command):
                     auth = None
                 client.get_config(auth=auth)
             except ValueError:
-                emoji = random.choice(self.EMOJI_ERRORS)
                 console.print(
-                    f"<options=bold>{emoji} bad credentials format for auth method. Format expected: user:password {emoji}</>"
+                    f"\nbad credentials format for auth method. Format expected: user:password {emoji}",
+                    style="bold",
                 )
                 raise SystemExit(1)
             except ConnectionError:
-                emoji = random.choice(self.EMOJI_ERRORS)
                 console.print(
-                    f"[red]failed to contact server![/red] {emoji}", style="bold"
+                    f"\n[red]failed to contact server![/red] {emoji}", style="bold"
                 )
                 raise SystemExit(1)
 
@@ -146,7 +146,7 @@ class ConfigClientCommand(Command):
             except RequestFailedException:
                 emoji = random.choice(self.EMOJI_ERRORS)
                 console.print(
-                    f"[red]failed to contact server![/red] {emoji}", style="bold"
+                    f"\n[red]failed to contact server![/red] {emoji}", style="bold"
                 )
                 raise SystemExit(1)
             with open(f"{filter_options}", "w", encoding="utf-8") as f:
@@ -165,7 +165,7 @@ class ConfigClientCommand(Command):
         if len(str(content)) == 0:
             emoji = random.choice(self.EMOJI_NOT_FOUND)
             console.print(
-                f"{emoji} no result found for your filter: <comment>'{filter_options}'</comment>"
+                f"\n{emoji} no result found for filter: [yellow]'[white bold]{filter_options}[/white bold]'[/yellow]",
             )
             raise SystemExit(0)
 
@@ -175,7 +175,7 @@ class ConfigClientCommand(Command):
         console.print(
             Panel(
                 JSON(json.dumps(content), indent=4, highlight=True, sort_keys=True),
-                title=f"[bold green]report for filter: [yellow]'[/yellow][white italic]{filter_options}[/white italic][yellow]'[/yellow][/bold green]",
+                title=f"[bold green]report for filter: [yellow]'[white italic]{filter_options}[/white italic]'[/yellow][/bold green]",
                 highlight=True,
                 border_style="white",
                 expand=True,
@@ -212,7 +212,7 @@ class DecryptCommand(Command):
         try:
             resp = client.decrypt(data, path=self.option("path"))
         except Exception:
-            console.print("[red]failed to contact server![/red]", style="bold")
+            console.print("\n[red]failed to contact server![/red]", style="bold")
             raise SystemExit(1)
         console.print(f"[cyan]{resp}[/cyan]")
 
@@ -240,7 +240,7 @@ class EncryptCommand(Command):
             raise SystemExit(1)
         if not self.option("raw"):
             console.print(
-                f"[yellow]'[/yellow][white]{{cipher}}{resp}[/white][yellow]'[/yellow]",
+                f"[yellow]'[white]{{cipher}}{resp}[/white]'[/yellow]",
                 style="bold",
             )
         else:
