@@ -43,18 +43,15 @@ class CF:
     def get_config(self, **kwargs) -> None:
         self.client.get_config(**kwargs)
 
+    async def get_config_async(self, **kwargs) -> None:
+        await self.client.get_config_async(**kwargs)
+
     @property
     def config(self) -> Dict:
         return self.client.config
 
-    def get_attribute(self, value: str) -> Any:
-        return self.client.get_attribute(value)
-
     def get(self, key, default: Any = ""):
         return self.client.get(key, default)
-
-    def get_keys(self) -> KeysView:
-        return self.client.get_keys()
 
     def keys(self) -> KeysView:
         return self.client.keys()

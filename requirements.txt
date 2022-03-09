@@ -3,4 +3,4 @@ requests
 attrs
 cleo
 python-dotenv
-portray
+rich
