@@ -44,7 +44,7 @@ class TestClientCommand:
         assert command.io.fetch_output() is not None
 
     def test_show_filter_config(self, command, attribute_mock):
-        command.execute("app 'db'")
+        command.execute("app db -v")
         assert command.io.fetch_output() is not None
 
     def test_connection_error(self, command, monkeypatch):
@@ -58,7 +58,7 @@ class TestClientCommand:
             command.execute("app")
 
     def test_save_as_json(self, command, attribute_mock):
-        command.execute("app 'db' --json")
+        command.execute("app db --json")
         assert command.io.fetch_output() is not None
 
     def test_custom_url_via_env(self, command, monkeypatch):
