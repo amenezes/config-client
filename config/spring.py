@@ -78,7 +78,7 @@ class ConfigClient:
         self._merge_dict(self._config, server_config)
 
     async def get_config_async(self, **kwargs) -> None:
-        loop = asyncio.get_event_loop()
+        loop = asyncio.get_running_loop()
         await loop.run_in_executor(None, partial(self.get_config, **kwargs))
 
     def _configure_oauth2(self, **kwargs) -> dict:

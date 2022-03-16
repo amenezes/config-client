@@ -128,11 +128,8 @@ def test_keys(client):
     ],
 )
 def test_get(client, monkeypatch, expr, expected, mocker):
-    # logging.basicConfig(level=logging.INFO)
     monkeypatch.setattr(http, "get", conftest.config_mock)
     client.get_config()
-
-    # logging.info(f"INFO: {client.get('info')}")
     assert client.get(expr) == expected
 
 

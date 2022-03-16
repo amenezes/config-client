@@ -3,11 +3,9 @@ import logging
 import os
 import random
 import re
-from pathlib import Path
 from typing import Any, List
 
 from cleo import Command
-from dotenv import load_dotenv
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 from rich.console import Console
 from rich.json import JSON
@@ -19,11 +17,7 @@ from config.exceptions import RequestFailedException
 from config.spring import ConfigClient
 
 logging.disable(logging.ERROR)
-
-
 console = Console()
-env_path = Path(".") / ".env"
-load_dotenv(dotenv_path=env_path)
 
 
 class ConfigClientCommand(Command):
