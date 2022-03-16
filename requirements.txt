@@ -2,5 +2,4 @@ glom
 requests
 attrs
 cleo
-python-dotenv
 rich
