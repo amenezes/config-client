@@ -9,6 +9,7 @@ from attrs import field, fields_dict, mutable, validators
 from glom import glom
 
 from . import http
+from ._config import merge_dict, to_dict
 from .auth import OAuth2
 from .core import singleton
 from .exceptions import RequestFailedException
@@ -68,14 +69,14 @@ class ConfigClient:
                 raise SystemExit(1)
             raise ConnectionError("fail_fast disabled.")
         fconfig = [
-            self._to_dict(config)
+            to_dict(config)
             for config in reversed(
                 glom(response.json(), ("propertySources", ["source"]))
             )
         ]
         server_config: dict = {}
-        [self._merge_dict(server_config, c) for c in fconfig]
-        self._merge_dict(self._config, server_config)
+        [merge_dict(server_config, c) for c in fconfig]
+        merge_dict(self._config, server_config)
 
     async def get_config_async(self, **kwargs) -> None:
         loop = asyncio.get_running_loop()
@@ -89,31 +90,6 @@ class ConfigClient:
             except KeyError:
                 kwargs.update(dict(headers=self.oauth2.authorization_header))
         return kwargs
-
-    def _to_dict(self, config: dict) -> dict:
-        final_config: dict = {}
-        for k, v in config.items():
-            tconfig = {}
-            last_key = k.split(".")[-1:][0]
-            for ksub in reversed(k.split(".")):
-                if ksub == last_key:
-                    tconfig = {ksub: v}
-                else:
-                    tconfig = {ksub: tconfig}
-            self._merge_dict(final_config, tconfig)
-        return final_config
-
-    def _merge_dict(self, primary_config: dict, secondary_config: dict) -> dict:
-        for k, v in primary_config.items():
-            if isinstance(v, dict):
-                if k in secondary_config and isinstance(secondary_config[k], dict):
-                    self._merge_dict(primary_config[k], secondary_config[k])
-            elif k in secondary_config:
-                primary_config[k] = secondary_config[k]
-        for k, v in secondary_config.items():
-            if k not in primary_config:
-                primary_config.update({k: v})
-        return primary_config
 
     def get_file(self, filename: str, **kwargs: dict) -> str:
         """Request a file from the config server."""

@@ -212,30 +212,3 @@ def test_client_with_auth_and_headers(monkeypatch, mocker, oauth2):
         },
         verify=False,
     )
-
-
-@pytest.mark.parametrize(
-    "data, expected",
-    [
-        ({"python.cache.timeout": 10}, {"python": {"cache": {"timeout": 10}}}),
-        ({"health.config.enabled": False}, {"health": {"config": {"enabled": False}}}),
-    ],
-)
-def test_to_dict(client, data, expected):
-    assert client._to_dict(data) == expected
-
-
-def test_merge_dict(client):
-    first = {
-        "info": {"description": "simple description", "docs": "http://localhost/docs"}
-    }
-    second = {"app": {"password": "234"}, "info": {"url": "http://localhost"}}
-    expected = {
-        "info": {
-            "description": "simple description",
-            "url": "http://localhost",
-            "docs": "http://localhost/docs",
-        },
-        "app": {"password": "234"},
-    }
-    assert client._merge_dict(first, second) == expected
