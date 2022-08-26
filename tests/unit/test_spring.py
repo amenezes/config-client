@@ -14,7 +14,7 @@ def test_get_config(client, monkeypatch):
     monkeypatch.setattr(http, "get", conftest.config_mock)
     client.get_config()
     assert isinstance(client.config, dict)
-    assert list(client.config) == ["health", "spring", "info", "server", "python"]
+    assert list(client.config) == ["health", "spring", "examples", "unwanted", "info", "server", "python"]
 
 
 def test_get_config_async(client, monkeypatch):
@@ -22,7 +22,7 @@ def test_get_config_async(client, monkeypatch):
     monkeypatch.setattr(http, "get", conftest.config_mock)
     loop.run_until_complete(client.get_config_async())
     assert isinstance(client.config, dict)
-    assert list(client.config) == ["health", "spring", "info", "server", "python"]
+    assert list(client.config) == ["health", "spring", "examples", "unwanted", "info", "server", "python"]
 
 
 def test_get_config_failed(client):
@@ -125,6 +125,11 @@ def test_keys(client):
         ("spring.cloud.consul.port", 8500),
         ("info.app.description", "pws test_app - development profile"),
         ("info.app.descriptions", ""),
+        ("examples.example_int_list", [1, 2]),
+        ("examples.example_str_list", ["example 1", "example 2", "example 3"]),
+        ("examples.example_float_list", [1.1, 2.2, 3.3]),
+        ("examples.float", 1.2),
+        ("unwanted.types", ["branded"]),
     ],
 )
 def test_get(client, monkeypatch, expr, expected, mocker):
