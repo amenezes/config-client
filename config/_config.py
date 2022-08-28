@@ -1,3 +1,4 @@
+from contextlib import suppress
 from typing import Tuple
 
 
@@ -12,6 +13,7 @@ def to_dict(config: dict) -> dict:
             else:
                 tconfig = {ksub: tconfig}
         merge_dict(final_config, tconfig)
+    _merge(final_config)
     return final_config
 
 
@@ -23,14 +25,38 @@ def merge_dict(primary_config: dict, secondary_config: dict) -> dict:
         elif k in secondary_config:
             primary_config[k] = secondary_config[k]
     for k, v in secondary_config.items():
-        k, is_list = _fix_key(k)
-        if k not in primary_config and is_list is False:
+        if k not in primary_config:
             primary_config.update({k: v})
-        elif k not in primary_config and is_list:
-            primary_config.update({k: [v]})
-        elif k in primary_config and is_list:
-            primary_config[k].append(v)
     return primary_config
+
+
+def merge_list(config: dict) -> None:
+    keys = {}
+    with suppress(AttributeError):
+        for k in config.keys():
+            key, is_list = _fix_key(k)
+            if is_list:
+                if key not in keys:
+                    keys[key] = 0
+                else:
+                    keys[key] += 1
+
+    for key, it in keys.items():
+        for i in range(it + 1):
+            if key not in config:
+                config.update({key: [config[f"{key}[{i}]"]]})
+                config.pop(f"{key}[{i}]")
+            else:
+                config[key].append(config[f"{key}[{i}]"])
+                config.pop(f"{key}[{i}]")
+
+
+def _merge(config: dict):
+    merge_list(config)
+    for k, v in config.items():
+        merge_list(config[k])
+        if isinstance(v, dict):
+            _merge(v)
 
 
 def _fix_key(key_str: str) -> Tuple[str, bool]:
