@@ -42,6 +42,10 @@ from config._config import merge_dict, merge_list, to_dict
                 "example": [1, 2],
             },
         ),
+        (
+            {"examples.three.one[0]": "one", "examples.three.one[1]": "thow"},
+            {"examples": {"three": {"one": ["one", "thow"]}}},
+        ),
     ],
 )
 def test_to_dict(data, expected):
