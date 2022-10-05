@@ -8,4 +8,16 @@ try:
 except ImportError:
     flask = None
 
-__all__ = ["AioHttpConfig", "FlaskConfig"]
+
+try:
+    from config.ext.fastapi import fastapi_cloud_foundry, fastapi_config_client
+except ImportError:
+    fastapi = None
+
+
+__all__ = [
+    "AioHttpConfig",
+    "FlaskConfig",
+    "fastapi_config_client,",
+    "fastapi_cloud_foundry",
+]
