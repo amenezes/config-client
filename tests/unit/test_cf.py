@@ -1,5 +1,3 @@
-import asyncio
-
 import pytest
 
 from config import CF, ConfigClient, http
@@ -49,9 +47,9 @@ def test_get_config(cf, config_mock):
     assert isinstance(cf.config, dict)
 
 
-def test_get_config_async(cf, config_mock):
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(cf.get_config_async())
+@pytest.mark.asyncio
+async def test_get_config_async(cf, config_mock):
+    await cf.get_config_async()
     assert isinstance(cf.config, dict)
 
 
