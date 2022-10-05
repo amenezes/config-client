@@ -3,6 +3,7 @@ flake8
 pytest
 pytest-cov
 pytest-mock
+pytest-asyncio
 isort
 black
 mypy
@@ -16,5 +17,7 @@ requests-mock
 Flask
 # aiohttp integration
 aiohttp
+# fastapi
+fastapi
 # optional for asdf-vm
 tox-asdf
