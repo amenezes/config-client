@@ -22,7 +22,8 @@ tests:
 
 docs:
 	@echo "> generate project documentation..."
-	portray server
+	@cp README.md docs/index.md
+	mkdocs serve
 
 install-deps:
 	@echo "> installing dependencies..."
