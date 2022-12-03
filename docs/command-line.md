@@ -10,62 +10,42 @@ pip install 'config-client[cli]'
 
 ## Usage
 
+`python -m config`
+
 ```bash
-$ python -m config -h
-Config Client version 1.0.0
+Usage: python -m config [OPTIONS] COMMAND [ARGS]...
 
-USAGE
-  config-client [-h] [-q] [-v [<...>]] [-V] [--ansi] [--no-ansi] [-n] <command> [<arg1>] ... [<argN>]
+Options:
+  --version   Show the version and exit.
+  -h, --help  Show this message and exit.
 
-ARGUMENTS
-  <command>              The command to execute
-  <arg>                  The arguments of the command
-
-GLOBAL OPTIONS
-  -h (--help)            Display this help message
-  -q (--quiet)           Do not output any message
-  -v (--verbose)         Increase the verbosity of messages: "-v" for normal output, "-vv" for more verbose output and "-vvv" for debug
-  -V (--version)         Display this application version
-  --ansi                 Force ANSI output
-  --no-ansi              Disable ANSI output
-  -n (--no-interaction)  Do not ask any interactive question
-
-AVAILABLE COMMANDS
-  client                 Interact with Spring Cloud Server via cli.
-  decrypt                Decrypt a input via Spring Cloud Config.
-  encrypt                Encrypt a input via Spring Cloud Config.
-  help                   Display the manual of a command
+Commands:
+  client   Interact with Spring Cloud Server via cli.
+  decrypt  Decrypt a input via Spring Cloud Config.
+  encrypt  Encrypt a input via Spring Cloud Config.
 ```
 
 #### example 1: show client help.
 
+`python -m config client -h`
+
 ```bash
-$ python -m config client -h
-USAGE
-  config-client client [-a <...>] [-l <...>] [-p <...>] [--file] [--json] [--all] [--auth <...>] [--digest <...>] <app> [<filter>]
+Usage: python -m config client [OPTIONS] APP_NAME
 
-ARGUMENTS
-  <app>                  Application name.
-  <filter>               Config selector.
+  Interact with Spring Cloud Server via cli.
 
-OPTIONS
-  -a (--address)         ConfigServer address. (default: "http://localhost:8888")
-  -l (--label)           Branch config. (default: "master")
-  -p (--profile)         Profile config. (default: "development")
-  --file                 Gets remote file from server and saves locally.
-  --json                 Save output as json.
-  --all                  Show all config.
-  --auth                 Basic authentication credentials.
-  --digest               Digest authentication credentials.
-
-GLOBAL OPTIONS
-  -h (--help)            Display this help message
-  -q (--quiet)           Do not output any message
-  -v (--verbose)         Increase the verbosity of messages: "-v" for normal output, "-vv" for more verbose output and "-vvv" for debug
-  -V (--version)         Display this application version
-  --ansi                 Force ANSI output
-  --no-ansi              Disable ANSI output
-  -n (--no-interaction)  Do not ask any interactive question
+Options:
+  -a, --address TEXT  ConfigServer address.  [default: http://localhost:8888;
+                      required]
+  -l, --label TEXT    Branch config.  [default: master; required]
+  -p, --profile TEXT  Profile config.  [default: development; required]
+  -f, --filter TEXT   Filter output by.
+  --auth TEXT         Basic authentication credentials.
+  --digest TEXT       Digest authentication credentials.
+  --file TEXT         Gets remote file from server and saves locally.
+  --json              Save output as json.
+  -v, --verbose       Extend output info.
+  -h, --help          Show this message and exit.
 ```
 
 > **`Notice`**
@@ -76,88 +56,191 @@ Example of environment variables available to override the command line options.
 
 #### example 2: querying for a specific configuration.
 
+Command syntax: config client `<application_name>` `<filter>`
+
+`python -m config client simpleweb000 -l master -v`
+
 ```bash
-# Command syntax: config client <application_name> <filter>
-$ python -m config client foo -l main --all -v
-╭───────────────────────────────────────────── client info ─────────────────────────────────────────────╮
-│  address: http://localhost:8888                                                                       │
-│    label: main                                                                                        │
-│  profile: development                                                                                 │
-│      URL: http://localhost:8888/foo/development/main                                                  │
-╰───────────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭────────────────────────────────────── report for filter: 'all' ───────────────────────────────────────╮
-│ {                                                                                                     │
-│     "bar": "spam",                                                                                    │
-│     "democonfigclient": {                                                                             │
-│         "message": "hello spring io"                                                                  │
-│     },                                                                                                │
-│     "eureka": {                                                                                       │
-│         "client": {                                                                                   │
-│             "serviceUrl": {                                                                           │
-│                 "defaultZone": "http://localhost:8761/eureka/"                                        │
-│             }                                                                                         │
-│         }                                                                                             │
-│     },                                                                                                │
-│     "foo": "from foo development",                                                                    │
-│     "info": {                                                                                         │
-│         "description": "Spring Cloud Samples",                                                        │
-│         "url": "https://github.com/spring-cloud-samples"                                              │
-│     }                                                                                                 │
-│ }                                                                                                     │
-╰───────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─────────────────────────────────────────────────────── client info ────────────────────────────────────────────────────────╮
+│  address: http://localhost:8888                                                                                            │
+│    label: master                                                                                                           │
+│  profile: development                                                                                                      │
+│      URL: http://localhost:8888/simpleweb000/development/master                                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭───────────────────────────────────────────────── report for filter: 'all' ─────────────────────────────────────────────────╮
+│ {                                                                                                                          │
+│     "example": [                                                                                                           │
+│         1,                                                                                                                 │
+│         2                                                                                                                  │
+│     ],                                                                                                                     │
+│     "examples": {                                                                                                          │
+│         "float": [                                                                                                         │
+│             1.1,                                                                                                           │
+│             2.2,                                                                                                           │
+│             3.3,                                                                                                           │
+│             4.4                                                                                                            │
+│         ],                                                                                                                 │
+│         "int": [                                                                                                           │
+│             1,                                                                                                             │
+│             2                                                                                                              │
+│         ],                                                                                                                 │
+│         "str": [                                                                                                           │
+│             "example 1",                                                                                                   │
+│             "example 2",                                                                                                   │
+│             "example 3"                                                                                                    │
+│         ]                                                                                                                  │
+│     },                                                                                                                     │
+│     "first": {                                                                                                             │
+│         "second_1": [                                                                                                      │
+│             1,                                                                                                             │
+│             2                                                                                                              │
+│         ],                                                                                                                 │
+│         "second_2": [                                                                                                      │
+│             1                                                                                                              │
+│         ],                                                                                                                 │
+│         "second_3": {                                                                                                      │
+│             "third_1": [                                                                                                   │
+│                 1,                                                                                                         │
+│                 2                                                                                                          │
+│             ],                                                                                                             │
+│             "third_2": [                                                                                                   │
+│                 1.1,                                                                                                       │
+│                 2.2,                                                                                                       │
+│                 3.3                                                                                                        │
+│             ],                                                                                                             │
+│             "third_3": {                                                                                                   │
+│                 "fourth_1": [                                                                                              │
+│                     "1",                                                                                                   │
+│                     "2"                                                                                                    │
+│                 ],                                                                                                         │
+│                 "fourth_2": [                                                                                              │
+│                     1                                                                                                      │
+│                 ],                                                                                                         │
+│                 "fourth_3": [                                                                                              │
+│                     1,                                                                                                     │
+│                     2.2,                                                                                                   │
+│                     "three"                                                                                                │
+│                 ],                                                                                                         │
+│                 "fourth_4": {                                                                                              │
+│                     "fifth_1": [                                                                                           │
+│                         1,                                                                                                 │
+│                         2                                                                                                  │
+│                     ],                                                                                                     │
+│                     "fifth_2": [                                                                                           │
+│                         1,                                                                                                 │
+│                         2,                                                                                                 │
+│                         3                                                                                                  │
+│                     ]                                                                                                      │
+│                 }                                                                                                          │
+│             }                                                                                                              │
+│         }                                                                                                                  │
+│     },                                                                                                                     │
+│     "health": {                                                                                                            │
+│         "config": {                                                                                                        │
+│             "enabled": false                                                                                               │
+│         }                                                                                                                  │
+│     },                                                                                                                     │
+│     "info": {                                                                                                              │
+│         "app": {                                                                                                           │
+│             "description": "pws simpleweb000 - development profile",                                                       │
+│             "name": "simpleweb000",                                                                                        │
+│             "password": "123"                                                                                              │
+│         }                                                                                                                  │
+│     },                                                                                                                     │
+│     "python": {                                                                                                            │
+│         "cache": {                                                                                                         │
+│             "timeout": 10,                                                                                                 │
+│             "type": "simple"                                                                                               │
+│         }                                                                                                                  │
+│     },                                                                                                                     │
+│     "server": {                                                                                                            │
+│         "port": 8080                                                                                                       │
+│     },                                                                                                                     │
+│     "spring": {                                                                                                            │
+│         "cloud": {                                                                                                         │
+│             "consul": {                                                                                                    │
+│                 "host": "discovery",                                                                                       │
+│                 "port": 8500                                                                                               │
+│             }                                                                                                              │
+│         }                                                                                                                  │
+│     }                                                                                                                      │
+│ }                                                                                                                          │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
 #### example 3: saving the output to a file.
 
+Command syntax: config client `<application_name>` `<filter>` `--json`
+
+`python -m config client simpleweb000 -f spring.cloud.consul --json`
+
 ```bash
-# Command syntax: config client <application_name> <filter> --json
-python -m config client foo eureka.client --json
-file saved: output.json
+File saved: response.json
 ```
 
 #### example 4: retrieving a remote file and saving locally.
 
+Command syntax: config client `<application_name>` `--file` `<filename>`
+
+`python -m config client simpleweb000 --file nginx.conf`
+
 ```bash
-# Command syntax: config client <application_name> <filename> --file
-python -m config client foo -l main books.xml --file  
-file saved: books.xml
+File saved: nginx.conf
 ```
 
 #### example 5: encrypting a secret
 
+Command syntax: config encrypt `<my_secret>`
+
+`python -m config encrypt 123`
+
 ```bash
-# Command syntax: config encrypt <my_secret>
-# help: config encrypt -h
-python -m config encrypt 123
-'{cipher}bd545199981d5663965a2daeb1a4978c5cbf3f5743cab5a735065681e8a1f4a7'
-# or
-config encrypt 123 --raw
-517d8c5e63078928ff1a6f5030551c49617258aaebbd99d9a17cc3622bb1d310
+╭─────────────────────────────────────────────────────────────────────────────────────╮
+│  encrypted data: 'f6d620453e28359fa05a2a96f2a089f5a46d858ee0174f5506e73a526ac6aed2' │
+╰─────────────────────────────────────────────────────────────────────────────────────╯
 ```
+
+`python -m config encrypt 123 --raw`
+
+```bash
+╭─────────────────────────────────────────────────────────────────────────────────────────────╮
+│  encrypted data: '{cipher}59e4bf2fff4a0411eb216e617886f3464d1c0d5a13fec0c00b746ed007ef28d5' │
+╰─────────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
 
 #### example 6: decrypting a secret
 
+Command syntax: config decrypt `<my_encrypted_secret>`
+
+`python -m config decrypt {cipher}59e4bf2fff4a0411eb216e617886f3464d1c0d5a13fec0c00b746ed007ef28d5`
+
 ```bash
-# Command syntax: config decrypt <my_encrypted_secret>
-# help: config decrypt -h
-python -m config decrypt '{cipher}bd545199981d5663965a2daeb1a4978c5cbf3f5743cab5a735065681e8a1f4a7'
-123
-# or
-config decrypt bd545199981d5663965a2daeb1a4978c5cbf3f5743cab5a735065681e8a1f4a7
-123
+╭────────────────────────╮
+│  decrypted data: '123' │
+╰────────────────────────╯
+```
+
+`python -m config decrypt 59e4bf2fff4a0411eb216e617886f3464d1c0d5a13fec0c00b746ed007ef28d5`
+
+```bash
+╭────────────────────────╮
+│  decrypted data: '123' │
+╰────────────────────────╯
 ```
 
 #### example 7: request config with basic auth
 
+Command syntax: config decrypt `<application_name>` `--auth` `<user:pass>`
+
+`python -m config client simpleweb000 -f spring.cloud.consul --auth user:pass`
+
 ```bash
-# Command syntax: config decrypt <application_name> --all --auth <user:pass>
-# help: config client -h
-python -m config client simpleweb000 spring.cloud.consul --auth user:pass
 ╭───────────────────────────────────────────── client info ─────────────────────────────────────────────╮
 │  address: http://localhost:8888                                                                       │
-│    label: main                                                                                        │
+│    label: master                                                                                      │
 │  profile: development                                                                                 │
-│      URL: http://localhost:8888/foo/development/main                                                  │
+│      URL: http://localhost:8888/simpleweb000/development/master                                       │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ╭────────────────────────────────────── report for filter: 'all' ───────────────────────────────────────╮
 │ {                                                                                                     │
@@ -169,15 +252,16 @@ python -m config client simpleweb000 spring.cloud.consul --auth user:pass
 
 #### example 8: request config with digest auth
 
+Command syntax: config client `<application_name>` `--digest` `<user:pass>`
+
+`python -m config client simpleweb000 'spring.cloud.consul' --digest user:pass`
+
 ```bash
-# Command syntax: config client <application_name> --all --digest <user:pass>
-# help: config client -h
-python -m config client simpleweb000 'spring.cloud.consul' --digest user:pass
 ╭───────────────────────────────────────────── client info ─────────────────────────────────────────────╮
 │  address: http://localhost:8888                                                                       │
-│    label: main                                                                                        │
+│    label: master                                                                                      │
 │  profile: development                                                                                 │
-│      URL: http://localhost:8888/foo/development/main                                                  │
+│      URL: http://localhost:8888/simpleweb000/development/master                                       │
 ╰───────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ╭────────────────────────────────────── report for filter: 'all' ───────────────────────────────────────╮
 │ {                                                                                                     │
