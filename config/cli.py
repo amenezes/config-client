@@ -87,18 +87,13 @@ def client(
             try:
                 resp = client.get_file(file)
             except RequestFailedException:
-                emoji = random.choice(EMOJI_ERRORS)
-                console.print(
-                    f"[red]Failed to contact server![/red] {emoji}", style="bold"
-                )
-                raise click.ClickException("Failed to contact server!")
+                raise click.ClickException("💥 Failed to contact server!")
             Path(file).write_text(resp)
             status.update("OK!")
         console.print(f"File saved: [cyan]{file}[/cyan]", style="bold")
         raise SystemExit
 
     if verbose:
-        # show 'client info' header
         table = Table.grid(padding=(0, 1))
         table.add_column(style="cyan", justify="right")
         table.add_column(style="magenta")
@@ -129,26 +124,23 @@ def client(
                 auth = None
             client.get_config(auth=auth)
         except ValueError:
-            console.print(
-                f"bad credentials format for auth method. Format expected: user:password {emoji}",
-                style="bold",
+            raise click.ClickException(
+                f"{emoji} Bad credentials format for auth method. Format expected: <user>:<password>"
             )
-            raise SystemExit
         except ConnectionError:
-            console.print(f"[red]Failed to contact server![/red] {emoji}", style="bold")
-            raise SystemExit
+            raise click.ClickException("💥 Failed to contact server!")
         status.update("OK!")
 
         content = client.config
         if filter:
             content = client.get(filter)
 
-        if len(str(content)) == 0:
-            emoji = random.choice(EMOJI_NOT_FOUND)
-            console.print(
-                f"{emoji} no result found for filter: [yellow]'[white bold]{filter}[/white bold]'[/yellow]",
-            )
-            raise SystemExit
+    if len(str(content)) == 0:
+        emoji = random.choice(EMOJI_NOT_FOUND)
+        console.print(
+            f"{emoji} No result found for filter: [yellow]'[white bold]{filter}[/white bold]'[/yellow]",
+        )
+        raise SystemExit
 
     if json:
         with open("response.json", "w", encoding="utf-8") as f:
@@ -160,7 +152,7 @@ def client(
     console.print(
         Panel(
             JSON(dumps(content), indent=4, highlight=True, sort_keys=True),
-            title=f"[bold green]report for filter: [yellow]'[white italic]{filter}[/white italic]'[/yellow][/bold green]",
+            title=f"[bold][green]report for filter[/green][yellow]: [/yellow]'[magenta italic]{filter}[/magenta italic]'[/bold]",
             highlight=True,
             border_style="white",
             expand=True,
@@ -191,8 +183,7 @@ def decrypt(text, address, path):
     try:
         resp = client.decrypt(text, path=path)
     except Exception:
-        console.print("[red]failed to contact server![/red]", style="bold")
-        raise SystemExit
+        raise click.ClickException("💥 Failed to contact server!")
 
     table = Table.grid(padding=(0, 1))
     table.add_column(style="cyan", justify="right")
@@ -222,7 +213,7 @@ def encrypt(data, address, path, raw):
     try:
         resp = client.encrypt(data, path=path)
     except Exception:
-        console.print("[red]failed to contact server![/red]", style="bold")
+        raise click.ClickException("💥 Failed to contact server!")
 
     if raw:
         resp = f"{{cipher}}{resp}"

@@ -13,7 +13,6 @@ def test_base_command(cli_runner):
     assert result.output == f"cli, version {__version__}\n"
 
 
-@pytest.mark.skip
 class TestClientCommand:
     def get_config_mock(self, *args, **kwargs):
         return SAMPLE_CONFIG
@@ -34,65 +33,68 @@ class TestClientCommand:
         monkeypatch.setattr(ConfigClient, "get", self.get_config_mock)
 
     def test_show_all_config(self, cli_runner, config_mock):
-        result = cli_runner.invoke(client, ["app --all"])
+        result = cli_runner.invoke(client, ["app"])
         assert result.output is not None
         assert len(result.output) >= 100
 
     def test_show_filter_config(self, cli_runner, attribute_mock):
-        result = cli_runner.invoke(client, ["app db -v"])
-        assert len(result.output.split()) == 7
+        result = cli_runner.invoke(client, ["app", "-f db"])
+        assert "report for filter: ' db'" in result.output
 
     def test_connection_error(self, cli_runner):
-        result = cli_runner.invoke(client, ["app --all"])
-        result.exit_code == 1
+        result = cli_runner.invoke(client, ["app"])
+        assert result.output == "Error: 💥 Failed to contact server!\n"
+        assert result.exit_code == 1
 
-    def test_empty_response(self, cli_runner):
-        result = cli_runner.invoke(client, ["app "])
-        result.exit_code == 1
+    def test_empty_response(self, cli_runner, config_mock):
+        result = cli_runner.invoke(client, ["app", "-f xxx"])
+        assert "No result found for filter: ' xxx'" in result.output
+        assert result.exit_code == 0
 
     def test_save_as_json(self, cli_runner, attribute_mock):
-        result = cli_runner.invoke(client, ["app db --json"])
-        assert result.output is not None
+        result = cli_runner.invoke(client, ["app", "-f db", "--json"])
+        assert result.output == "File saved: response.json\n"
+        assert result.exit_code == 0
 
     def test_custom_url_via_env(self, cli_runner, monkeypatch):
-        monkeypatch.setenv("CONFIGSERVER_CUSTOM_URL", "http://localhost")
+        monkeypatch.setenv("CONFIGSERVER_ADDRESS", "http://my-custom-server")
         monkeypatch.setattr(ConfigClient, "get_config", self.dumb_func)
-        result = cli_runner.invoke(client, ["app 'db' --json"])
+        result = cli_runner.invoke(client, ["app", "-f db", "-v"])
         assert result.exit_code == 0
+        assert "address: http://my-custom-server" in result.output
 
     def test_get_file(self, cli_runner, monkeypatch):
         monkeypatch.setattr(http, "get", conftest.text_mock)
-        result = cli_runner.invoke(client, ["app nginx.conf --file"])
+        result = cli_runner.invoke(client, ["app", "--file", "nginx.conf"])
+        assert result.output == "File saved: nginx.conf\n"
         assert result.exit_code == 0
 
-    def test_get_file_error(self, cli_runner, monkeypatch):
-        monkeypatch.setattr(http, "get", SystemExit())
-        with pytest.raises(SystemExit):
-            result = cli_runner.invoke(client, ["app nginx.conf --file"])
-            assert result.exit_code == 1
+    def test_get_file_error(self, cli_runner):
+        result = cli_runner.invoke(client, ["app", "--file", "nginx.conf"])
+        assert result.exit_code == 1
+        assert result.output == "Error: 💥 Failed to contact server!\n"
 
     @pytest.mark.parametrize(
         "cmdline", ["app --auth user:pass", "app --digest user:pass"]
     )
-    def test_get_config(self, cli_runner, monkeypatch, cmdline, config_mock):
-        result = cli_runner.invoke(client, [cmdline])
+    def test_get_config(self, cli_runner, cmdline, config_mock):
+        result = cli_runner.invoke(client, cmdline.split())
+        assert result.exit_code == 0
         assert result.output is not None
         assert len(result.output) >= 100
 
     @pytest.mark.parametrize(
-        "cmdline,error",
+        "cmdline",
         [
-            ("app --auth user:pass", conftest.connection_error),
-            ("app --auth user:pass", conftest.value_error),
-            ("app --digest user:pass", conftest.connection_error),
-            ("app --digest user:pass", conftest.value_error),
+            "app --auth userpass",
+            "app --auth user-pass",
+            "app --digest user::pass",
+            "app --digest user@pass",
         ],
     )
-    def test_get_config_with_auth_error(self, cli_runner, monkeypatch, cmdline, error):
-        monkeypatch.setattr(ConfigClient, "get_config", error)
-        with pytest.raises(SystemExit):
-            result = cli_runner.invoke(client, [cmdline])
-            assert result.output == ""
+    def test_get_config_with_auth_error(self, cli_runner, cmdline):
+        result = cli_runner.invoke(client, cmdline.split())
+        assert result.exit_code == 1
 
 
 class TestDecryptCommand:
@@ -119,22 +121,22 @@ class TestDecryptCommand:
 
 class TestEncryptCommand:
     def _mock_encrypt(self, *args, **kwargs):
-        return f"{{cipher}}{conftest.ENCRYPTED_DATA}"
+        return f"{conftest.ENCRYPTED_DATA}"
 
     def _mock_encrypt_raw(self, *args, **kwargs):
-        return conftest.ENCRYPTED_DATA
+        return f"{{cipher}}{conftest.ENCRYPTED_DATA}"
 
     def test_encrypt_command(self, cli_runner, monkeypatch):
         monkeypatch.setattr(ConfigClient, "encrypt", self._mock_encrypt)
         result = cli_runner.invoke(encrypt, ["123"])
         assert result.output is not None
+        assert r"{cipher}" not in result.output
         assert len(result.output) >= 100
 
     def test_encrypt_command_raw(self, cli_runner, monkeypatch):
         monkeypatch.setattr(ConfigClient, "encrypt", self._mock_encrypt_raw)
         result = cli_runner.invoke(encrypt, ["123", "--raw"])
-        assert result.output is not None
-        assert len(result.output) >= 100
+        assert r"{cipher}" in result.output
 
     def test_encrypt_command_error(self, cli_runner):
         result = cli_runner.invoke(encrypt, ["123"])
