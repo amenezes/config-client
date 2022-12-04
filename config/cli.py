@@ -143,7 +143,7 @@ def client(
         if filter:
             content = client.get(filter)
 
-        if len(content) == 0:
+        if len(str(content)) == 0:
             emoji = random.choice(EMOJI_NOT_FOUND)
             console.print(
                 f"{emoji} no result found for filter: [yellow]'[white bold]{filter}[/white bold]'[/yellow]",
