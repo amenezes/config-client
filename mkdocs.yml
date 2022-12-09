@@ -53,3 +53,9 @@ nav:
   - FastAPI: integrations/fastapi.md
 - CLI: command-line.md
 - Development: development.md
+markdown_extensions:
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences

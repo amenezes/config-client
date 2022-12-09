@@ -30,5 +30,7 @@ If you would like to test spring-cloud-configserver locally can you use:
 - use [hyness/spring-cloud-config-server](https://github.com/hyness/spring-cloud-config-server)
 
 ```bash
-docker run -it --rm -p 8888:8888 hyness/spring-cloud-config-server:3.1.0-jre17 --spring.cloud.config.server.git.uri=https://github.com/spring-cloud-samples/config-repo
+docker run -it --rm -p 8888:8888 \
+       hyness/spring-cloud-config-server:3.1.0-jre17 \
+       --spring.cloud.config.server.git.uri=https://github.com/spring-cloud-samples/config-repo
 ```

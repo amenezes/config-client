@@ -4,15 +4,17 @@ From the version >= `0.5.0` a simple command line it's available to query and te
 
 ## Installing cli dependencies
 
-```bash
+``` bash
 pip install 'config-client[cli]'
 ```
 
 ## Usage
 
-`python -m config`
+``` bash
+python -m config
+```
 
-```bash
+``` bash title="expected output"
 Usage: python -m config [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -27,9 +29,11 @@ Commands:
 
 #### example 1: show client help.
 
-`python -m config client -h`
+``` bash
+python -m config client -h
+```
 
-```bash
+```bash title="expected output"
 Usage: python -m config client [OPTIONS] APP_NAME
 
   Interact with Spring Cloud Server via cli.
@@ -50,17 +54,19 @@ Options:
 
 > **`Notice`**
 
-If you preferer can you set the command line options in `environment variables` or `.env` file.
+If you preferer can you set the command line options in `environment variables`.
 
 Example of environment variables available to override the command line options.
 
 #### example 2: querying for a specific configuration.
 
-Command syntax: config client `<application_name>` `<filter>`
+Command syntax: `config client <application_name> <filter>`
 
-`python -m config client simpleweb000 -l master -v`
+``` bash
+python -m config client simpleweb000 -l master -v
+```
 
-```bash
+``` bash title="expected output"
 ╭─────────────────────────────────────────────────────── client info ────────────────────────────────────────────────────────╮
 │  address: http://localhost:8888                                                                                            │
 │    label: master                                                                                                           │
@@ -170,39 +176,47 @@ Command syntax: config client `<application_name>` `<filter>`
 
 #### example 3: saving the output to a file.
 
-Command syntax: config client `<application_name>` `<filter>` `--json`
+Command syntax: `config client <application_name> <filter> --json`
 
-`python -m config client simpleweb000 -f spring.cloud.consul --json`
+``` bash
+python -m config client simpleweb000 -f spring.cloud.consul --json
+```
 
-```bash
+``` bash title="expected output"
 File saved: response.json
 ```
 
 #### example 4: retrieving a remote file and saving locally.
 
-Command syntax: config client `<application_name>` `--file` `<filename>`
+Command syntax: `config client <application_name> --file <filename>`
 
-`python -m config client simpleweb000 --file nginx.conf`
+``` bash
+python -m config client simpleweb000 --file nginx.conf
+```
 
-```bash
+``` bash title="expected output"
 File saved: nginx.conf
 ```
 
 #### example 5: encrypting a secret
 
-Command syntax: config encrypt `<my_secret>`
+Command syntax: `config encrypt <my_secret>`
 
-`python -m config encrypt 123`
+``` bash
+python -m config encrypt 123
+```
 
-```bash
+```bash title="expected output"
 ╭─────────────────────────────────────────────────────────────────────────────────────╮
 │  encrypted data: 'f6d620453e28359fa05a2a96f2a089f5a46d858ee0174f5506e73a526ac6aed2' │
 ╰─────────────────────────────────────────────────────────────────────────────────────╯
 ```
 
-`python -m config encrypt 123 --raw`
+``` bash
+python -m config encrypt 123 --raw
+```
 
-```bash
+```bash title="expected output"
 ╭─────────────────────────────────────────────────────────────────────────────────────────────╮
 │  encrypted data: '{cipher}59e4bf2fff4a0411eb216e617886f3464d1c0d5a13fec0c00b746ed007ef28d5' │
 ╰─────────────────────────────────────────────────────────────────────────────────────────────╯
@@ -211,19 +225,23 @@ Command syntax: config encrypt `<my_secret>`
 
 #### example 6: decrypting a secret
 
-Command syntax: config decrypt `<my_encrypted_secret>`
+Command syntax: `config decrypt <my_encrypted_secret>`
 
-`python -m config decrypt {cipher}59e4bf2fff4a0411eb216e617886f3464d1c0d5a13fec0c00b746ed007ef28d5`
+``` bash
+python -m config decrypt {cipher}59e4bf2fff4a0411eb216e617886f3464d1c0d5a13fec0c00b746ed007ef28d5
+```
 
-```bash
+``` bash title="expected output"
 ╭────────────────────────╮
 │  decrypted data: '123' │
 ╰────────────────────────╯
 ```
 
-`python -m config decrypt 59e4bf2fff4a0411eb216e617886f3464d1c0d5a13fec0c00b746ed007ef28d5`
+``` bash
+python -m config decrypt 59e4bf2fff4a0411eb216e617886f3464d1c0d5a13fec0c00b746ed007ef28d5
+```
 
-```bash
+``` bash title="expected output"
 ╭────────────────────────╮
 │  decrypted data: '123' │
 ╰────────────────────────╯
@@ -231,11 +249,13 @@ Command syntax: config decrypt `<my_encrypted_secret>`
 
 #### example 7: request config with basic auth
 
-Command syntax: config decrypt `<application_name>` `--auth` `<user:pass>`
+Command syntax: `config decrypt <application_name> --auth <user:pass>`
 
-`python -m config client simpleweb000 -f spring.cloud.consul --auth user:pass`
+``` bash
+python -m config client simpleweb000 -f spring.cloud.consul --auth user:pass
+```
 
-```bash
+``` bash title="expected output"
 ╭───────────────────────────────────────────── client info ─────────────────────────────────────────────╮
 │  address: http://localhost:8888                                                                       │
 │    label: master                                                                                      │
@@ -252,11 +272,14 @@ Command syntax: config decrypt `<application_name>` `--auth` `<user:pass>`
 
 #### example 8: request config with digest auth
 
-Command syntax: config client `<application_name>` `--digest` `<user:pass>`
+Command syntax: `config client <application_name> --digest <user:pass>`
 
-`python -m config client simpleweb000 'spring.cloud.consul' --digest user:pass`
 
-```bash
+``` bash
+python -m config client simpleweb000 'spring.cloud.consul' --digest user:pass
+```
+
+``` bash title="expected output"
 ╭───────────────────────────────────────────── client info ─────────────────────────────────────────────╮
 │  address: http://localhost:8888                                                                       │
 │    label: master                                                                                      │
