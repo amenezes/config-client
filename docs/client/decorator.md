@@ -4,7 +4,7 @@
 
 For use cases where environment variables are set.
 
-```ini
+``` ini title=".env"
 APP_NAME=foo
 PROFILE=dev,docker
 LABEL=main

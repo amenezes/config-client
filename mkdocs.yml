@@ -1,0 +1,61 @@
+site_name: config-client
+repo_url: https://github.com/amenezes/config-client
+repo_name: amenezes/config-client
+theme:
+  name: material
+  logo: spring-icon.png
+  favicon: spring-icon.png
+  features:
+    - navigation.instant
+    - navigation.top
+    - navigation.prune
+    - toc.integrate 
+    - search.highlight
+    - search.suggest
+    - search.share
+    - content.code.annotate
+    - content.tooltips
+    - toc.follow
+  palette:
+    - scheme: default
+      primary: green
+      accent: teal
+      toggle:
+        icon: material/lightbulb-on
+        name: Switch to dark mode
+    - scheme: slate
+      primary: green
+      accent: teal
+      toggle:
+        icon: material/lightbulb
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github-alt
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/amenezes/config-client
+    - icon: fontawesome/solid/bug
+      link: https://github.com/amenezes/config-client/issues
+    - icon: fontawesome/solid/envelope
+      link: mailto:alexandre.fmenezes@gmail.com
+nav:
+- Overview: overview.md
+- Client:
+  - Standard Client: client/standard-client.md
+  - Decorator: client/decorator.md
+  - asyncio: client/asyncio.md
+  - CloudFoundry: client/cloudfoundry.md
+  - Singleton: client/singleton.md
+- Integrations:
+  - AIOHTTP: integrations/aiohttp.md
+  - Flask: integrations/flask.md
+  - FastAPI: integrations/fastapi.md
+- CLI: command-line.md
+- Development: development.md
+markdown_extensions:
+  - pymdownx.highlight:
+      use_pygments: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences

@@ -3,6 +3,7 @@ import json
 import pytest
 import requests
 import requests_mock
+from click.testing import CliRunner
 
 from config.auth import OAuth2
 from config.cf import CF
@@ -166,3 +167,8 @@ def custom_cfenv():
 @pytest.fixture(scope="module")
 def cf():
     return CF()
+
+
+@pytest.fixture(scope="session")
+def cli_runner():
+    return CliRunner()

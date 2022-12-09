@@ -4,7 +4,7 @@
 
 ### Overview
 
-```python
+``` py
 from config import ConfigClient
 
 

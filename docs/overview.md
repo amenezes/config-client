@@ -4,7 +4,7 @@ The needed configuration to use `config-client` can be set through environment v
 
 ## Using environment variables
 
-```ini
+``` ini title=".env"
 # default environment variables values:
 #
 CONFIGSERVER_ADDRESS=http://localhost:8888

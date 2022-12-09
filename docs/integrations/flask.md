@@ -4,9 +4,14 @@
 
 ### option 1: using environment variables
 
-First run: `export APP_NAME=foo`, `export LABEL=main`
+First run: 
 
-```python
+``` bash title="terminal"
+export APP_NAME=foo
+export LABEL=main
+```
+
+``` py title="flask_example_1.py"
 import logging
 
 from config.ext.flask import FlaskConfig
@@ -54,7 +59,7 @@ def config(key):
 
 ### option 2: using custom client
 
-```python
+``` py title="flask_example_2.py"
 import logging
 
 from config import ConfigClient
@@ -101,7 +106,7 @@ def config(key):
 
 ### option 3: using custom settings
 
-```python
+``` py title="flask_example_3.py"
 import logging
 
 from config import ConfigClient
@@ -154,11 +159,15 @@ def config(key):
 
 ### option 1: using environment variables
 
-Set `APP_NAME=app_name` environment variable as others necessary.  
+Setting `APP_NAME` environment variable as others if necessary.  
+
+``` bash title="terminal"
+export APP_NAME=app_name
+```
 
 For details, see: [https://config-client.amenezes.net/docs/1.-overview/#setup](https://config-client.amenezes.net/docs/1.-overview/#setup)
 
-```python
+``` py title="flask_cf_example_1.py"
 import logging
 
 from config import CF
@@ -189,7 +198,7 @@ def config():
 
 ### option 2: using custom client
 
-```python
+``` py title="flask_cf_example_2.py"
 import logging
 
 from config.cf import CF, ConfigClient
@@ -234,7 +243,7 @@ def config(key):
 
 ### option 3: using custom settings
 
-```python
+``` py title="flask_cf_example_3.py"
 import logging
 
 from config import CF, ConfigClient

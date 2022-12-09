@@ -3,12 +3,3 @@ requires = [
     "setuptools >= 46.4.0",
 ]
 build-backend = "setuptools.build_meta"
-
-[tool.portray]
-modules = ["config"]
-
-[tool.portray.mkdocs.theme]
-favicon = "docs/spring-icon.png"
-logo = "docs/spring-logo-black.png"
-name = "material"
-palette = {primary = "green", accent = "gray"}

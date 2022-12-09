@@ -1,11 +1,10 @@
-import json
-import logging
-import os
 import random
 import re
-from typing import Any, List
+from json import dump, dumps
+from pathlib import Path
+from typing import List
 
-from cleo import Command
+import click
 from requests.auth import HTTPBasicAuth, HTTPDigestAuth
 from rich.console import Console
 from rich.json import JSON
@@ -13,229 +12,215 @@ from rich.panel import Panel
 from rich.status import Status
 from rich.table import Table
 
+from config import __version__
 from config.exceptions import RequestFailedException
 from config.spring import ConfigClient
 
-logging.disable(logging.ERROR)
+CONTEXT_SETTINGS = dict(
+    help_option_names=["-h", "--help"],
+)
+EMOJI_ERRORS: List[str] = ["🤯", "😵", "🤮", "🤢", "😨", "😭", "💩", "💔", "💥", "🔥"]
+EMOJI_SUCCESS: List[str] = ["🥳", "🤩", "😻", "💖", "🎉", "🎊"]
+EMOJI_NOT_FOUND = ["🙂", "😌", "🤨", "🙃", "😅"]
+
 console = Console()
 
 
-class ConfigClientCommand(Command):
-    """
-    Interact with Spring Cloud Server via cli.
+@click.group(context_settings=CONTEXT_SETTINGS)
+@click.version_option(version=__version__)
+def cli():
+    pass
 
-    client
-        {app : Application name.}
-        {filter? : Config selector.}
-        {--a|address=http://localhost:8888 : ConfigServer address.}
-        {--l|label=master : Branch config.}
-        {--p|profile=development : Profile config.}
-        {--file : Gets remote file from server and saves locally.}
-        {--json : Save output as json.}
-        {--all : Show all config.}
-        {--auth= : Basic authentication credentials.}
-        {--digest= : Digest authentication credentials.}
-    """
 
-    EMOJI_ERRORS: List[str] = [
-        "\U0001f92f",
-        "\U0001f635",
-        "\U0001f92e",
-        "\U0001f922",
-        "\U0001f628",
-        "\U0001f62d",
-        "\U0001f4a9",
-        "\U0001f494",
-        "\U0001f4a5",
-        "\U0001f525",
-    ]
-    EMOJI_SUCCESS: List[str] = [
-        "\U0001f973",
-        "\U0001f929",
-        "\U0001f63b",
-        "\U0001f496",
-        "\U0001f389",
-        "\U0001f38a",
-    ]
-    EMOJI_NOT_FOUND = [
-        "\U0001f642",
-        "\U0001f60c",
-        "\U0001f928",
-        "\U0001f643",
-        "\U0001f605",
-    ]
+@cli.command()
+@click.argument("app_name", envvar="APP_NAME")
+@click.option(
+    "-a",
+    "--address",
+    envvar="CONFIGSERVER_ADDRESS",
+    required=True,
+    default="http://localhost:8888",
+    show_default=True,
+    help="ConfigServer address.",
+)
+@click.option(
+    "-l",
+    "--label",
+    envvar="LABEL",
+    required=True,
+    default="master",
+    show_default=True,
+    help="Branch config.",
+)
+@click.option(
+    "-p",
+    "--profile",
+    envvar="PROFILE",
+    required=True,
+    default="development",
+    show_default=True,
+    help="Profile config.",
+)
+@click.option("-f", "--filter", required=False, help="Filter output by.")
+@click.option("--auth", required=False, help="Basic authentication credentials.")
+@click.option("--digest", required=False, help="Digest authentication credentials.")
+@click.option(
+    "--file", required=False, help="Gets remote file from server and saves locally."
+)
+@click.option("--json", is_flag=True, required=False, help="Save output as json.")
+@click.option("-v", "--verbose", is_flag=True, help="Extend output info.")
+def client(
+    app_name, address, label, profile, filter, auth, digest, file, json, verbose
+):
+    """Interact with Spring Cloud Server via cli."""
+    client = ConfigClient(
+        address=address,
+        label=label,
+        app_name=app_name,
+        profile=profile,
+        fail_fast=False,
+    )
 
-    def handle(self) -> None:
-        filter_options = self.argument("filter") or ""
-        client = ConfigClient(
-            address=os.getenv("CONFIGSERVER_ADDRESS", self.option("address")),
-            label=os.getenv("LABEL", self.option("label")),
-            app_name=os.getenv("APP_NAME", self.argument("app")),
-            profile=os.getenv("PROFILE", self.option("profile")),
-            fail_fast=False,
-        )
-
-        if self.option("file"):
-            self.request_file(client, filter_options)
-            raise SystemExit(0)
-
-        content = self.request_config(client, filter_options)
-        if self.option("json"):
-            self.save_json("output.json", content)
-        else:
-            self.std_output(filter_options, content)
-
-    def request_config(self, client: ConfigClient, filter_options: str) -> Any:
-        if self.io.verbosity:
-            table = Table.grid(padding=(0, 1))
-            table.add_column(style="cyan", justify="right")
-            table.add_column(style="magenta")
-
-            table.add_row("address[yellow]:[/yellow] ", client.address)
-            table.add_row("label[yellow]:[/yellow] ", client.label)
-            table.add_row("profile[yellow]:[/yellow] ", client.profile)
-            table.add_row("URL[yellow]:[/yellow] ", client.url)
-            console.print(
-                Panel(
-                    table,
-                    title="[bold yellow]client info[/bold yellow]",
-                    border_style="yellow",
-                    expand=True,
-                )
-            )
-
-        with Status("contacting server...", spinner="dots4") as status:
-            emoji = random.choice(self.EMOJI_ERRORS)
+    if file:
+        # get file from server and exit
+        with Status("Contacting server...", spinner="dots4") as status:
             try:
-                if self.option("auth"):
-                    username, password = self.option("auth").split(":")
-                    auth = HTTPBasicAuth(username, password)
-                elif self.option("digest"):
-                    username, password = self.option("digest").split(":")
-                    auth = HTTPDigestAuth(username, password)  # type: ignore
-                else:
-                    auth = None
-                client.get_config(auth=auth)
-            except ValueError:
-                console.print(
-                    f"\nbad credentials format for auth method. Format expected: user:password {emoji}",
-                    style="bold",
-                )
-                raise SystemExit(1)
-            except ConnectionError:
-                console.print(
-                    f"\n[red]failed to contact server![/red] {emoji}", style="bold"
-                )
-                raise SystemExit(1)
-
-            status.update("OK!")
-        content = self.get_config(client, filter_options)
-        self.has_content(content, filter_options)
-        return content
-
-    def request_file(self, client: ConfigClient, filter_options: str) -> None:
-        with Status("contacting server...", spinner="dots4") as status:
-            try:
-                response = client.get_file(filter_options)
+                resp = client.get_file(file)
             except RequestFailedException:
-                emoji = random.choice(self.EMOJI_ERRORS)
-                console.print(
-                    f"\n[red]failed to contact server![/red] {emoji}", style="bold"
-                )
-                raise SystemExit(1)
-            with open(f"{filter_options}", "w", encoding="utf-8") as f:
-                f.write(response)
+                raise click.ClickException("💥 Failed to contact server!")
+            Path(file).write_text(resp)
             status.update("OK!")
-        console.print(f"file saved: [cyan]{filter_options}[/cyan]", style="bold")
+        console.print(f"File saved: [cyan]{file}[/cyan]", style="bold")
+        raise SystemExit
 
-    def get_config(self, client: ConfigClient, filter_options: str) -> Any:
-        if self.option("all"):
-            content = client.config
-        else:
-            content = client.get(f"{filter_options}")
-        return content
+    if verbose:
+        table = Table.grid(padding=(0, 1))
+        table.add_column(style="cyan", justify="right")
+        table.add_column(style="magenta")
 
-    def has_content(self, content, filter_options: str) -> None:
-        if len(str(content)) == 0:
-            emoji = random.choice(self.EMOJI_NOT_FOUND)
-            console.print(
-                f"\n{emoji} no result found for filter: [yellow]'[white bold]{filter_options}[/white bold]'[/yellow]",
-            )
-            raise SystemExit(0)
-
-    def std_output(self, filter_options: str, content: str) -> None:
-        if self.option("all"):
-            filter_options = "all"
+        table.add_row("address[yellow]:[/yellow] ", client.address)
+        table.add_row("label[yellow]:[/yellow] ", client.label)
+        table.add_row("profile[yellow]:[/yellow] ", client.profile)
+        table.add_row("URL[yellow]:[/yellow] ", client.url)
         console.print(
             Panel(
-                JSON(json.dumps(content), indent=4, highlight=True, sort_keys=True),
-                title=f"[bold green]report for filter: [yellow]'[white italic]{filter_options}[/white italic]'[/yellow][/bold green]",
-                highlight=True,
-                border_style="white",
+                table,
+                title="[bold yellow]client info[/bold yellow]",
+                border_style="yellow",
                 expand=True,
             )
         )
 
-    def save_json(self, filename: str, content: str) -> None:
-        with open(f"{filename}", "w", encoding="utf-8") as f:
-            json.dump(content, f, indent=4, sort_keys=True)
-        console.print(f"file saved: [cyan]{filename}[/cyan]", style="bold")
-
-
-class DecryptCommand(Command):
-    """
-    Decrypt a input via Spring Cloud Config.
-
-    decrypt
-        {data : Data to decrypt.}
-        {--a|address=http://localhost:8888 : ConfigServer address.}
-        {--p|path=/decrypt : decrypt path.}
-    """
-
-    def handle(self):
-        client = ConfigClient(
-            address=os.getenv("CONFIGSERVER_ADDRESS", self.option("address")),
-            fail_fast=False,
-        )
+    with Status("Contacting server...", spinner="dots4") as status:
+        emoji = random.choice(EMOJI_ERRORS)
         try:
-            data = re.match(r"^.?{cipher}?(?P<name>\w.*)", self.argument("data")).group(
-                "name"
+            if auth:
+                username, password = auth.split(":")
+                auth = HTTPBasicAuth(username, password)
+            elif digest:
+                username, password = digest.split(":")
+                auth = HTTPDigestAuth(username, password)
+            else:
+                auth = None
+            client.get_config(auth=auth)
+        except ValueError:
+            raise click.ClickException(
+                f"{emoji} Bad credentials format for auth method. Format expected: <user>:<password>"
             )
-        except AttributeError:
-            data = self.argument("data")
-        try:
-            resp = client.decrypt(data, path=self.option("path"))
-        except Exception:
-            console.print("\n[red]failed to contact server![/red]", style="bold")
-            raise SystemExit(1)
-        console.print(f"[cyan]{resp}[/cyan]")
+        except ConnectionError:
+            raise click.ClickException("💥 Failed to contact server!")
+        status.update("OK!")
 
+        content = client.config
+        if filter:
+            content = client.get(filter)
 
-class EncryptCommand(Command):
-    """
-    Encrypt a input via Spring Cloud Config.
-
-    encrypt
-        {data : Data to encrypt.}
-        {--a|address=http://localhost:8888 : ConfigServer address.}
-        {--p|path=/encrypt : encrypt path.}
-        {--raw : Format output including {cipher}?}
-    """
-
-    def handle(self):
-        client = ConfigClient(
-            address=os.getenv("CONFIGSERVER_ADDRESS", self.option("address")),
-            fail_fast=False,
+    if len(str(content)) == 0:
+        emoji = random.choice(EMOJI_NOT_FOUND)
+        console.print(
+            f"{emoji} No result found for filter: [yellow]'[white bold]{filter}[/white bold]'[/yellow]",
         )
-        try:
-            resp = client.encrypt(self.argument("data"), path=self.option("path"))
-        except Exception:
-            console.print("[red]failed to contact server![/red]", style="bold")
-            raise SystemExit(1)
-        if not self.option("raw"):
-            console.print(
-                f"[yellow]'[white]{{cipher}}{resp}[/white]'[/yellow]",
-                style="bold",
-            )
-        else:
-            console.print(resp)
+        raise SystemExit
+
+    if json:
+        with open("response.json", "w", encoding="utf-8") as f:
+            dump(content, f, indent=4, sort_keys=True)
+        console.print("File saved: [cyan]response.json[/cyan]", style="bold")
+        raise SystemExit
+
+    filter = filter or "all"
+    console.print(
+        Panel(
+            JSON(dumps(content), indent=4, highlight=True, sort_keys=True),
+            title=f"[bold][green]report for filter[/green][yellow]: [/yellow]'[magenta italic]{filter}[/magenta italic]'[/bold]",
+            highlight=True,
+            border_style="white",
+            expand=True,
+        )
+    )
+
+
+@cli.command()
+@click.argument("text")
+@click.option(
+    "-a",
+    "--address",
+    envvar="CONFIGSERVER_ADDRESS",
+    required=True,
+    default="http://localhost:8888",
+    help="ConfigServer address.",
+)
+@click.option(
+    "-p", "--path", required=True, default="/decrypt", help="Decrypt path endpoint."
+)
+def decrypt(text, address, path):
+    """Decrypt a input via Spring Cloud Config."""
+    client = ConfigClient(address=address, fail_fast=False)
+    cipher = re.match(r"^.?{cipher}?(?P<name>\w.*)", text)
+    if cipher:
+        text = cipher.group("name")
+
+    try:
+        resp = client.decrypt(text, path=path)
+    except Exception:
+        raise click.ClickException("💥 Failed to contact server!")
+
+    table = Table.grid(padding=(0, 1))
+    table.add_column(style="cyan", justify="right")
+    table.add_column(style="magenta")
+
+    table.add_row("decrypted data[yellow]:[/yellow] ", f"'{resp}'")
+    console.print(Panel(table, border_style="yellow", expand=True))
+
+
+@cli.command()
+@click.argument("data")
+@click.option(
+    "-a",
+    "--address",
+    envvar="CONFIGSERVER_ADDRESS",
+    default="http://localhost:8888",
+    required=True,
+    help="ConfigServer address.",
+)
+@click.option(
+    "-p", "--path", default="/encrypt", required=True, help="Encrypt path endpoint."
+)
+@click.option("--raw", is_flag=True, help=r"Format output including {cipher}")
+def encrypt(data, address, path, raw):
+    """Encrypt a input via Spring Cloud Config."""
+    client = ConfigClient(address=address, fail_fast=False)
+    try:
+        resp = client.encrypt(data, path=path)
+    except Exception:
+        raise click.ClickException("💥 Failed to contact server!")
+
+    if raw:
+        resp = f"{{cipher}}{resp}"
+
+    table = Table.grid(padding=(0, 1))
+    table.add_column(style="cyan", justify="right")
+    table.add_column(style="magenta")
+
+    table.add_row("encrypted data[yellow]:[/yellow] ", f"'{resp}'")
+    console.print(Panel(table, border_style="yellow", expand=True))

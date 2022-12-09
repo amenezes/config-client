@@ -11,9 +11,14 @@ Why this approach?
 
 ### option 1: using environment variables
 
-First run: `export APP_NAME=foo`, `export LABEL=main`
+First run: 
 
-```python
+``` bash title="terminal"
+export APP_NAME=foo
+export LABEL=main
+```
+
+``` py title="fastapi_example_1.py"
 import logging
 
 from fastapi import Depends, FastAPI, Request
@@ -65,11 +70,15 @@ def config(request: Request, config_key):
 
 ### option 1: using environment variables
 
-Set `APP_NAME=app_name` environment variable as others necessary.  
+Set `APP_NAME` environment variable as others if necessary.  
+
+``` bash title="terminal"
+export APP_NAME=app_name
+```
 
 For details, see: [https://config-client.amenezes.net/docs/1.-overview/#setup](https://config-client.amenezes.net/docs/1.-overview/#setup)
 
-```python
+``` py title="fastapi_cf_example_1.py"
 import logging
 
 from fastapi import Depends, FastAPI, Request
@@ -97,4 +106,3 @@ def consul(request: Request):
 def config(config_key):
     return request.app.config_client.get(f"{config_key}", {"message": "not found"})
 ```
-

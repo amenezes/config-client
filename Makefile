@@ -22,11 +22,13 @@ tests:
 
 docs:
 	@echo "> generate project documentation..."
-	portray server
+	@cp README.md docs/index.md
+	mkdocs serve
 
 install-deps:
 	@echo "> installing dependencies..."
 	pip install -r requirements-dev.txt
+	pre-commit install
 
 tox:
 	@echo "> running tox..."

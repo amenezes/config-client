@@ -7,7 +7,7 @@
 First run: export `APP_NAME=foo`, `export LABEL=main`
 
 
-```python
+``` py title="aiohttp_example_1.py"
 import logging
 
 from config.ext import AioHttpConfig
@@ -57,7 +57,7 @@ web.run_app(app)
 
 ### option 2: using custom client
 
-```python
+``` py title="aiohttp_example_2.py"
 import logging
 
 from config import ConfigClient
@@ -111,7 +111,7 @@ web.run_app(app)
 
 ### option 3: using custom settings
 
-```python
+``` py title="aiohttp_example_3.py"
 import logging
 from config import ConfigClient
 from config.ext import AioHttpConfig
@@ -172,7 +172,7 @@ For details, see: [https://config-client.amenezes.net/docs/1.-overview/#setup](h
 
 ### option 1: using environment variables
 
-```python
+``` py title="aiohttp_cf_example_1.py"
 import logging
 
 from config import CF
@@ -211,7 +211,7 @@ web.run_app(app)
 
 ### option 2: using custom client
 
-```python
+``` py title="aiohttp_cf_example_2.py"
 import logging
 
 from config import CF, ConfiClient
@@ -250,7 +250,7 @@ web.run_app(app)
 
 ### option 3: using custom settings
 
-```python
+``` py title="aiohttp_cf_example_3.py"
 import logging
 
 from config import CF, ConfiClient
