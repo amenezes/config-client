@@ -13,6 +13,7 @@ codecov
 build
 types-requests
 requests-mock
+pre-commit
 # flask integration
 Flask
 # aiohttp integration
