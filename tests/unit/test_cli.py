@@ -101,14 +101,20 @@ class TestDecryptCommand:
     def _mock_decrypt(self, *args, **kwargs):
         return "123"
 
-    def test_decrypt_command(self, cli_runner, monkeypatch):
+    @pytest.mark.parametrize(
+        "secret",
+        [
+            "dfa76862fe7f367d9c1923de55ba85512eea7a41163ade3059d64fcfbed31017",
+            "{cipher}dfa76862fe7f367d9c1923de55ba85512eea7a41163ade3059d64fcfbed31017",
+        ],
+    )
+    def test_decrypt_command(self, cli_runner, monkeypatch, secret):
         monkeypatch.setattr(ConfigClient, "decrypt", self._mock_decrypt)
         result = cli_runner.invoke(
             decrypt,
-            ["dfa76862fe7f367d9c1923de55ba85512eea7a41163ade3059d64fcfbed31017"],
+            [secret],
         )
-        assert result.output is not None
-        assert len(result.output) >= 100
+        assert "123" in result.output
 
     def test_decrypt_command_error(self, cli_runner, monkeypatch):
         monkeypatch.setattr(http, "post", SystemExit())

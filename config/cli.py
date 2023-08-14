@@ -82,16 +82,7 @@ def client(
     )
 
     if file:
-        # get file from server and exit
-        with Status("Contacting server...", spinner="dots4") as status:
-            try:
-                resp = client.get_file(file)
-            except RequestFailedException:
-                raise click.ClickException("💥 Failed to contact server!")
-            Path(file).write_text(resp)
-            status.update("OK!")
-        console.print(f"File saved: [cyan]{file}[/cyan]", style="bold")
-        raise SystemExit
+        _download_file(file, client)
 
     if verbose:
         table = Table.grid(padding=(0, 1))
@@ -114,14 +105,7 @@ def client(
     with Status("Contacting server...", spinner="dots4") as status:
         emoji = random.choice(EMOJI_ERRORS)
         try:
-            if auth:
-                username, password = auth.split(":")
-                auth = HTTPBasicAuth(username, password)
-            elif digest:
-                username, password = digest.split(":")
-                auth = HTTPDigestAuth(username, password)
-            else:
-                auth = None
+            auth = _configure_auth(auth, digest)
             client.get_config(auth=auth)
         except ValueError:
             raise click.ClickException(
@@ -158,6 +142,29 @@ def client(
             expand=True,
         )
     )
+
+
+def _download_file(file, client):
+    """Get file from server and exit."""
+    with Status("Contacting server...", spinner="dots4") as status:
+        try:
+            resp = client.get_file(file)
+        except RequestFailedException:
+            raise click.ClickException("💥 Failed to contact server!")
+        Path(file).write_text(resp)
+        status.update("OK!")
+    console.print(f"File saved: [cyan]{file}[/cyan]", style="bold")
+    raise SystemExit
+
+
+def _configure_auth(basic_auth, digest_auth):
+    if basic_auth:
+        username, password = basic_auth.split(":")
+        return HTTPBasicAuth(username, password)
+    elif digest_auth:
+        username, password = digest_auth.split(":")
+        return HTTPDigestAuth(username, password)
+    return None
 
 
 @cli.command()

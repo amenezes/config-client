@@ -64,3 +64,19 @@ def test_custom_vcap_configserver_client_id(custom_cfenv):
 
 def test_custom_vcap_configserver_client_secret(custom_cfenv):
     assert custom_cfenv.configserver_client_secret() == "example_client_secret"
+
+
+@pytest.mark.parametrize(
+    "attr",
+    [
+        "vcap_service_prefix",
+        "vcap_application",
+        "vcap_services",
+        "space_name",
+        "organization_name",
+        "application_name",
+        "uris",
+    ],
+)
+def test_cfenv_attributes(cfenv, attr):
+    assert hasattr(cfenv, attr)

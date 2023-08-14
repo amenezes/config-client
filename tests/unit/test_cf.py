@@ -30,6 +30,13 @@ def test_configure_custom_client():
     assert cf.client.address == "http://localhost:8888/configuration"
 
 
+@pytest.mark.parametrize(
+    "attr", ["cfenv", "oauth2", "client", "vcap_services", "vcap_application", "config"]
+)
+def test_cf_attributes(cf, attr):
+    assert hasattr(cf, attr)
+
+
 def test_default_properties(cf):
     assert cf is not None
 

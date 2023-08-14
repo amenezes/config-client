@@ -31,3 +31,18 @@ def test_authorization_header(oauth2, monkeypatch):
     monkeypatch.setattr(http, "post", conftest.oauth2_mock)
     oauth2.configure()
     assert isinstance(oauth2.authorization_header, dict)
+
+
+@pytest.mark.parametrize(
+    "attr",
+    [
+        "access_token_uri",
+        "client_id",
+        "client_secret",
+        "grant_type",
+        "token",
+        "authorization_header",
+    ],
+)
+def test_oauth_attributes(oauth2, attr):
+    assert hasattr(oauth2, attr)

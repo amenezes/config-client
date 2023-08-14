@@ -3,7 +3,7 @@ from .cf import CF
 from .cfenv import CFenv
 from .spring import ConfigClient, config_client, create_config_client
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 __all__ = [
     "__version__",
     "ConfigClient",

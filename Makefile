@@ -10,6 +10,10 @@ ifeq ($(SKIP_STYLE), )
 	black config
 	black tests
 endif
+	@echo "> running bandit"
+	bandit -r -ll -ii -s B104 config
+	@echo "> running radon"
+	radon cc -s -n C config tests
 	@echo "> running flake8..."
 	flake8 config
 	flake8 tests
