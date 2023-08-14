@@ -41,16 +41,55 @@ class CF:
         return self.cfenv.vcap_application
 
     def get_config(self, **kwargs) -> None:
+        """Request the configuration to the config server.
+
+        Usage:
+
+        # Example 1:
+        cf.get_config()
+
+        # Example 2:
+        cf.get_config(verify=False)
+
+        :param kwargs: any keyword argument used to configure oauth2 or request for the server.
+        """
         self.client.get_config(**kwargs)
 
     async def get_config_async(self, **kwargs) -> None:
+        """Request the configuration to the config server.
+
+        Usage:
+
+        # Example 1:
+        await cf.get_config_async()
+
+        # Example 2:
+        await cf.get_config_async(verify=False)
+
+        :param kwargs: any keyword argument used to configure oauth2 or request for the server.
+        """
         await self.client.get_config_async(**kwargs)
 
     @property
     def config(self) -> Dict:
+        """Getter from configurations retrieved from ConfigClient."""
         return self.client.config
 
-    def get(self, key, default: Any = ""):
+    def get(self, key: str, default: Any = "") -> Any:
+        """Loads a configuration from a key.
+
+        Usage:
+
+        # Example 1:
+        cf.get('spring')
+
+        # Exampel 2:
+        cf.get('spring.cloud.consul')
+
+
+        :param key: configuration key.
+        :param default: default value if key does not exist. [default=''].
+        """
         return self.client.get(key, default)
 
     def keys(self) -> KeysView:

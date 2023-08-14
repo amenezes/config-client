@@ -37,11 +37,11 @@ class OAuth2:
                 self.access_token_uri, auth=client_auth, data=data, **kwargs
             )
         except MissingSchema:
-            raise RequestFailedException("Access token URL it's empty")
+            raise RequestFailedException("empty")
         except HTTPError:
-            raise RequestTokenException("Failed to retrieve oauth2 access_token.")
+            raise RequestTokenException
         self.token = response.json().get("access_token")
-        logger.info("Access token successfully obtained.")
+        logger.debug("Access token successfully obtained.")
 
     def configure(self, **kwargs) -> None:
         client_auth = HTTPBasicAuth(self.client_id, self.client_secret)

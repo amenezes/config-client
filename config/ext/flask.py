@@ -20,6 +20,22 @@ class FlaskConfig:
     def __init__(
         self, app: Flask, client: Optional[ConfigClient] = None, **kwargs
     ) -> None:
+        """Configure Flask application with config-client.
+
+        Usage:
+
+        from config.ext.flask import FlaskConfig
+        from flask import Flask
+
+
+        app = Flask(__name__)
+        FlaskConfig(app)
+
+
+        :param app: Flask application.
+        :param client: custom ConfigClient.
+        :param kwargs: any keyword argument used to request config from the server.
+        """
         if not isinstance(app, Flask):
             raise TypeError("app must be Flask instance")
 
