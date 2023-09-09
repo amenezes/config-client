@@ -26,3 +26,4 @@ fastapi
 tox-asdf
 # terminal-ui
 trogon
+textual>=0.36.0
