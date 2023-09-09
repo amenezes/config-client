@@ -11,6 +11,7 @@ from rich.json import JSON
 from rich.panel import Panel
 from rich.status import Status
 from rich.table import Table
+from trogon import tui
 
 from config import __version__
 from config.exceptions import RequestFailedException
@@ -26,6 +27,7 @@ EMOJI_NOT_FOUND = ["🙂", "😌", "🤨", "🙃", "😅"]
 console = Console()
 
 
+@tui(command="terminal-ui", help="Open terminal UI")
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.version_option(version=__version__)
 def cli():

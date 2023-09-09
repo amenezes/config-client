@@ -24,3 +24,5 @@ aiohttp
 fastapi
 # optional for asdf-vm
 tox-asdf
+# terminal-ui
+trogon
