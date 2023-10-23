@@ -1,3 +1,5 @@
+from typing import Dict
+
 from attrs import field, mutable, validators
 from requests.auth import HTTPBasicAuth
 from requests.exceptions import HTTPError, MissingSchema
@@ -28,7 +30,7 @@ class OAuth2:
         logger.debug(f"set: [access_token='{self._token}']")
 
     @property
-    def authorization_header(self) -> dict:
+    def authorization_header(self) -> Dict[str, str]:
         return {"Authorization": f"Bearer {self.token}"}
 
     def request_token(self, client_auth: HTTPBasicAuth, data: dict, **kwargs) -> None:

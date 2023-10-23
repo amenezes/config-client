@@ -1,11 +1,10 @@
 """Module for retrieve application's config from Spring Cloud Config."""
 import asyncio
 import os
-from distutils.util import strtobool
 from functools import partial, wraps
 from typing import Any, Callable, Dict, KeysView, Optional, Tuple
 
-from attrs import field, fields_dict, mutable, validators
+from attrs import converters, field, fields_dict, mutable, validators
 from glom import glom
 
 from . import http
@@ -36,10 +35,10 @@ class ConfigClient:
         default=os.getenv("PROFILE", "development"),
         validator=validators.instance_of(str),
     )
-    fail_fast: bool = field(
-        default=bool(strtobool(str(os.getenv("CONFIG_FAIL_FAST", True)))),
+    fail_fast: bool = field(  # type: ignore
+        default=os.getenv("CONFIG_FAIL_FAST", True),
         validator=validators.instance_of(bool),
-        converter=bool,
+        converter=converters.to_bool,
     )
     oauth2: Optional[OAuth2] = field(
         default=None,
@@ -188,7 +187,7 @@ class ConfigClient:
         return response.text
 
     @property
-    def config(self) -> Dict:
+    def config(self) -> dict:
         """Getter from configurations retrieved from ConfigClient."""
         return self._config
 
