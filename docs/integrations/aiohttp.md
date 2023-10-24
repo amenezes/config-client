@@ -4,10 +4,13 @@
 
 ### option 1: using environment variables
 
-First run: export `APP_NAME=foo`, `export LABEL=main`
+!!! tip ""
+    First run:
+    
+    - `export APP_NAME=foo`
+    - `export LABEL=main`
 
-
-``` py title="aiohttp_example_1.py"
+``` py title="aiohttp-example-1.py" linenums="1"
 import logging
 
 from config.ext import AioHttpConfig
@@ -57,7 +60,7 @@ web.run_app(app)
 
 ### option 2: using custom client
 
-``` py title="aiohttp_example_2.py"
+``` py title="aiohttp-example-2.py" linenums="1"
 import logging
 
 from config import ConfigClient
@@ -111,7 +114,7 @@ web.run_app(app)
 
 ### option 3: using custom settings
 
-``` py title="aiohttp_example_3.py"
+``` py title="aiohttp-example-3.py" linenums="1"
 import logging
 from config import ConfigClient
 from config.ext import AioHttpConfig
@@ -166,13 +169,12 @@ web.run_app(app)
 
 ## Using the CloudFoundry client
 
-Set `APP_NAME` environment variable, for example.
-
-For details, see: [https://config-client.amenezes.net/docs/1.-overview/#setup](https://config-client.amenezes.net/docs/1.-overview/#setup)
+!!! tip ""
+    First set `APP_NAME` environment variable
 
 ### option 1: using environment variables
 
-``` py title="aiohttp_cf_example_1.py"
+``` py title="aiohttp-cf-example-1.py" linenums="1"
 import logging
 
 from config import CF
@@ -211,7 +213,7 @@ web.run_app(app)
 
 ### option 2: using custom client
 
-``` py title="aiohttp_cf_example_2.py"
+``` py title="aiohttp-cf-example-2.py" linenums="1"
 import logging
 
 from config import CF, ConfiClient
@@ -250,7 +252,7 @@ web.run_app(app)
 
 ### option 3: using custom settings
 
-``` py title="aiohttp_cf_example_3.py"
+``` py title="aiohttp-cf-example-3.py" linenums="1"
 import logging
 
 from config import CF, ConfiClient

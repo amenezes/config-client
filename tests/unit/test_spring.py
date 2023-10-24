@@ -211,3 +211,11 @@ def test_client_with_auth_and_headers(monkeypatch, mocker, oauth2):
         },
         verify=False,
     )
+
+
+@pytest.mark.parametrize(
+    "attr",
+    ["address", "label", "app_name", "profile", "fail_fast", "oauth2", "url", "config"],
+)
+def test_config_client_attributes(client, attr):
+    assert hasattr(client, attr)

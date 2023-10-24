@@ -14,6 +14,9 @@ build
 types-requests
 requests-mock
 pre-commit
+radon
+bandit
+mkdocs-material
 # flask integration
 Flask
 # aiohttp integration
@@ -22,3 +25,6 @@ aiohttp
 fastapi
 # optional for asdf-vm
 tox-asdf
+# terminal-ui
+trogon
+textual>=0.36.0

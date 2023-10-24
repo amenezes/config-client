@@ -51,7 +51,7 @@ def merge_list(config: dict) -> None:
                 config.pop(f"{key}[{i}]")
 
 
-def _merge(config: dict):
+def _merge(config: dict) -> None:
     merge_list(config)
     for k, v in config.items():
         merge_list(config[k])

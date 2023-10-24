@@ -15,6 +15,24 @@ class AioHttpConfig:
         client: Optional[ConfigClient] = None,
         **kwargs,
     ) -> None:
+        """Configure AIOHTTP application with config-client.
+
+        Usage:
+
+        from config.ext import AioHttpConfig
+        from aiohttp import web
+
+
+        app = web.Application()
+        AioHttpConfig(app)
+
+        web.run_app(app)
+
+
+        :param app: AIOHTTP web.Application.
+        :param key: key prefix to access config.
+        :param client: custom ConfigClient.
+        """
         self._validate_app(app)
         if not client:
             client = ConfigClient()

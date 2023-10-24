@@ -1,10 +1,8 @@
-# Standard Client
-
 ## Usage
 
 ### Overview
 
-``` py
+``` py linenums="1"
 from config import ConfigClient
 
 
@@ -23,7 +21,7 @@ cc.get('spring.cloud.config.uri')
 
 #### Custom parameters on HTTP request
 
-```python
+``` py linenums="1"
 from config import ConfigClient
 
 
@@ -31,13 +29,21 @@ cc = ConfigClient(app_name='foo', label='main')
 cc.get_config(timeout=5.0, headers={'Accept': 'application/json'})
 ```
 
-> hint: any parameter supported by the `get` method from the `requests` can be used on `get_config`. Including authentication, SSL verification or custom headers, for example. See: [#40](https://github.com/amenezes/config-client/issues/40) [#41](https://github.com/amenezes/config-client/issues/41)
+!!! tip ""
+
+    Any parameter supported by the **`get`** method from the [requests library](https://requests.readthedocs.io/en/latest/) can be used on **`get_config`**, including: authentication, SSL verification or custom headers.
+    
+    Details:
+    
+    - [How to invoke config server using basic authentication](https://github.com/amenezes/config-client/issues/40)
+    - [ Is there a option for https?](https://github.com/amenezes/config-client/issues/41)
+
 
 ### Authentication
 
 #### OAuth2
 
-```python
+``` py linenums="1"
 from config import ConfigClient
 from config.auth import OAuth2
 
@@ -55,7 +61,7 @@ cc.get_config()
 
 #### Basic
 
-```
+``` py linenums="1"
 from requests.auth import HTTPBasicAuth
 
 from config import ConfigClient
@@ -66,7 +72,7 @@ cc.get_config(auth=HTTPBasicAuth('user', 'passwd'))
 
 #### Digest
 
-```
+``` py linenums="1"
 from requests.auth import HTTPDigestAuth
 
 from config import ConfigClient
@@ -78,13 +84,15 @@ cc.get_config(auth=HTTPDigestAuth('user', 'passwd'))
 
 ### Retrieving plain files
 
-````python
+``` py linenums="1"
 from config import ConfigClient
 
 cc = ConfigClient(app_name='foo', label='main')
-books = cc.get_file('books.xml')
+cc.get_file('books.xml')
+```
 
-print(books)
-````
+!!! tip ""
 
-> For more info see: [https://cloud.spring.io/spring-cloud-config/multi/multi__serving_plain_text.html](https://cloud.spring.io/spring-cloud-config/multi/multi__serving_plain_text.html)
+    For more details access:
+    
+    - [Serving Plain Text](https://cloud.spring.io/spring-cloud-config/multi/multi__serving_plain_text.html)

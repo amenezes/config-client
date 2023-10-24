@@ -2,7 +2,7 @@
 
 ## Create singleton instance with default values
 
-```python
+``` py linenums="1"
 from config import create_config_client
 
 
@@ -19,7 +19,7 @@ print(id(c2))
 
 ## Create singleton instance with custom values
 
-```python
+``` py linenums="1"
 from config import create_config_client
 
 
@@ -40,7 +40,7 @@ print(id(c2))
 
 ## Singleton instance with decorator
 
-```python
+``` py linenums="1"
 from config import config_client
 from config.core import singleton
 
