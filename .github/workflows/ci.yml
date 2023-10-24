@@ -29,6 +29,7 @@ jobs:
         path: "./requirements-dev.txt"
     - name: Run lint & tests
       run: |
+        pip install cython && \
         make ci SKIP_STYLE=true
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
