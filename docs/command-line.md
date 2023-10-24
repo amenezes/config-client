@@ -1,6 +1,4 @@
-# CLI
-
-From the version >= `0.5.0` a simple command line it's available to query and test config-client.
+From the version >= `0.5.0` a command line it's available to query and test config-client.
 
 ## Installing cli dependencies
 
@@ -14,7 +12,7 @@ pip install 'config-client[cli]'
 python -m config
 ```
 
-``` bash title="expected output"
+``` bash title="Example output"
 Usage: python -m config [OPTIONS] COMMAND [ARGS]...
 
 Options:
@@ -33,7 +31,7 @@ Commands:
 python -m config client -h
 ```
 
-```bash title="expected output"
+```bash title="Example output"
 Usage: python -m config client [OPTIONS] APP_NAME
 
   Interact with Spring Cloud Server via cli.
@@ -52,9 +50,9 @@ Options:
   -h, --help          Show this message and exit.
 ```
 
-> **`Notice`**
+!!! tip ""
 
-If you preferer can you set the command line options in `environment variables`.
+    If you preferer can you set the command line options in `environment variables`.
 
 Example of environment variables available to override the command line options.
 
@@ -66,7 +64,7 @@ Command syntax: `config client <application_name> <filter>`
 python -m config client simpleweb000 -l master -v
 ```
 
-``` bash title="expected output"
+``` bash title="Example output"
 ╭─────────────────────────────────────────────────────── client info ────────────────────────────────────────────────────────╮
 │  address: http://localhost:8888                                                                                            │
 │    label: master                                                                                                           │
@@ -182,7 +180,7 @@ Command syntax: `config client <application_name> <filter> --json`
 python -m config client simpleweb000 -f spring.cloud.consul --json
 ```
 
-``` bash title="expected output"
+``` bash title="Example output"
 File saved: response.json
 ```
 
@@ -194,7 +192,7 @@ Command syntax: `config client <application_name> --file <filename>`
 python -m config client simpleweb000 --file nginx.conf
 ```
 
-``` bash title="expected output"
+``` bash title="Example output"
 File saved: nginx.conf
 ```
 
@@ -206,7 +204,7 @@ Command syntax: `config encrypt <my_secret>`
 python -m config encrypt 123
 ```
 
-```bash title="expected output"
+```bash title="Example output"
 ╭─────────────────────────────────────────────────────────────────────────────────────╮
 │  encrypted data: 'f6d620453e28359fa05a2a96f2a089f5a46d858ee0174f5506e73a526ac6aed2' │
 ╰─────────────────────────────────────────────────────────────────────────────────────╯
@@ -216,7 +214,7 @@ python -m config encrypt 123
 python -m config encrypt 123 --raw
 ```
 
-```bash title="expected output"
+```bash title="Example output"
 ╭─────────────────────────────────────────────────────────────────────────────────────────────╮
 │  encrypted data: '{cipher}59e4bf2fff4a0411eb216e617886f3464d1c0d5a13fec0c00b746ed007ef28d5' │
 ╰─────────────────────────────────────────────────────────────────────────────────────────────╯
@@ -231,7 +229,7 @@ Command syntax: `config decrypt <my_encrypted_secret>`
 python -m config decrypt {cipher}59e4bf2fff4a0411eb216e617886f3464d1c0d5a13fec0c00b746ed007ef28d5
 ```
 
-``` bash title="expected output"
+``` bash title="Example output"
 ╭────────────────────────╮
 │  decrypted data: '123' │
 ╰────────────────────────╯
@@ -241,7 +239,7 @@ python -m config decrypt {cipher}59e4bf2fff4a0411eb216e617886f3464d1c0d5a13fec0c
 python -m config decrypt 59e4bf2fff4a0411eb216e617886f3464d1c0d5a13fec0c00b746ed007ef28d5
 ```
 
-``` bash title="expected output"
+``` bash title="Example output"
 ╭────────────────────────╮
 │  decrypted data: '123' │
 ╰────────────────────────╯
@@ -255,7 +253,7 @@ Command syntax: `config decrypt <application_name> --auth <user:pass>`
 python -m config client simpleweb000 -f spring.cloud.consul --auth user:pass
 ```
 
-``` bash title="expected output"
+``` bash title="Example output"
 ╭───────────────────────────────────────────── client info ─────────────────────────────────────────────╮
 │  address: http://localhost:8888                                                                       │
 │    label: master                                                                                      │
@@ -279,7 +277,7 @@ Command syntax: `config client <application_name> --digest <user:pass>`
 python -m config client simpleweb000 'spring.cloud.consul' --digest user:pass
 ```
 
-``` bash title="expected output"
+``` bash title="Example output"
 ╭───────────────────────────────────────────── client info ─────────────────────────────────────────────╮
 │  address: http://localhost:8888                                                                       │
 │    label: master                                                                                      │

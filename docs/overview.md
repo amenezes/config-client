@@ -1,12 +1,18 @@
-# Introduction
+Python config-client is a library for integration and usage with Spring Cloud Config.
 
-The needed configuration to use `config-client` can be set through environment variables or parameters.
+## Usage
+
+The needed configuration to use config-client can be set through:
+
+- environment variables; or
+- arguments.
 
 ## Using environment variables
 
-``` ini title=".env"
-# default environment variables values:
-#
+The following presents the default values:
+
+
+``` ini linenums="1"
 CONFIGSERVER_ADDRESS=http://localhost:8888
 LABEL=master
 PROFILE=development
@@ -14,40 +20,32 @@ APP_NAME= # empyt string
 CONFIG_FAIL_FAST=True
 ```
 
-If `fail_fast` it's enabled, by default, any error to contact server will raise `SystemExit(1)` otherwise `ConnectionError` will raised.
+!!! tip ""
 
-In the version `1.0.0` there's no more url property to customize request URL to get configuration from server, because merge files occur in the client side. Unfortunately the config-server API have a strange behavior and seems that no honor your API.
-
-### Content-Type supported for configuration
-
-- JSON `only`
+    By default, the value of the environment variable **`CONFIG_FAIL_FAST`** is set to **`True`**, so if any error occurs while contacting the server, a `SystemExit(1)` exception will be raised; otherwise, a `ConnectionError` exception is raised.
 
 ## Security
 
-The `config-client` can interact with the Spring Cloud Config [encryption and decryption](https://cloud.spring.io/spring-cloud-config/reference/html/#_encryption_and_decryption) API.
+The config-client can interact with the Spring Cloud Config [encryption and decryption API](https://docs.spring.io/spring-cloud-config/docs/current/reference/html/#_encryption_and_decryption).
 
 ### [Encryption](https://config-client.amenezes.net/reference/config/spring/#encrypt)
 
-#### Usage
-
-```python
+``` py linenums="1" title="example-encryption.py"
 from config import ConfigClient
 
 client = ConfigClient()
-my_secret = client.encrypt('my_secret') # returns a str
-print(my_secret)
+client.encrypt('my_secret')
 # for example: a3c3333956a1ab2ade8b8219e36d0a4cb97d9a2789cbbcd858ea4ef3130563c6
 ```
 
 ### [Decryption](https://config-client.amenezes.net/reference/config/spring/#decrypt)
 
-#### Usage
-
-```python
+``` py linenums="1" title="example-decryption.py"
 from config import ConfigClient
 
 client = ConfigClient()
-my_secret = client.decrypt('a3c3333956a1ab2ade8b8219e36d0a4cb97d9a2789cbbcd858ea4ef3130563c6') # returns a str
-print(my_secret)
+client.decrypt(
+  'a3c3333956a1ab2ade8b8219e36d0a4cb97d9a2789cbbcd858ea4ef3130563c6'
+)
 # for example: my_secret
 ```

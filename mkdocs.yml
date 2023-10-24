@@ -6,20 +6,21 @@ theme:
   logo: spring-icon.png
   favicon: spring-icon.png
   features:
+    - toc.follow
+    - toc.integrate 
     - navigation.instant
     - navigation.top
     - navigation.prune
-    - toc.integrate 
     - search.highlight
     - search.suggest
     - search.share
     - content.code.annotate
     - content.tooltips
-    - toc.follow
+    - content.code.copy
   palette:
     - scheme: default
       primary: green
-      accent: teal
+      accent: light green
       toggle:
         icon: material/lightbulb-on
         name: Switch to dark mode
@@ -39,6 +40,20 @@ extra:
       link: https://github.com/amenezes/config-client/issues
     - icon: fontawesome/solid/envelope
       link: mailto:alexandre.fmenezes@gmail.com
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - tables
+  - attr_list
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
 nav:
 - Overview: overview.md
 - Client:
@@ -53,9 +68,3 @@ nav:
   - FastAPI: integrations/fastapi.md
 - CLI: command-line.md
 - Development: development.md
-markdown_extensions:
-  - pymdownx.highlight:
-      use_pygments: true
-  - pymdownx.inlinehilite
-  - pymdownx.snippets
-  - pymdownx.superfences

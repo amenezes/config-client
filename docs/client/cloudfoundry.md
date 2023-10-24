@@ -14,7 +14,7 @@ The value can be updated setting the environment variable `VCAP_SERVICE_PREFIX` 
 
 Example of using the Cloud Foundry module:
 
-````python
+````py linenums="1"
 from config.cf import CF
 
 cf = CF()
@@ -25,14 +25,17 @@ cf.get_config()
 
 Example of using the Cloud Foundry module:
 
-```python
+```py linenums="1"
 from config.cf import CF
 from config.cfenv import CFenv
 
 cf = CF(cfenv=CFenv(vcap_service_prefix="p.config-server"))
 cf.get_config()
 ```
-**notice**: if the environment variable `VCAP_SERVICE_PREFIX` was set to `p.config-server` cfenv parameter will not be necessary.
+!!! tip ""
+
+    if the environment variable `VCAP_SERVICE_PREFIX` was set to `p.config-server` cfenv parameter will not be necessary.
+
 
 ## Notice
 

@@ -16,6 +16,7 @@ requests-mock
 pre-commit
 radon
 bandit
+mkdocs-material
 # flask integration
 Flask
 # aiohttp integration

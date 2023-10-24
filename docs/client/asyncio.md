@@ -1,8 +1,8 @@
-# Asyncio
+## Native method
 
-- native method `get_config_async`
+- native method **`get_config_async`**:
 
-```python
+``` py linenums="1"
 from config import ConfigClient
 
 
@@ -12,24 +12,43 @@ await cc.get_config_async(timeout=5.0)
 cc.config
 ```
 
-> For python 3.8 > use asyncio REPL. `python -m asyncio`
+!!! tip ""
 
-**NOTICE**: To avoid block the event loop in the calls made by `config-client` could you use:
+    For python 3.8 > use asyncio REPL. `python -m asyncio`
 
-- for python > 3.9: [`asyncio.to_thread()`](https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread) as the example below:
 
-````python
+!!! warning ""
+
+    If for some reason the get_config_async method cannot be used, there are still some other possibilities, such as:
+
+    - [asyncio.to_thread](https://docs.python.org/3/library/asyncio-task.html#asyncio.to_thread)
+    - [run_in_executor](https://docs.python.org/3.8/library/asyncio-eventloop.html#asyncio.loop.run_in_executor)
+
+    This is important to avoid blocking the event loop.
+
+### asyncio.to_thread
+
+!!! tip ""
+
+    For Python > 3.9
+
+``` py linenums="1"
 from config.spring import ConfigClient
 
 
 cc = ConfigClient(app_name='foo', label='main')
 await asyncio.to_thread(cc.get_config)
 print(cc.config)
-````
+```
 
-- for python > 3.6: [`run_in_executor()`](https://docs.python.org/3.8/library/asyncio-eventloop.html#asyncio.loop.run_in_executor) as the example below:
+### run_in_executor
 
-```python
+!!! tip ""
+
+    For Python > 3.6
+
+
+``` py linenums="1"
 import asyncio
 import concurrent.futures
 
