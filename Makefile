@@ -31,7 +31,7 @@ docs:
 
 install-deps:
 	@echo "> installing dependencies..."
-	pip install -r requirements-dev.txt
+	uv pip install -r requirements-dev.txt
 	pre-commit install
 
 tox:
