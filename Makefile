@@ -31,7 +31,7 @@ docs:
 
 install-deps:
 	@echo "> installing dependencies..."
-	pip install -r requirements-dev.txt
+	uv pip install -r requirements-dev.txt
 	pre-commit install
 
 tox:
@@ -56,7 +56,6 @@ ifeq ($(GITHUB_HEAD_REF), false)
 	curl -L https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64 > ./cc-test-reporter
 	chmod +x ./cc-test-reporter
 	@echo "> uploading report..."
-	codecov --file coverage.xml -t $$CODECOV_TOKEN
 	./cc-test-reporter format-coverage -t coverage.py -o codeclimate.json
 	./cc-test-reporter upload-coverage -i codeclimate.json -r $$CC_TEST_REPORTER_ID
 endif

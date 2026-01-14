@@ -1,4 +1,5 @@
 """Test spring module."""
+
 from unittest.mock import PropertyMock
 
 import pytest

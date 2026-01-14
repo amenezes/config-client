@@ -1,3 +1,4 @@
+import os
 import random
 import re
 from json import dump, dumps
@@ -70,9 +71,17 @@ def cli():
     "--file", required=False, help="Gets remote file from server and saves locally."
 )
 @click.option("--json", is_flag=True, required=False, help="Save output as json.")
+@click.option(
+    "-o",
+    "--output",
+    envvar="CONFIG_OUTPUT_FILE",
+    default="response.json",
+    show_default=True,
+    help="Output file path for JSON format.",
+)
 @click.option("-v", "--verbose", is_flag=True, help="Extend output info.")
 def client(
-    app_name, address, label, profile, filter, auth, digest, file, json, verbose
+    app_name, address, label, profile, filter, auth, digest, file, json, output, verbose
 ):
     """Interact with Spring Cloud Server via cli."""
     client = ConfigClient(
@@ -129,9 +138,28 @@ def client(
         raise SystemExit
 
     if json:
-        with open("response.json", "w", encoding="utf-8") as f:
-            dump(content, f, indent=4, sort_keys=True)
-        console.print("File saved: [cyan]response.json[/cyan]", style="bold")
+        try:
+            output_path = Path(output).resolve()
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+
+            if not os.access(output_path.parent, os.W_OK):
+                raise click.ClickException(
+                    f"Permission denied: cannot write to {output_path.parent}"
+                )
+
+        except Exception as e:
+            if "Permission denied" in str(e):
+                raise click.ClickException(f"Permission denied: {e}")
+            else:
+                raise click.ClickException(f"Invalid output path: {e}")
+
+        try:
+            with open(output_path, "w", encoding="utf-8") as f:
+                dump(content, f, indent=4, sort_keys=True)
+            console.print(f"File saved: [cyan]{output_path}[/cyan]", style="bold")
+        except Exception as e:
+            raise click.ClickException(f"Failed to save file: {e}")
+
         raise SystemExit
 
     filter = filter or "all"
