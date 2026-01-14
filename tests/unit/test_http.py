@@ -5,20 +5,20 @@ from config import http
 
 
 def test_get():
-    resp = http.get("https://httpbin.org/get")
+    resp = http.get("https://postman-echo.com/get")
     assert resp.ok
 
 
 def test_get_error():
     with pytest.raises(HTTPError):
-        http.get("https://httpbin.org/status/404")
+        http.get("https://postman-echo.com/status/404")
 
 
 def test_post(monkeypatch):
-    resp = http.post("https://httpbin.org/post")
+    resp = http.post("https://postman-echo.com/post")
     assert resp.ok
 
 
 def test_post_error():
     with pytest.raises(HTTPError):
-        http.post("https://httpbin.org/status/404")
+        http.post("https://postman-echo.com/status/404")
