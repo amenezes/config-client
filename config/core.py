@@ -1,4 +1,5 @@
 """Core functions."""
+
 from functools import wraps
 
 

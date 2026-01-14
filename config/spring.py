@@ -1,4 +1,5 @@
 """Module for retrieve application's config from Spring Cloud Config."""
+
 import asyncio
 import os
 from functools import partial, wraps
