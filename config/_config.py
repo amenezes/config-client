@@ -43,12 +43,19 @@ def merge_list(config: dict) -> None:
 
     for key, it in keys.items():
         for i in range(it + 1):
+            value = config[f"{key}[{i}]"]
             if key not in config:
-                config.update({key: [config[f"{key}[{i}]"]]})
+                config.update({key: [value]})
                 config.pop(f"{key}[{i}]")
             else:
-                config[key].append(config[f"{key}[{i}]"])
+                config[key].append(value)
                 config.pop(f"{key}[{i}]")
+
+
+def _fix_list_items(values: list) -> None:
+    for item in values:
+        if isinstance(item, dict):
+            _merge(item)
 
 
 def _merge(config: dict) -> None:
@@ -57,6 +64,8 @@ def _merge(config: dict) -> None:
         merge_list(config[k])
         if isinstance(v, dict):
             _merge(v)
+        elif isinstance(v, list):
+            _fix_list_items(v)
 
 
 def _fix_key(key_str: str) -> Tuple[str, bool]:

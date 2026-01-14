@@ -46,6 +46,14 @@ from config._config import merge_dict, merge_list, to_dict
             {"examples.three.one[0]": "one", "examples.three.one[1]": "thow"},
             {"examples": {"three": {"one": ["one", "thow"]}}},
         ),
+        (
+            {
+                "main_list[0]": {"child_list[0]": {"property-name": "example0"}},
+            },
+            {
+                "main_list": [{'child_list': [{'property-name': 'example0'}]}],
+            },
+        ),
     ],
 )
 def test_to_dict(data, expected):
