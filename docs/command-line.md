@@ -45,8 +45,10 @@ Options:
   --auth TEXT         Basic authentication credentials.
   --digest TEXT       Digest authentication credentials.
   --file TEXT         Gets remote file from server and saves locally.
-  --json              Save output as json.
-  -v, --verbose       Extend output info.
+   --json              Save output as json.
+   -o, --output TEXT   Output file path for JSON format.  [default:
+                       response.json]
+   -v, --verbose       Extend output info.
   -h, --help          Show this message and exit.
 ```
 
@@ -182,6 +184,31 @@ python -m config client simpleweb000 -f spring.cloud.consul --json
 
 ``` bash title="Example output"
 File saved: response.json
+```
+
+#### example 4: saving the output to a custom file path.
+
+Command syntax: `config client <application_name> <filter> --json --output <file_path>`
+
+``` bash
+python -m config client simpleweb000 -f spring.cloud.consul --json --output configs/myapp-config.json
+```
+
+``` bash title="Example output"
+File saved: configs/myapp-config.json
+```
+
+You can also use the short flag `-o`:
+
+``` bash
+python -m config client simpleweb000 -f spring.cloud.consul --json -o configs/myapp-config.json
+```
+
+Or set the output path via environment variable:
+
+``` bash
+export CONFIG_OUTPUT_FILE=configs/myapp-config.json
+python -m config client simpleweb000 -f spring.cloud.consul --json
 ```
 
 #### example 4: retrieving a remote file and saving locally.
