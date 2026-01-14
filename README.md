@@ -1,5 +1,4 @@
 [![ci](https://github.com/amenezes/config-client/actions/workflows/ci.yml/badge.svg)](https://github.com/amenezes/config-client/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/amenezes/config-client/branch/master/graph/badge.svg)](https://codecov.io/gh/amenezes/config-client)
 [![PyPI version](https://badge.fury.io/py/config-client.svg)](https://badge.fury.io/py/config-client)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/config-client)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)

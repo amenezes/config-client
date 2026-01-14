@@ -52,6 +52,7 @@ async def fastapi_cloud_foundry(request: Request):
     )
     """
     try:
+        request.app.config_client
         logger.debug("ConfigClient already initialized")
     except AttributeError:
         logger.debug("Initializing ConfigClient")

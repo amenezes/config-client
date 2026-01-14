@@ -9,7 +9,6 @@ black
 mypy
 types-requests
 tox
-codecov
 build
 types-requests
 requests-mock
