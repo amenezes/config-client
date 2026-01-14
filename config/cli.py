@@ -84,7 +84,7 @@ def client(
     app_name, address, label, profile, filter, auth, digest, file, json, output, verbose
 ):
     """Interact with Spring Cloud Server via cli."""
-    client = ConfigClient(
+    cfg_client = ConfigClient(
         address=address,
         label=label,
         app_name=app_name,
@@ -93,42 +93,12 @@ def client(
     )
 
     if file:
-        _download_file(file, client)
+        _download_file(file, cfg_client)
 
     if verbose:
-        table = Table.grid(padding=(0, 1))
-        table.add_column(style="cyan", justify="right")
-        table.add_column(style="magenta")
+        _display_client_info(cfg_client)
 
-        table.add_row("address[yellow]:[/yellow] ", client.address)
-        table.add_row("label[yellow]:[/yellow] ", client.label)
-        table.add_row("profile[yellow]:[/yellow] ", client.profile)
-        table.add_row("URL[yellow]:[/yellow] ", client.url)
-        console.print(
-            Panel(
-                table,
-                title="[bold yellow]client info[/bold yellow]",
-                border_style="yellow",
-                expand=True,
-            )
-        )
-
-    with Status("Contacting server...", spinner="dots4") as status:
-        emoji = random.choice(EMOJI_ERRORS)
-        try:
-            auth = _configure_auth(auth, digest)
-            client.get_config(auth=auth)
-        except ValueError:
-            raise click.ClickException(
-                f"{emoji} Bad credentials format for auth method. Format expected: <user>:<password>"
-            )
-        except ConnectionError:
-            raise click.ClickException("💥 Failed to contact server!")
-        status.update("OK!")
-
-        content = client.config
-        if filter:
-            content = client.get(filter)
+    content = _fetch_config(cfg_client, auth, digest, filter)
 
     if len(str(content)) == 0:
         emoji = random.choice(EMOJI_NOT_FOUND)
@@ -138,40 +108,10 @@ def client(
         raise SystemExit
 
     if json:
-        try:
-            output_path = Path(output).resolve()
-            output_path.parent.mkdir(parents=True, exist_ok=True)
-
-            if not os.access(output_path.parent, os.W_OK):
-                raise click.ClickException(
-                    f"Permission denied: cannot write to {output_path.parent}"
-                )
-
-        except Exception as e:
-            if "Permission denied" in str(e):
-                raise click.ClickException(f"Permission denied: {e}")
-            else:
-                raise click.ClickException(f"Invalid output path: {e}")
-
-        try:
-            with open(output_path, "w", encoding="utf-8") as f:
-                dump(content, f, indent=4, sort_keys=True)
-            console.print(f"File saved: [cyan]{output_path}[/cyan]", style="bold")
-        except Exception as e:
-            raise click.ClickException(f"Failed to save file: {e}")
-
+        _save_json(content, output)
         raise SystemExit
 
-    filter = filter or "all"
-    console.print(
-        Panel(
-            JSON(dumps(content), indent=4, highlight=True, sort_keys=True),
-            title=f"[bold][green]report for filter[/green][yellow]: [/yellow]'[magenta italic]{filter}[/magenta italic]'[/bold]",
-            highlight=True,
-            border_style="white",
-            expand=True,
-        )
-    )
+    _display_result(content, filter)
 
 
 def _download_file(file, client):
@@ -195,6 +135,87 @@ def _configure_auth(basic_auth, digest_auth):
         username, password = digest_auth.split(":")
         return HTTPDigestAuth(username, password)
     return None
+
+
+def _display_client_info(client):
+    """Display client configuration info."""
+    table = Table.grid(padding=(0, 1))
+    table.add_column(style="cyan", justify="right")
+    table.add_column(style="magenta")
+
+    table.add_row("address[yellow]:[/yellow] ", client.address)
+    table.add_row("label[yellow]:[/yellow] ", client.label)
+    table.add_row("profile[yellow]:[/yellow] ", client.profile)
+    table.add_row("URL[yellow]:[/yellow] ", client.url)
+    console.print(
+        Panel(
+            table,
+            title="[bold yellow]client info[/bold yellow]",
+            border_style="yellow",
+            expand=True,
+        )
+    )
+
+
+def _fetch_config(client, auth, digest, filter_key):
+    """Fetch configuration from server."""
+    with Status("Contacting server...", spinner="dots4") as status:
+        emoji = random.choice(EMOJI_ERRORS)
+        try:
+            auth = _configure_auth(auth, digest)
+            client.get_config(auth=auth)
+        except ValueError:
+            raise click.ClickException(
+                f"{emoji} Bad credentials format for auth method. Format expected: <user>:<password>"
+            )
+        except ConnectionError:
+            raise click.ClickException("💥 Failed to contact server!")
+        status.update("OK!")
+
+        content = client.config
+        if filter_key:
+            content = client.get(filter_key)
+
+    return content
+
+
+def _save_json(content, output):
+    """Validate output path and save content as JSON."""
+    try:
+        output_path = Path(output).resolve()
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        if not os.access(output_path.parent, os.W_OK):
+            raise click.ClickException(
+                f"Permission denied: cannot write to {output_path.parent}"
+            )
+
+    except Exception as e:
+        if "Permission denied" in str(e):
+            raise click.ClickException(f"Permission denied: {e}")
+        else:
+            raise click.ClickException(f"Invalid output path: {e}")
+
+    try:
+        with open(output_path, "w", encoding="utf-8") as f:
+            dump(content, f, indent=4, sort_keys=True)
+        console.print(f"File saved: [cyan]{output_path}[/cyan]", style="bold")
+    except Exception as e:
+        raise click.ClickException(f"Failed to save file: {e}")
+
+
+def _display_result(content, filter_key):
+    """Display configuration result."""
+    filter_display = filter_key or "all"
+    console.print(
+        Panel(
+            JSON(dumps(content), indent=4, highlight=True, sort_keys=True),
+            title=f"[bold][green]report for filter[/green][yellow]: [/yellow]'[magenta italic]{filter_display}[/magenta italic]'[/bold]",
+            highlight=True,
+            border_style="white",
+            expand=True,
+        )
+    )
 
 
 @cli.command()
